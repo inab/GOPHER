@@ -1,0 +1,78 @@
+<collection xmlns="http://exist-db.org/collection-config/1.0">
+	<index xmlns:gopher="http://www.cnio.es/scombio/gopher/1.0">
+    		<!--
+        	<fulltext default="none" attributes="false" alphanum="true">
+			<include path="//mim:alias"/>
+			<include path="//mim:allelicVariant/@name"/>
+			<include path="//mim:allelicVariant/@mutation"/>
+			<include path="//mim:extref"/>
+			<include path="//mim:extref/@id"/>
+			<include path="//mim:geneSymbol"/>
+			<include path="//mim:included"/>
+			<include path="//mim:para"/>
+			<include path="//mim:record/@title"/>
+			<include path="//mim:record/@mimNumber"/>
+			<include path="//mim:ref"/>
+			<include path="//mim:ref/@mimNumber"/>
+			<include path="//mim:section/@name"/>
+			<include path="//mim:term"/>
+		</fulltext>
+		-->
+
+		<!--
+			Excluding entry history from FTI & FTS
+		-->
+		<!--
+        	<fulltext default="all" attributes="true" alphanum="true">
+			<exclude path="//mim:entryHistory" />
+
+			<create qname="mim:record" />
+
+			<create qname="mim:alias" />
+			<create qname="@name" />
+			<create qname="@mutation" />
+			<create qname="odb:text" />
+			<create qname="@id" />
+			<create qname="@namespace" />
+			<create qname="mim:geneSymbol" />
+			<create qname="mim:included" />
+			<create qname="mim:para" />
+			<create qname="@title" />
+			<create qname="@mimNumber" />
+			<create qname="mim:term" />
+		</fulltext>
+		-->
+
+		<lucene>
+			<analyzer class="org.apache.lucene.analysis.SimpleAnalyzer"/>
+
+			<text qname="mim:record" />
+
+			<text qname="mim:alias" />
+			<text qname="@name" />
+			<text qname="@mutation" />
+			<text qname="odb:text" />
+			<text qname="@id" />
+			<text qname="@namespace" />
+			<text qname="mim:geneSymbol" />
+			<text qname="mim:included" />
+			<text qname="mim:para" />
+			<text qname="@title" />
+			<text qname="@mimNumber" />
+			<text qname="mim:term" />
+		</lucene>
+
+		<!--
+        	<create path="//odb:link/@namespace" type="xs:string"/>
+        	<create path="//odb:link/@id" type="xs:string"/>
+        	<create path="//mim:movedTo/@mimNumber" type="xs:string"/>
+        	<create path="//mim:record/@mimNumber" type="xs:string"/>
+        	<create path="//mim:geneSymbol" type="xs:string"/>
+		-->
+
+        	<create qname="@mimNumber" type="xs:string"/>
+        	<create qname="@id" type="xs:string"/>
+        	<create qname="@namespace" type="xs:string"/>
+        	<create qname="mim:geneSymbol" type="xs:string"/>
+	</index>
+</collection>

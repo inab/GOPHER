@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+
+<project basedir="." default="list" name="GOPHER" xmlns:xdb="http://exist-db.org/ant">
+	<description>GOPHER system by jmfernandez Ant script $Id$</description>
+	
+	<!--
+		Configuration properties
+	-->
+	<dirname property="project.home" file="${ant.file}"/>
+	<property file="${project.home}/build.properties"/>
+	
+	<property name="src" location="src" />
+	<property name="build" location="build" />
+	<property name="libs" location="libs" />
+	<property name="weeklyGOPHER-eXist-module.dist.dir" location="weeklyGOPHER-eXist-module/dist" />
+	
+	
+	<dirname property="project.home.parent" file="${project.home}"/>
+	
+	<property name="weeklyGOPHER-eXist-module.dir.rel" value="weeklyGOPHER-eXist-module" />
+	<property name="weeklyGOPHER-eXist-module.dir" location="${weeklyGOPHER-eXist-module.dir.rel}" />
+	<property name="weeklyGOPHER-eXist-module.dist.dir" location="${weeklyGOPHER-eXist-module.dir.rel}/dist" />
+	<property name="weeklyGOPHER-eXist-module.eXist.dir" location="${weeklyGOPHER-eXist-module.dir.rel}/eXist" />
+	
+	<path id="exist-ant.classpath.core">
+		<fileset dir="${weeklyGOPHER-eXist-module.eXist.dir}">
+			<include name="exist.jar" />
+			<include name="exist-optional.jar" />
+			<include name="lib/core/*.jar" />
+		</fileset>
+		<!--
+		<fileset dir="antlibs">
+			<include name="*.jar" />
+		</fileset>
+		-->
+	</path>
+	
+	<!--
+		Targets
+	-->
+	
+	<target name="init">
+		<!-- Creating the timestamp -->
+		<tstamp/>
+	</target>
+	
+	<target name="init.eXist.extension" depends="init">
+		<!--
+			eXist Ant task
+		-->
+		<property name="myclasspath" refid="exist-ant.classpath.core"/>
+		<!-- Emit the property to the ant console -->
+		<echo message="Classpath = ${myclasspath}"/>
+
+		<typedef resource="org/exist/ant/antlib.xml" uri="http://exist-db.org/ant">
+			<classpath refid="exist-ant.classpath.core"/>
+		</typedef>
+
+	</target>
+	
+	<target name="list" depends="init.eXist.extension" description="Listing">
+		<xdb:list uri="xmldb:exist://${deploy.host}:${deploy.eXist.port}/xmlrpc/db" user="${deploy.eXist.user}" password="${deploy.eXist.pass}" failonerror="true" resources="true" outputproperty="resources"/>
+		<xdb:list uri="xmldb:exist://${deploy.host}:${deploy.eXist.port}/xmlrpc/db" user="${deploy.eXist.user}" password="${deploy.eXist.pass}" failonerror="true" collections="true" outputproperty="collections" />
+		<echo>Resources:${line.separator}${resources}${line.separator}and Collections:${line.separator}${collections}</echo>
+	</target>
+
+	<target name="deploy.skel" depends="compile.eXist,init.eXist.extension" description="Upload the skeleton">
+		<!-- First, XML content -->
+		<xdb:store uri="xmldb:exist://${deploy.host}:${deploy.eXist.port}/xmlrpc/db" user="${deploy.eXist.user}" password="${deploy.eXist.pass}" failonerror="true" createsubcollections="true">
+			<fileset dir="skel">
+				<include name="**/*.xsd" />
+				<include name="**/*.xsl" />
+				<include name="**/*.xconf" />
+				<include name="**/*.xml" />
+			</fileset>
+		</xdb:store>
+		<!-- Then, non XML content -->
+		<xdb:store uri="xmldb:exist://${deploy.host}:${deploy.eXist.port}/xmlrpc/db" user="${deploy.eXist.user}" password="${deploy.eXist.pass}" failonerror="true" createsubcollections="true">
+			<fileset dir="skel" defaultexcludes="no">
+				<exclude name="**/*.xsd" />
+				<exclude name="**/*.xsl" />
+				<exclude name="**/*.xconf" />
+				<exclude name="**/*.xml" />
+				<exclude name="**/.svn" />
+				<exclude name="**/.svn/**" />
+			</fileset>
+		</xdb:store>
+	</target>
+
+	<target name="deploy.jars" depends="compile.weeklyGOPHER-eXist-module" description="It copies the eXist weeklyGOPHER library JAR files to the eXist installation">
+		<scp todir="${deploy.ssh.user}@${deploy.host}:${deploy.eXist.dir}/lib/user" keyfile="${deploy.ssh.keyfile}" passphrase="${deploy.ssh.passphrase}" verbose="true">
+			<fileset dir="${weeklyGOPHER-eXist-module.dist.dir}">
+				<include name="*.jar"/>
+			</fileset>
+		</scp>
+	</target>
+	
+	<target name="deploy" depends="deploy.jars,deploy.skel" description="Installation procedure">
+	</target>
+	
+	<target name="clean" depends="clean.weeklyGOPHER-eXist-module" description="clean up ${ant.project.name}">
+		<!-- Something, please! -->
+	</target>
+	
+	<target name="compile.weeklyGOPHER-eXist-module" depends="init" description="compiles weeklyGOPHER-eXist-module">
+		<ant inheritAll="false" inheritRefs="false" dir="${weeklyGOPHER-eXist-module.dir}" />
+	</target>
+	
+	<target name="compile.eXist" depends="init" description="compiles eXist inside weeklyGOPHER-eXist-module">
+		<ant inheritAll="false" inheritRefs="false" dir="${weeklyGOPHER-eXist-module.eXist.dir}" />
+	</target>
+	
+	<target name="clean.weeklyGOPHER-eXist-module" description="clean up weeklyGOPHER-eXist-module">
+		<ant inheritAll="false" inheritRefs="false" dir="${weeklyGOPHER-eXist-module.dir}" target="clean" />
+	</target>
+	
+</project>

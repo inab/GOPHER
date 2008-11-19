@@ -1,0 +1,467 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xsd:schema
+	xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+	xmlns:gopher="http://www.cnio.es/scombio/gopher/1.0"
+	targetNamespace="http://www.cnio.es/scombio/gopher/1.0"
+	elementFormDefault="qualified">
+
+	<xsd:annotation>
+		<xsd:documentation><![CDATA[GOPHER XML Schema, made by José María Fernández González (C) 2008]]></xsd:documentation>
+	</xsd:annotation>
+	
+	<xsd:element name="reference">
+		<xsd:annotation>
+			<xsd:documentation><![CDATA[A reference to external information associated to the server]]></xsd:documentation>
+		</xsd:annotation>
+		<xsd:complexType>
+			<xsd:simpleContent>
+				<xsd:extension base="xsd:anyURI">
+					<xsd:attribute name="description" type="xsd:string" use="required">
+						<xsd:annotation>
+							<xsd:documentation><![CDATA[A brief description about the pointed contents]]></xsd:documentation>
+						</xsd:annotation>
+					</xsd:attribute>
+					<xsd:attribute name="kind" use="required">
+						<xsd:annotation>
+							<xsd:documentation><![CDATA[The supposed type of the content]]></xsd:documentation>
+						</xsd:annotation>
+						<xsd:simpleType>
+							<xsd:restriction base="xsd:string">
+								<xsd:enumeration value="site">
+									<xsd:annotation>
+										<xsd:documentation><![CDATA[Link to the main site]]></xsd:documentation>
+									</xsd:annotation>
+								</xsd:enumeration>
+								<xsd:enumeration value="link">
+									<xsd:annotation>
+										<xsd:documentation><![CDATA[Link to associated material (e.g. PubMed)]]></xsd:documentation>
+									</xsd:annotation>
+								</xsd:enumeration>
+								<xsd:enumeration value="logo">
+									<xsd:annotation>
+										<xsd:documentation><![CDATA[Link to a server logo]]></xsd:documentation>
+									</xsd:annotation>
+								</xsd:enumeration>
+								<xsd:enumeration value="image">
+									<xsd:annotation>
+										<xsd:documentation><![CDATA[Link to images, like screenshots]]></xsd:documentation>
+									</xsd:annotation>
+								</xsd:enumeration>
+							</xsd:restriction>
+						</xsd:simpleType>
+					</xsd:attribute>
+				</xsd:extension>
+			</xsd:simpleContent>
+		</xsd:complexType>
+	</xsd:element>
+	
+	<xsd:element name="server">
+		<xsd:annotation>
+			<xsd:documentation><![CDATA[Each one of the servers registered in GOPHER]]></xsd:documentation>
+		</xsd:annotation>
+		<xsd:complexType>
+			<xsd:sequence minOccurs="1" maxOccurs="1">
+				<xsd:element name="description" type="xsd:string">
+					<xsd:annotation>
+						<xsd:documentation><![CDATA[A description about the server, maybe in HTML]]></xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+				<xsd:element name="otherParams" minOccurs="1" maxOccurs="1">
+					<xsd:annotation>
+						<xsd:documentation><![CDATA[Other parameters set by the owner of the service, which tweaks the run]]></xsd:documentation>
+					</xsd:annotation>
+					<xsd:complexType>
+						<xsd:sequence minOccurs="1" maxOccurs="1">
+							<xsd:element name="param" minOccurs="0" maxOccurs="unbounded">
+								<xsd:annotation>
+									<xsd:documentation><![CDATA[A parameter which tweaks the run. The content of the element is the value]]></xsd:documentation>
+								</xsd:annotation>
+								<xsd:complexType>
+									<xsd:simpleContent>
+										<xsd:extension base="xsd:string">
+											<xsd:attribute name="name" type="xsd:string" use="required">
+												<xsd:annotation>
+													<xsd:documentation><![CDATA[The name of the parameter]]></xsd:documentation>
+												</xsd:annotation>
+											</xsd:attribute>
+										</xsd:extension>
+									</xsd:simpleContent>
+								</xsd:complexType>
+							</xsd:element>
+						</xsd:sequence>
+					</xsd:complexType>
+				</xsd:element>
+				<xsd:element ref="gopher:reference" minOccurs="0" maxOccurs="unbounded">
+					<xsd:annotation>
+						<xsd:documentation><![CDATA[A reference to external information associated to the server]]></xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+				<xsd:element name="downTime" minOccurs="0" maxOccurs="unbounded">
+					<xsd:annotation>
+						<xsd:documentation><![CDATA[An scheduled downTime. It can contain a reason about the downTime as its content]]></xsd:documentation>
+					</xsd:annotation>
+					<xsd:complexType>
+						<xsd:simpleContent>
+							<xsd:extension base="xsd:string">
+								<xsd:attribute name="from" type="xsd:dateTime" use="required">
+									<xsd:annotation>
+										<xsd:documentation><![CDATA[When this downTime starts (inclusive)]]></xsd:documentation>
+									</xsd:annotation>
+								</xsd:attribute>
+								<xsd:attribute name="to" type="xsd:dateTime" use="optional">
+									<xsd:annotation>
+										<xsd:documentation><![CDATA[When this downTime finished (exclusive). If it is not set, the downTime is *forever*]]></xsd:documentation>
+									</xsd:annotation>
+								</xsd:attribute>
+							</xsd:extension>
+						</xsd:simpleContent>
+					</xsd:complexType>
+				</xsd:element>
+			</xsd:sequence>
+			<xsd:attribute name="id" type="xsd:string" use="required">
+				<xsd:annotation>
+					<xsd:documentation><![CDATA[The GOPHER ID for a server]]></xsd:documentation>
+				</xsd:annotation>
+			</xsd:attribute>
+			<xsd:attribute name="name" type="xsd:string" use="required">
+				<xsd:annotation>
+					<xsd:documentation><![CDATA[The GOPHER name for a server]]></xsd:documentation>
+				</xsd:annotation>
+			</xsd:attribute>
+			<xsd:attribute name="managerId" type="xsd:string" use="required">
+				<xsd:annotation>
+					<xsd:documentation><![CDATA[The ID of the manager of this server]]></xsd:documentation>
+				</xsd:annotation>
+			</xsd:attribute>
+			<xsd:attribute name="uri" type="xsd:anyURI">
+				<xsd:annotation>
+					<xsd:documentation><![CDATA[The invocation URI]]></xsd:documentation>
+				</xsd:annotation>
+			</xsd:attribute>
+		</xsd:complexType>
+	</xsd:element>
+	
+	<xsd:element name="managementData">
+		<xsd:complexType>
+			<xsd:sequence minOccurs="1" maxOccurs="1">
+				<xsd:element name="users" minOccurs="1" maxOccurs="1">
+					<xsd:annotation>
+						<xsd:documentation><![CDATA[GOPHER users are the servers managers]]></xsd:documentation>
+					</xsd:annotation>
+					<xsd:complexType>
+						<xsd:sequence minOccurs="1" maxOccurs="1">
+							<xsd:element name="user" minOccurs="0" maxOccurs="unbounded">
+								<xsd:annotation>
+									<xsd:documentation><![CDATA[A GOPHER user, with all the contact information]]></xsd:documentation>
+								</xsd:annotation>
+								<xsd:complexType>
+									<xsd:sequence minOccurs="1" maxOccurs="1">
+										<xsd:element name="eMail" minOccurs="1" maxOccurs="unbounded" type="xsd:string">
+											<xsd:annotation>
+												<xsd:documentation><![CDATA[The e-mail address(es). They must be valid ones]]></xsd:documentation>
+											</xsd:annotation>
+										</xsd:element>
+										<xsd:element ref="gopher:reference" minOccurs="0" maxOccurs="unbounded">
+											<xsd:annotation>
+												<xsd:documentation><![CDATA[A reference to external information associated to the server]]></xsd:documentation>
+											</xsd:annotation>
+										</xsd:element>
+									</xsd:sequence>
+									<xsd:attribute name="id" type="xsd:string" use="required">
+										<xsd:annotation>
+											<xsd:documentation><![CDATA[The unique id of the user in the system]]></xsd:documentation>
+										</xsd:annotation>
+									</xsd:attribute>
+									<xsd:attribute name="nickname" type="xsd:string" use="required">
+										<xsd:annotation>
+											<xsd:documentation><![CDATA[The unique nickname of the user in the system]]></xsd:documentation>
+										</xsd:annotation>
+									</xsd:attribute>
+									<xsd:attribute name="status" use="required">
+										<xsd:annotation>
+											<xsd:documentation><![CDATA[The user status: enabled or disabled. When an user is disabled, all the servers owned by him/her are disabled]]></xsd:documentation>
+										</xsd:annotation>
+										<xsd:simpleType>
+											<xsd:restriction base="xsd:string">
+												<xsd:enumeration value="disabled"/>
+												<xsd:enumeration value="enabled"/>
+											</xsd:restriction>
+										</xsd:simpleType>
+									</xsd:attribute>
+									<xsd:attribute name="firstName" type="xsd:string" use="required">
+										<xsd:annotation>
+											<xsd:documentation><![CDATA[The first name(s) of the user (e.g. José María)]]></xsd:documentation>
+										</xsd:annotation>
+									</xsd:attribute>
+									<xsd:attribute name="lastName" type="xsd:string" use="required">
+										<xsd:annotation>
+											<xsd:documentation><![CDATA[The last name(s) of the user (e.g. Fernández González)]]></xsd:documentation>
+										</xsd:annotation>
+									</xsd:attribute>
+									<xsd:attribute name="organization" type="xsd:string" use="required">
+										<xsd:annotation>
+											<xsd:documentation><![CDATA[The organization where the user is integrated]]></xsd:documentation>
+										</xsd:annotation>
+									</xsd:attribute>
+								</xsd:complexType>
+							</xsd:element>
+						</xsd:sequence>
+					</xsd:complexType>
+					<xsd:key name="users_key">
+						<xsd:annotation>
+							<xsd:documentation><![CDATA[There cannot be two users in GOPHER with the same id]]></xsd:documentation>
+						</xsd:annotation>
+						<xsd:selector xpath="gopher:user"/>
+						<xsd:field xpath="@id"/>
+					</xsd:key>
+					<xsd:unique name="users_nickname_unique">
+						<xsd:annotation>
+							<xsd:documentation><![CDATA[There cannot be two users in GOPHER with the same nickname]]></xsd:documentation>
+						</xsd:annotation>
+						<xsd:selector xpath="gopher:user"/>
+						<xsd:field xpath="@nickname"/>
+					</xsd:unique>
+					<xsd:unique name="users_eMail_unique">
+						<xsd:annotation>
+							<xsd:documentation><![CDATA[An user cannot have two identical e-mail addresses]]></xsd:documentation>
+						</xsd:annotation>
+						<xsd:selector xpath="gopher:user"/>
+						<xsd:field xpath="gopher:eMail"/>
+					</xsd:unique>
+				</xsd:element>
+				
+				<xsd:element name="servers" minOccurs="1" maxOccurs="1">
+					<xsd:complexType>
+						<xsd:sequence minOccurs="1" maxOccurs="1">
+							<xsd:element ref="gopher:server" minOccurs="0" maxOccurs="unbounded"/>
+						</xsd:sequence>
+					</xsd:complexType>
+					<xsd:key name="servers_key">
+						<xsd:annotation>
+							<xsd:documentation><![CDATA[There cannot be two servers with the same ID]]></xsd:documentation>
+						</xsd:annotation>
+						<xsd:selector xpath="gopher:server"/>
+						<xsd:field xpath="@id"/>
+					</xsd:key>
+					<xsd:unique name="servers_name_unique">
+						<xsd:annotation>
+							<xsd:documentation><![CDATA[There cannot be two servers with the same name]]></xsd:documentation>
+						</xsd:annotation>
+						<xsd:selector xpath="gopher:server"/>
+						<xsd:field xpath="@name"/>
+					</xsd:unique>
+				</xsd:element>
+			</xsd:sequence>
+		</xsd:complexType>
+		<xsd:keyref refer="gopher:users_key" name="servers_managerId_keyref_users">
+			<xsd:selector xpath="gopher:servers/gopher:server"/>
+			<xsd:field xpath="@id"/>
+		</xsd:keyref>
+	</xsd:element>
+	
+	<xsd:element name="experiments">
+		<xsd:complexType>
+			<xsd:sequence minOccurs="1" maxOccurs="1">
+				<xsd:element name="experiment" minOccurs="0" maxOccurs="unbounded">
+					<xsd:complexType>
+						<xsd:sequence minOccurs="1" maxOccurs="1">
+							<xsd:element name="target" minOccurs="1" maxOccurs="unbounded">
+								<xsd:complexType>
+									<xsd:sequence minOccurs="1" maxOccurs="1">
+										<xsd:element name="sequence" minOccurs="1" maxOccurs="1" type="xsd:string">
+											<xsd:annotation>
+												<xsd:documentation><![CDATA[The sequence which is submitted to the servers]]></xsd:documentation>
+											</xsd:annotation>
+										</xsd:element>
+										<xsd:element name="tag" minOccurs="0" maxOccurs="unbounded">
+											<xsd:annotation>
+												<xsd:documentation><![CDATA[Generic tags, containing the value as content]]></xsd:documentation>
+											</xsd:annotation>
+											<xsd:complexType>
+												<xsd:simpleContent>
+													<xsd:extension base="xsd:string">
+														<xsd:attribute name="name" type="xsd:string" use="required">
+															<xsd:annotation>
+																<xsd:documentation><![CDATA[The key of this tag]]></xsd:documentation>
+															</xsd:annotation>
+														</xsd:attribute>
+													</xsd:extension>
+												</xsd:simpleContent>
+											</xsd:complexType>
+										</xsd:element>
+										<xsd:element name="result" minOccurs="0" maxOccurs="unbounded" type="xsd:string">
+											<xsd:annotation>
+												<xsd:documentation><![CDATA[A result from the job (there can be from 0 to undefined]]></xsd:documentation>
+											</xsd:annotation>
+										</xsd:element>
+									</xsd:sequence>
+									<xsd:attribute name="id" type="xsd:string" use="required">
+										<xsd:annotation>
+											<xsd:documentation><![CDATA[The id of the sequence (typically, the PDB id)]]></xsd:documentation>
+										</xsd:annotation>
+									</xsd:attribute>
+									<xsd:attribute name="description" type="xsd:string" use="required">
+										<xsd:annotation>
+											<xsd:documentation><![CDATA[A descriptive line for the sequence (either from PDB or PDBPre)]]></xsd:documentation>
+										</xsd:annotation>
+									</xsd:attribute>
+									<xsd:attribute name="origin" use="required">
+										<xsd:annotation>
+											<xsd:documentation><![CDATA[The sequence origin, either PDB or PDBPre]]></xsd:documentation>
+										</xsd:annotation>
+										<xsd:simpleType>
+											<xsd:restriction base="xsd:string">
+												<xsd:enumeration value="pdb"/>
+												<xsd:enumeration value="pdbpre"/>
+											</xsd:restriction>
+										</xsd:simpleType>
+									</xsd:attribute>
+									<xsd:attribute name="level">
+										<xsd:annotation>
+											<xsd:documentation><![CDATA[The initially estimated complexity score assigned to the sequence]]></xsd:documentation>
+										</xsd:annotation>
+										<xsd:simpleType>
+											<xsd:restriction base="xsd:double">
+												<xsd:minInclusive value="0.0"/>
+												<xsd:maxInclusive value="1.0"/>
+											</xsd:restriction>
+										</xsd:simpleType>
+									</xsd:attribute>
+								</xsd:complexType>
+							</xsd:element>
+							<xsd:element name="participant" minOccurs="1" maxOccurs="unbounded">
+								<xsd:complexType>
+									<xsd:sequence minOccurs="1" maxOccurs="1">
+										<xsd:element ref="gopher:server" minOccurs="1" maxOccurs="1">
+											<xsd:annotation>
+												<xsd:documentation><![CDATA[Server information is preserved here, so changes do not affect the calling values]]></xsd:documentation>
+											</xsd:annotation>
+										</xsd:element>
+										<xsd:element name="job" minOccurs="0" maxOccurs="unbounded">
+											<xsd:annotation>
+												<xsd:documentation><![CDATA[A job is a target sent to the server]]></xsd:documentation>
+											</xsd:annotation>
+											<xsd:complexType>
+												<xsd:sequence minOccurs="1" maxOccurs="1">
+													<xsd:element name="lastMessage" type="xsd:string" minOccurs="0" maxOccurs="1">
+														<xsd:annotation>
+															<xsd:documentation><![CDATA[Last human-readable message fetched from server or generated by GOPHER]]></xsd:documentation>
+														</xsd:annotation>
+													</xsd:element>
+												</xsd:sequence>
+												<xsd:attribute name="targetId" type="xsd:string" use="required">
+													<xsd:annotation>
+														<xsd:documentation><![CDATA[The Id of the target sent in this job]]></xsd:documentation>
+													</xsd:annotation>
+												</xsd:attribute>
+												<xsd:attribute name="startStamp" type="xsd:dateTime" use="required">
+													<xsd:annotation>
+														<xsd:documentation><![CDATA[The timestamp of the job submission]]></xsd:documentation>
+													</xsd:annotation>
+												</xsd:attribute>
+												<xsd:attribute name="lastQueryStamp" type="xsd:dateTime" use="required">
+													<xsd:annotation>
+														<xsd:documentation><![CDATA[The timestamp of the last query about this job to the server]]></xsd:documentation>
+													</xsd:annotation>
+												</xsd:attribute>
+												<xsd:attribute name="stopStamp" type="xsd:dateTime" use="optional">
+													<xsd:annotation>
+														<xsd:documentation><![CDATA[The timestamp when GOPHER new the job finished (either properly or with failure)]]></xsd:documentation>
+													</xsd:annotation>
+												</xsd:attribute>
+												<xsd:attribute name="status" use="required">
+													<xsd:annotation>
+														<xsd:documentation><![CDATA[The status of the job at lastQueryStamp]]></xsd:documentation>
+													</xsd:annotation>
+													<xsd:simpleType>
+														<xsd:restriction base="xsd:string">
+															<xsd:enumeration value="queued">
+																<xsd:annotation>
+																	<xsd:documentation><![CDATA[The job has not been sent yet]]></xsd:documentation>
+																</xsd:annotation>
+															</xsd:enumeration>
+															<xsd:enumeration value="submitted">
+																<xsd:annotation>
+																	<xsd:documentation><![CDATA[The job has been properly submitted, but no polling has been done yet]]></xsd:documentation>
+																</xsd:annotation>
+															</xsd:enumeration>
+															<xsd:enumeration value="running">
+																<xsd:annotation>
+																	<xsd:documentation><![CDATA[The job is still running]]></xsd:documentation>
+																</xsd:annotation>
+															</xsd:enumeration>
+															<xsd:enumeration value="killed">
+																<xsd:annotation>
+																	<xsd:documentation><![CDATA[The job has been killed from the GOPHER's side]]></xsd:documentation>
+																</xsd:annotation>
+															</xsd:enumeration>
+															<xsd:enumeration value="transienterror">
+																<xsd:annotation>
+																	<xsd:documentation><![CDATA[A transient error happened (network is down, for instance)]]></xsd:documentation>
+																</xsd:annotation>
+															</xsd:enumeration>
+															<xsd:enumeration value="error">
+																<xsd:annotation>
+																	<xsd:documentation><![CDATA[There was an error on the server's side]]></xsd:documentation>
+																</xsd:annotation>
+															</xsd:enumeration>
+															<xsd:enumeration value="finished">
+																<xsd:annotation>
+																	<xsd:documentation><![CDATA[The job finished and the results could be fetched]]></xsd:documentation>
+																</xsd:annotation>
+															</xsd:enumeration>
+														</xsd:restriction>
+													</xsd:simpleType>
+												</xsd:attribute>
+											</xsd:complexType>
+										</xsd:element>
+									</xsd:sequence>
+								</xsd:complexType>
+							</xsd:element>
+						</xsd:sequence>
+						<xsd:attribute name="stamp" type="xsd:dateTime" use="required">
+							<xsd:annotation>
+								<xsd:documentation><![CDATA[The experiment's timestamp (when it started)]]></xsd:documentation>
+							</xsd:annotation>
+						</xsd:attribute>
+						<xsd:attribute name="baseStamp" type="xsd:dateTime" use="required">
+							<xsd:annotation>
+								<xsd:documentation><![CDATA[The previous experiment's timestamp (used to track changes)]]></xsd:documentation>
+							</xsd:annotation>
+						</xsd:attribute>
+					</xsd:complexType>
+					<xsd:key name="target_key">
+						<xsd:annotation>
+							<xsd:documentation><![CDATA[There cannot be two targets with the same id in the same experiment]]></xsd:documentation>
+						</xsd:annotation>
+						<xsd:selector xpath="gopher:target"/>
+						<xsd:field xpath="@id"/>
+					</xsd:key>
+					<xsd:keyref refer="gopher:target_key" name="job_targetid_referes_target">
+						<xsd:selector xpath="gopher:participant/gopher:job"></xsd:selector>
+						<xsd:field xpath="@targetId"></xsd:field>
+					</xsd:keyref>
+					<xsd:unique name="participant_server_unique">
+						<xsd:selector xpath="gopher:participant/gopher:server"></xsd:selector>
+						<xsd:field xpath="@id"></xsd:field>
+					</xsd:unique>
+				</xsd:element>
+			</xsd:sequence>
+		</xsd:complexType>
+		<xsd:key name="experiments_stamp">
+			<xsd:annotation>
+				<xsd:documentation><![CDATA[There cannot be two experiments with the same timestamp]]></xsd:documentation>
+			</xsd:annotation>
+			<xsd:selector xpath="gopher:experiment"></xsd:selector>
+			<xsd:field xpath="@stamp"></xsd:field>
+		</xsd:key>
+		<xsd:keyref refer="gopher:experiments_stamp" name="experiments_baseStamp_stamp">
+			<xsd:annotation>
+				<xsd:documentation><![CDATA[baseStamp points to a previous experiment]]></xsd:documentation>
+			</xsd:annotation>
+			<xsd:selector xpath="gopher:experiment"></xsd:selector>
+			<xsd:field xpath="@baseStamp"></xsd:field>
+		</xsd:keyref>
+	</xsd:element>
+	
+</xsd:schema>
