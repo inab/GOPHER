@@ -15,10 +15,12 @@ weeklyGOPHER-eXist-module glue classes by jmfernandez Ant script</description>
 	<property name="eXist.dir.rel" value="eXist"/>
 	<property name="eXist.dir" location="${eXist.dir.rel}"/>
 	
+	<property name="eXist.jar.rel" value="exist.jar"/>
+	<property name="eXist.jar" location="${eXist.dir}/${eXist.jar.rel}"/>
 	
 	<path id="org.cnio.scombio.jmfernandez.widget.javalibs">
 		<fileset dir="${eXist.dir}">
-			<include name="exist.jar"/>
+			<include name="${eXist.jar.rel}"/>
 			<include name="lib/core/xmldb.jar"/>
 		</fileset>
 	</path>
@@ -28,7 +30,18 @@ weeklyGOPHER-eXist-module glue classes by jmfernandez Ant script</description>
 		<tstamp/>
 	</target>
 
-	<target name="compile" depends="init,compile.eXist" description="compiles the source">
+	<target name="bootstrap.eXist.exists" depends="init">
+		<available file="${eXist.jar}" property="eXist.archive.present"/>
+	</target>
+	
+	<target name="conditional.bootstrap.eXist" depends="bootstrap.eXist.exists" unless="eXist.archive.present">
+		<antcall target="bootstrap.eXist"/>
+	</target>
+	
+	<target name="bootstrap.eXist" depends="compile.eXist" description="It compiles eXist">
+	</target>
+
+	<target name="compile" depends="init,conditional.bootstrap.eXist" description="compiles the source">
 		<mkdir dir="${build}"/>
 		<javac debug="on" destdir="${build}" includes="**" srcdir="${src}" source="1.5" target="1.5">
 			<classpath refid="org.cnio.scombio.jmfernandez.widget.javalibs" />

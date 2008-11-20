@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="src" path="weeklyGOPHER-eXist-module/src"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="lib" path="weeklyGOPHER-eXist-module/eXist/lib/core/xmldb.jar"/>
+	<classpathentry kind="lib" path="weeklyGOPHER-eXist-module/eXist/exist.jar"/>
+	<classpathentry kind="lib" path="weeklyGOPHER-eXist-module/eXist/lib/core/quartz-1.6.0.jar"/>
+	<classpathentry kind="output" path="weeklyGOPHER-eXist-module/build"/>
+</classpath>

@@ -21,10 +21,12 @@
 	<property name="weeklyGOPHER-eXist-module.dir" location="${weeklyGOPHER-eXist-module.dir.rel}" />
 	<property name="weeklyGOPHER-eXist-module.dist.dir" location="${weeklyGOPHER-eXist-module.dir.rel}/dist" />
 	<property name="weeklyGOPHER-eXist-module.eXist.dir" location="${weeklyGOPHER-eXist-module.dir.rel}/eXist" />
+	<property name="eXist.jar.rel" value="exist.jar"/>
+	<property name="eXist.jar" location="${weeklyGOPHER-eXist-module.eXist.dir}/${eXist.jar.rel}"/>
 	
 	<path id="exist-ant.classpath.core">
 		<fileset dir="${weeklyGOPHER-eXist-module.eXist.dir}">
-			<include name="exist.jar" />
+			<include name="${eXist.jar.rel}" />
 			<include name="exist-optional.jar" />
 			<include name="lib/core/*.jar" />
 		</fileset>
@@ -44,7 +46,19 @@
 		<tstamp/>
 	</target>
 	
-	<target name="init.eXist.extension" depends="init">
+	<target name="bootstrap.eXist.exists" depends="init">
+		<available file="${eXist.jar}" property="eXist.archive.present"/>
+	</target>
+	
+	<target name="conditional.bootstrap.eXist" depends="bootstrap.eXist.exists" unless="eXist.archive.present">
+		<antcall target="bootstrap.eXist"/>
+	</target>
+	
+	<target name="bootstrap.eXist" depends="compile.eXist" description="It compiles eXist">
+	</target>
+	
+
+	<target name="init.eXist.extension" depends="conditional.bootstrap.eXist">
 		<!--
 			eXist Ant task
 		-->
@@ -64,7 +78,7 @@
 		<echo>Resources:${line.separator}${resources}${line.separator}and Collections:${line.separator}${collections}</echo>
 	</target>
 
-	<target name="deploy.skel" depends="compile.eXist,init.eXist.extension" description="Upload the skeleton">
+	<target name="deploy.skel" depends="init.eXist.extension" description="Upload the skeleton">
 		<!-- First, XML content -->
 		<xdb:store uri="xmldb:exist://${deploy.host}:${deploy.eXist.port}/xmlrpc/db" user="${deploy.eXist.user}" password="${deploy.eXist.pass}" failonerror="true" createsubcollections="true">
 			<fileset dir="skel">

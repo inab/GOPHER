@@ -1,12 +1,21 @@
 package org.cnio.scombio.jmfernandez.GOPHER;
 
+import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileNotFOundException;
-import java,io.IOException;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.FileReader;
+import java.io.InputStream;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.PrintStream;
 import java.io.PrintWriter;
+import java.nio.channels.FileChannel;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class GOPHERPrepare {
@@ -69,7 +78,8 @@ public class GOPHERPrepare {
 			try {
 				byte[] buffer=new byte[65536];
 				int readed;
-				while(readed=is.read(buffer,0,buffer.length)) {
+				
+				while((readed=is.read(buffer,0,buffer.length))!=-1) {
 					os.write(buffer,0,readed);
 				}
 			} catch (IOException ioe) {
@@ -102,12 +112,12 @@ public class GOPHERPrepare {
 	protected ArrayList<String> readFASTAHeaders(BufferedReader FH)
 		throws IOException
 	{
-		Arraylist<String> headers=new ArrayList<String>();
+		ArrayList<String> headers=new ArrayList<String>();
 		
 		String line;
 		while((line=FH.readLine())!=null) {
 			if(line.length() > 0 && line.charAt(0)=='>') {
-				headers.push(line.substring(1));
+				headers.add(line.substring(1));
 			}
 		}
 		
@@ -142,7 +152,7 @@ public class GOPHERPrepare {
 			// Let's get last match
 			int lastpos;
 			do {
-				lastpos=matcher.start();
+				lastpos=m.start();
 			} while(m.find());
 			
 			// And now the length
@@ -161,7 +171,7 @@ public class GOPHERPrepare {
 		throws FileNotFoundException, IOException
 	{
 		boolean succeed=true;
-		BufferedReader ORIG=new BufferedReader(origFile);
+		BufferedReader ORIG=new BufferedReader(new FileReader(origFile));
 		ArrayList<String> origheaders=null;
 		try {
 			origheaders=readFASTAHeaders(ORIG);
@@ -170,7 +180,7 @@ public class GOPHERPrepare {
 			ORIG.close();
 		}
 		
-		BufferedReader NEW = new BufferedReader(newFile);
+		BufferedReader NEW = new BufferedReader(new FileReader(newFile));
 		ArrayList<String> newheaders=null;
 		try {
 			newheaders=readFASTAHeaders(NEW);
@@ -183,14 +193,14 @@ public class GOPHERPrepare {
 		int maxorigpos=origheaders.size();
 		int maxnewpos=newheaders.size();
 		int origpos=0;
-		inr newpos=0;
+		int newpos=0;
 		HashMap<String,Object> candidate=new HashMap<String,Object>();
 		while(origpos<maxorigpos && newpos<maxnewpos) {
 			if(origheaders.get(origpos).equals(newheaders.get(newpos))) {
 				// Equal, next step!
 				origpos++;
 				newpos++;
-			} elsif(origheaders.get(origpos).compareTo(newheaders.get(newpos))<0) {
+			} else if(origheaders.get(origpos).compareTo(newheaders.get(newpos))<0) {
 				// Not skipped yet, next step on original!
 				origpos++;
 			} else {
@@ -212,7 +222,7 @@ public class GOPHERPrepare {
 				boolean survivor=false;
 
 				// Reset file pointer for further usage
-				NEW = new BufferedReader(newFile);
+				NEW = new BufferedReader(new FileReader(newFile));
 				while((line=NEW.readLine())!=null) {
 					if(line.charAt(0)=='>') {
 						// We have a candidate sequence!
@@ -273,7 +283,7 @@ public class GOPHERPrepare {
 		} else {
 			desc = desc.trim();
 			String[] res = desc.split("[ \t]+",2);
-			id=(res.length()>0)?res[0]:desc;
+			id=(res.length>0)?res[0]:desc;
 		}
 
 		return id;
@@ -282,21 +292,22 @@ public class GOPHERPrepare {
 	protected ArrayList<PDBSeq> copyWithPrefix(File fastaFile,String prefix,PrintWriter FH)
 		throws FileNotFoundException, IOException
 	{
-		ArrayList<String> seqs=new ArrayList<String>();
+		ArrayList<PDBSeq> seqs=new ArrayList<PDBSeq>();
+		BufferedReader FASTA = null;
 		try {
-			BufferedReader FASTA = new BufferedReader(fastaFile);
+			FASTA = new BufferedReader(new FileReader(fastaFile));
 		} catch(IOException ioe) {
 			throw new IOException("ERROR: Unable to open "+fastaFile.getAbsolutePath()+" to prefix it with "+prefix+"! Reason: "+ioe.getMessage());
 		}
+		String id=null;
+		String iddesc=null;
+		StringBuilder sequence=null;
 		try {
 			String line;
-			String id=null;
-			String iddesc=null;
-			StringBuilder sequence=null;
 			while((line=FASTA.readLine())!=null) {
 				if(line.charAt(0)=='>') {
 					if(id!=null)
-						seqs.push(new PDBSeq(id,iddesc,sequence));
+						seqs.add(new PDBSeq(id,iddesc,sequence));
 					String desc=line.substring(1);
 					FH.println(">"+prefix+":"+desc);
 
@@ -311,7 +322,7 @@ public class GOPHERPrepare {
 			}
 		} finally {
 			if(id!=null)
-				seqs.push(new PDBSeq(id,iddesc,sequence));
+				seqs.add(new PDBSeq(id,iddesc,sequence));
 			FASTA.close();
 		}
 		
@@ -345,8 +356,8 @@ public class GOPHERPrepare {
 		} catch(IOException ioe) {
 			throw new IOException("ERROR: Unable to create survivors database "+survdb.getAbsolutePath()+". Reason:"+ioe.getMessage());
 		}
-		Arraylist<PDBSeq> pdbArray=null;
-		Arraylist<PDBSeq> pdbPreArray=null;
+		ArrayList<PDBSeq> pdbArray=null;
+		ArrayList<PDBSeq> pdbPreArray=null;
 		try {
 			try {
 				pdbArray=copyWithPrefix(analpdb,PDBPREFIX,SURVFH);
@@ -363,8 +374,8 @@ public class GOPHERPrepare {
 		}
 
 		HashMap<String,ArrayList<PDBSeq>> survivor=new HashMap<String,ArrayList<PDBSeq>>();
-		survivor.push(PDBPREFIX,pdbArray);
-		survivor.push(PDBPREPREFIX,pdbPreArray);
+		survivor.put(PDBPREFIX,pdbArray);
+		survivor.put(PDBPREPREFIX,pdbPreArray);
 
 		// Now, let's calculate needed memory for clustering
 		int cdmem=(int)Math.round(((double)(origdb.length()+survdb.length()))/(1024L*1024L)*20+0.5);
@@ -375,7 +386,7 @@ public class GOPHERPrepare {
 			"-i",origdb.getAbsolutePath(),
 			"-i2",survdb.getAbsolutePath(),
 			"-o",leaderscanddb.getAbsolutePath(),
-			"-c",Integer.toString(CDHIT_IDENTITY),
+			"-c",Double.toString(CDHIT_IDENTITY),
 			"-n",Integer.toString(CDHIT_WORD_SIZE),
 			"-M",Integer.toString(cdmem)
 		};
@@ -387,16 +398,20 @@ public class GOPHERPrepare {
 		StreamRedirector sre=new StreamRedirector(p.getErrorStream(),logStream,logStream);
 		sro.start();
 		sre.start();
-		int retval = p.waitFor();
 		
-		if(retval!=0)
-			throw new IOException("ERROR: system @CDHIT2Dparams failed: "+retval);
-
+		try {
+			int retval = p.waitFor();
+			if(retval!=0)
+				throw new IOException("ERROR: system @CDHIT2Dparams failed: "+retval);
+		} catch(InterruptedException ie) {
+			throw new IOException("ERROR: system @CDHIT2Dparams failed due "+ie.getMessage());
+		}
+		
 		String[] CDHITparams={
 			"cd-hit",
 			"-i",leaderscanddb.getAbsolutePath(),
 			"-o",leadersdb.getAbsolutePath(),
-			"-c",Integer.toString(CDHIT_IDENTITY),
+			"-c",Double.toString(CDHIT_IDENTITY),
 			"-n",Integer.toString(CDHIT_WORD_SIZE),
 			"-M",Integer.toString(cdmem)
 		};
@@ -407,10 +422,13 @@ public class GOPHERPrepare {
 		sre=new StreamRedirector(p.getErrorStream(),logStream,logStream);
 		sro.start();
 		sre.start();
-		retval = p.waitFor();
-		
-		if(retval!=0)
-			throw new IOException("system @CDHITparams failed: "+retval);
+		try {
+			int retval = p.waitFor();
+			if(retval!=0)
+				throw new IOException("ERROR: system @CDHITparams failed: "+retval);
+		} catch(InterruptedException ie) {
+			throw new IOException("ERROR: system @CDHITparams failed due "+ie.getMessage());
+		}
 
 		// And now, information about the survivors!
 		String[] BLASTparams={
@@ -424,30 +442,33 @@ public class GOPHERPrepare {
 		};
 
 		logStream.println("NOTICE: Launching @BLASTparams");
-		p = r.exec(BLASTparams);
+		BufferedOutputStream lrs=null;
 		try {
-			BufferedOutputStream lrs=new BufferedOutputStream(leadersReport);
+			lrs=new BufferedOutputStream(new FileOutputStream(leadersReport));
 		} catch(IOException ioe) {
 			throw new IOException("ERROR: unable to create BLAST report "+leadersReport.getAbsolutePath()+". Reason: "+ioe.getMessage());
 		}
-		retval=-1;
+		p = r.exec(BLASTparams);
 		try {
-			sro=new StreamRedirector(p.getInputStream(),new BufferedOutputStream(leadersReport),logStream);
+			sro=new StreamRedirector(p.getInputStream(),lrs,logStream);
 			sre=new StreamRedirector(p.getErrorStream(),logStream,logStream);
 			sro.start();
 			sre.start();
-			retval = p.waitFor();
+			try {
+				int retval = p.waitFor();
+				if(retval!=0)
+					throw new IOException("ERROR: system @BLASTparams failed: "+retval);
+			} catch(InterruptedException ie) {
+				throw new IOException("ERROR: system @BLASTparams failed due "+ie.getMessage());
+			}
 		} finally {
 			lrs.close();
 		}
 		
-		if(retval!=0)
-			throw new IOException("ERROR: unable to run @BLASTparams failed: "+retval);
-		
 		// Let's parse!
 		BufferedReader BLFH=null;
 		try {
-			BLFH=new BufferedReader(leadersReport);
+			BLFH=new BufferedReader(new FileReader(leadersReport));
 		} catch(IOException ioe) {
 			throw new IOException("ERROR: unable to parse BLAST report "+leadersReport.getAbsolutePath()+". Reason: "+ioe.getMessage());
 		}
@@ -526,7 +547,7 @@ public class GOPHERPrepare {
 	{
 		// First, time to create workfing directory
 		workdir.mkdirs();
-		if(!wordkir.isDirectory()) {
+		if(!workdir.isDirectory()) {
 			throw new IOException("FATAL ERROR: Unable to create directory "+workdir.getAbsolutePath()+"!!!");
 		}
 
@@ -609,7 +630,7 @@ public class GOPHERPrepare {
 		}
 	}
 	
-	public final static int main(String[] args) {
+	public final static void main(String[] args) {
 		if(args.length>=5) {
 			File origprepdb=new File(args[0]);
 			File newprepdb=new File(args[1]);
