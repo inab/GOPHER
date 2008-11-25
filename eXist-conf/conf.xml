@@ -468,11 +468,8 @@
         -->
 
 	<job type="user" name="weeklyGOPHER" cron-trigger="0 23 * * 4 ?"
-		class="org.cnio.scombio.GOPHER.WeeklyGOPHERTask"
-	>
-		<parameter name="blah1" value="sanity"/>
-		<parameter name="blah2" value="no"/>
-        </job>
+		xquery="/db/GOPHER-logic/cronjob.xql"
+	/>
         
         <!-- 
             Automatically creates a copy of the database .dbx files every 2 minutes

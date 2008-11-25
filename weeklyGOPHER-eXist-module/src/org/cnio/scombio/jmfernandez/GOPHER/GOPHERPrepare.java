@@ -19,29 +19,37 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class GOPHERPrepare {
-	protected static int MINSEQLENGTH=30;
-	protected static int HAREA=20;
-	protected static int HMIN=3;
-	protected static double CDHIT_IDENTITY=0.97;
-	protected static int CDHIT_WORD_SIZE=5;
-	protected static String BLAST_PATH="dc_blastall";
-	protected static String BLAST_ALGO="tera-blastp";
-	protected static String KNOWNSEQS_DB="fusionated";
-	protected static double BLAST_EVALUE=1e-5;
-	protected static int BLAST_HITS=500;
-
-	protected static String PDBPREFILE="pdbpre.fas";
-	protected static String PDBFILE="pdb.fas";
-	protected static String ORIGPRE="prev-";
-	protected static String FILTPRE="filtered-";
-	protected static String SURVPRE="survivors-";
-	protected static String LEADERSPRE="leaders-";
-	protected static String ORIGDB="original.fas";
-	protected static String SURVDB="survivors.fas";
-	protected static String LEADERSDB="leaders.fas";
-	protected static String PDBPREPREFIX="N";
-	protected static String PDBPREFIX="P";
-	protected static String BLASTPOST=".blast";
+	protected final static int MINSEQLENGTH=30;
+	protected final static int HAREA=20;
+	protected final static int HMIN=3;
+	protected final static double CDHIT_IDENTITY=0.97;
+	protected final static int CDHIT_WORD_SIZE=5;
+	protected final static String BLAST_PATH="dc_blastall";
+	protected final static String BLAST_ALGO="tera-blastp";
+	protected final static String KNOWNSEQS_DB="fusionated";
+	protected final static double BLAST_EVALUE=1e-5;
+	protected final static int BLAST_HITS=500;
+	
+	protected final static String ORIGIN_KEY="origin";
+	
+	protected final static String PDBPRE_LABEL="pdbpre";
+	protected final static String PDBPREFILE=PDBPRE_LABEL+".fas";
+	protected final static String PDB_LABEL="pdb";
+	protected final static String PDBFILE=PDB_LABEL+".fas";
+	protected final static String ORIGPRE="prev-";
+	protected final static String FILTPRE="filtered-";
+	protected final static String SURVPRE="survivors-";
+	protected final static String LEADERSPRE="leaders-";
+	protected final static String ORIGDB="original.fas";
+	protected final static String SURVDB="survivors.fas";
+	protected final static String LEADERSDB="leaders.fas";
+	protected final static String PDBPREPREFIX="N";
+	protected final static String PDBPREFIX="P";
+	protected final static String PREF_SEP=":";
+	protected final static String BLASTPOST=".blast";
+	
+	protected final static String ORIG_PDBPREFILE=ORIGPRE+PDBPREFILE;
+	protected final static String ORIG_PDBFILE=ORIGPRE+PDBFILE;
 	
 	protected static String queryParticle="Query=";
 	
@@ -49,11 +57,13 @@ public class GOPHERPrepare {
 		public String id;
 		public String iddesc;
 		public StringBuilder sequence;
+		public HashMap<String,Object> features;
 		
 		public PDBSeq(String id,String iddesc,StringBuilder sequence) {
 			this.id=id;
 			this.iddesc=iddesc;
 			this.sequence=sequence;
+			this.features=new HashMap<String,Object>();
 		}
 	}
 	
@@ -95,6 +105,9 @@ public class GOPHERPrepare {
 	protected Pattern blhitspat;
 	protected PrintStream logStream;
 	
+	File leadersdb;
+	File leadersReport;
+	
 	public GOPHERPrepare(PrintStream logStream)
 	{
 		hdpattern=Pattern.compile("[HX]{"+HMIN+",}");
@@ -102,6 +115,8 @@ public class GOPHERPrepare {
 		PDBHEADERPAT=Pattern.compile("PDB:([^ :]+)[ :]");
 		blhitspat=Pattern.compile("\\([0-9]+ letters?\\)");
 		this.logStream=logStream;
+		leadersdb=null;
+		leadersReport=null;
 	}
 	
 	public GOPHERPrepare()
@@ -289,10 +304,10 @@ public class GOPHERPrepare {
 		return id;
 	}
 	
-	protected ArrayList<PDBSeq> copyWithPrefix(File fastaFile,String prefix,PrintWriter FH)
+	protected HashMap<String,PDBSeq> copyWithPrefix(File fastaFile,String prefix,PrintWriter FH)
 		throws FileNotFoundException, IOException
 	{
-		ArrayList<PDBSeq> seqs=new ArrayList<PDBSeq>();
+		HashMap<String,PDBSeq> seqs=new HashMap<String,PDBSeq>();
 		BufferedReader FASTA = null;
 		try {
 			FASTA = new BufferedReader(new FileReader(fastaFile));
@@ -307,9 +322,9 @@ public class GOPHERPrepare {
 			while((line=FASTA.readLine())!=null) {
 				if(line.charAt(0)=='>') {
 					if(id!=null)
-						seqs.add(new PDBSeq(id,iddesc,sequence));
+						seqs.put(id,new PDBSeq(id,iddesc,sequence));
 					String desc=line.substring(1);
-					FH.println(">"+prefix+":"+desc);
+					FH.println(">"+prefix+PREF_SEP+desc);
 
 					// Now, store
 					id=processFASTAPDBDesc(desc);
@@ -322,14 +337,42 @@ public class GOPHERPrepare {
 			}
 		} finally {
 			if(id!=null)
-				seqs.add(new PDBSeq(id,iddesc,sequence));
+				seqs.put(id,new PDBSeq(id,iddesc,sequence));
 			FASTA.close();
 		}
 		
 		return seqs;
 	}
 	
-	protected void chooseLeaders(File workdir, File origprepdb, File origpdb, File analprepdb, File analpdb, File leadersdb, File leadersReport)
+	protected HashMap<String,PDBSeq> parseLeaders(HashMap<String,HashMap<String,PDBSeq>> survivors,File leadersFile)
+		throws FileNotFoundException, IOException
+	{
+		HashMap<String,PDBSeq> leaders=new HashMap<String,PDBSeq>();
+		BufferedReader FH=new BufferedReader(new FileReader(leadersFile));
+		String line;
+		while((line=FH.readLine())!=null) {
+			if(line.length() > 0 && line.charAt(0)=='>') {
+				String[] procHeader = line.split(PREF_SEP, 2);
+				if(procHeader.length<2 || !survivors.containsKey(procHeader[0])) {
+					throw new IOException("Garbled FASTA header at "+leadersFile.getAbsolutePath());
+				}
+				HashMap<String,PDBSeq> paq = survivors.get(procHeader[0]);
+				String pdbCode=processFASTAPDBDesc(procHeader[1]);
+				if(pdbCode==null || !paq.containsKey(pdbCode)) {
+					throw new IOException("PDB Id "+pdbCode+" was not found! Perhaps the FASTA header was garbled");
+				}
+				PDBSeq leaderSeq=paq.get(pdbCode);
+				leaderSeq.features.put(ORIGIN_KEY, PDBPREFIX.equals(procHeader[0])?PDB_LABEL:PDBPRE_LABEL);
+				leaders.put(leaderSeq.id,leaderSeq);
+			}
+		}
+		
+		FH.close();
+		
+		return leaders;
+	}
+	
+	protected HashMap<String,PDBSeq> chooseLeaders(File workdir, File origprepdb, File origpdb, File analprepdb, File analpdb, File leadersdb, File leadersReport)
 		throws FileNotFoundException, IOException
 	{
 		// First, let's generate common original database
@@ -356,8 +399,8 @@ public class GOPHERPrepare {
 		} catch(IOException ioe) {
 			throw new IOException("ERROR: Unable to create survivors database "+survdb.getAbsolutePath()+". Reason:"+ioe.getMessage());
 		}
-		ArrayList<PDBSeq> pdbArray=null;
-		ArrayList<PDBSeq> pdbPreArray=null;
+		HashMap<String,PDBSeq> pdbArray=null;
+		HashMap<String,PDBSeq> pdbPreArray=null;
 		try {
 			try {
 				pdbArray=copyWithPrefix(analpdb,PDBPREFIX,SURVFH);
@@ -373,9 +416,9 @@ public class GOPHERPrepare {
 			SURVFH.close();
 		}
 
-		HashMap<String,ArrayList<PDBSeq>> survivor=new HashMap<String,ArrayList<PDBSeq>>();
-		survivor.put(PDBPREFIX,pdbArray);
-		survivor.put(PDBPREPREFIX,pdbPreArray);
+		HashMap<String,HashMap<String,PDBSeq>> survivors=new HashMap<String,HashMap<String,PDBSeq>>();
+		survivors.put(PDBPREFIX,pdbArray);
+		survivors.put(PDBPREPREFIX,pdbPreArray);
 
 		// Now, let's calculate needed memory for clustering
 		int cdmem=(int)Math.round(((double)(origdb.length()+survdb.length()))/(1024L*1024L)*20+0.5);
@@ -429,8 +472,11 @@ public class GOPHERPrepare {
 		} catch(InterruptedException ie) {
 			throw new IOException("ERROR: system @CDHITparams failed due "+ie.getMessage());
 		}
-
-		// And now, information about the survivors!
+		
+		// Let's catch the leaders!
+		HashMap<String,PDBSeq> leaders=parseLeaders(survivors,leadersdb);
+		
+		// And now, information about the leaders!
 		String[] BLASTparams={
 			BLAST_PATH,
 			"-p",BLAST_ALGO,
@@ -504,9 +550,11 @@ public class GOPHERPrepare {
 		} finally {
 			BLFH.close();
 		}
+		
+		return leaders;
 	}
 	
-	protected void copyFile(File origFile,File newFile,boolean append)
+	protected static void copyFile(File origFile,File newFile,boolean append)
 		throws FileNotFoundException, IOException
 	{
 		FileChannel inChannel = null;
@@ -524,58 +572,74 @@ public class GOPHERPrepare {
 		}
 	}
 	
-	protected void copyFile(File origFile,File newFile)
+	protected static void copyFile(File origFile,File newFile)
 		throws FileNotFoundException, IOException
 	{
 		copyFile(origFile,newFile,false);
 	}
 	
-	protected void appendFile(File origFile,File newFile)
+	protected static void appendFile(File origFile,File newFile)
 		throws FileNotFoundException, IOException
 	{
 		copyFile(origFile,newFile,true);
 	}
 	
-	public void doGOPHERPrepare(File origprepdb,File newprepdb,File origpdb,File newpdb,File workdir)
+	public HashMap<String,PDBSeq> doGOPHERPrepare(File origprepdb,File newprepdb,File origpdb,File newpdb,File workdir)
 		throws IOException
 	{
-		doGOPHERPrepare(origprepdb,newprepdb,origpdb,newpdb,workdir,false);
+		return doGOPHERPrepare(origprepdb,newprepdb,origpdb,newpdb,workdir,false);
 	}
 	
-	public void doGOPHERPrepare(File origprepdb,File newprepdb,File origpdb,File newpdb,File workdir,boolean first)
+	public HashMap<String,PDBSeq> doGOPHERPrepare(String origprepdb,String newprepdb,String origpdb,String newpdb,File workdir)
 		throws IOException
 	{
-		// First, time to create workfing directory
+		return doGOPHERPrepare(origprepdb,newprepdb,origpdb,newpdb,workdir,false);
+	}
+
+	public HashMap<String,PDBSeq> doGOPHERPrepare(String origprepdb,String newprepdb,String origpdb,String newpdb,File workdir,boolean first)
+		throws IOException
+	{
+		return doGOPHERPrepare(new File(workdir,origprepdb),new File(workdir,newprepdb),new File(workdir,origpdb),new File(workdir,newpdb),workdir,first);
+	}
+	
+	public HashMap<String,PDBSeq> doGOPHERPrepare(File origprepdb,File newprepdb,File origpdb,File newpdb,File workdir,boolean first)
+		throws IOException
+	{
+		// First, time to create working directory
 		workdir.mkdirs();
 		if(!workdir.isDirectory()) {
 			throw new IOException("FATAL ERROR: Unable to create directory "+workdir.getAbsolutePath()+"!!!");
 		}
 
 		// Second, let's copy the original and new files there
-		File Worigprepdb=new File(workdir,ORIGPRE+PDBPREFILE);
+		File Worigprepdb=new File(workdir,ORIG_PDBPREFILE);
 		try {
-			copyFile(origprepdb,Worigprepdb);
+			if(!Worigprepdb.equals(origprepdb))
+				copyFile(origprepdb,Worigprepdb);
 		} catch(IOException ioe) {
 			throw new IOException("FATAL ERROR: Unable to copy "+origprepdb.getAbsolutePath()+" to "+Worigprepdb.getAbsolutePath()+" due "+ioe.getMessage()+". Reason:"+ioe.getMessage());
 		}
 		
-		File Worigpdb=new File(workdir,ORIGPRE+PDBFILE);
+		File Worigpdb=new File(workdir,ORIG_PDBFILE);
 		try {
-			copyFile(origpdb,Worigpdb);
+			if(!Worigpdb.equals(origpdb))
+				copyFile(origpdb,Worigpdb);
 		} catch(IOException ioe) {
 			throw new IOException("FATAL ERROR: Unable to copy "+origpdb.getAbsolutePath()+" to "+Worigpdb.getAbsolutePath()+" due "+ioe.getMessage()+". Reason:"+ioe.getMessage());
 		}
 
 		File Wnewprepdb=new File(workdir,PDBPREFILE);
 		try {
-			copyFile(newprepdb,Wnewprepdb);
+			if(!Wnewprepdb.equals(newprepdb))
+				copyFile(newprepdb,Wnewprepdb);
 		} catch(IOException ioe) {
 			throw new IOException("FATAL ERROR: Unable to copy "+newprepdb.getAbsolutePath()+" to "+Wnewprepdb.getAbsolutePath()+" due "+ioe.getMessage()+". Reason:"+ioe.getMessage());
 		}
 		
 		File Wnewpdb=new File(workdir,PDBFILE);
 		try {
-			copyFile(newpdb,Wnewpdb);
+			if(!Wnewpdb.equals(newpdb))
+				copyFile(newpdb,Wnewpdb);
 		} catch(IOException ioe) {
 			throw new IOException("FATAL ERROR: Unable to copy "+newpdb.getAbsolutePath()+" to "+Wnewpdb.getAbsolutePath()+" due "+ioe.getMessage()+". Reason:"+ioe.getMessage());
 		}
@@ -604,6 +668,8 @@ public class GOPHERPrepare {
 			} catch(IOException ioe) {
 				throw new IOException("FATAL ERROR: Unable to generate "+analpdb.getAbsolutePath()+" from "+Worigpdb.getAbsolutePath()+" and "+Wnewpdb.getAbsolutePath()+". Reason:"+ioe.getMessage());
 			}
+			
+			return null;
 		} else {
 			// Third, easy filtering phase (new only, 30 residues or more after
 			// prunning histidines heads and tails)
@@ -619,9 +685,9 @@ public class GOPHERPrepare {
 			}
 
 			// Fourth, heuristics and difficult filtering phase
-			File leadersdb=new File(workdir,LEADERSDB);
-			File leadersReport=new File(workdir,LEADERSDB+BLASTPOST);
-			chooseLeaders(workdir,origprepdb,origpdb,analprepdb,analpdb,leadersdb,leadersReport);
+			leadersdb=new File(workdir,LEADERSDB);
+			leadersReport=new File(workdir,LEADERSDB+BLASTPOST);
+			return chooseLeaders(workdir,origprepdb,origpdb,analprepdb,analpdb,leadersdb,leadersReport);
 
 			// File leadersprepdb=new File(workdir,LEADERSPRE+PDBPREFILE);
 			// File leaderspdb=new File(workdir,LEADERSPRE+PDBFILE);
