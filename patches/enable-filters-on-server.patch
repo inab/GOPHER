@@ -1,0 +1,83 @@
+--- server.xml	2009-01-24 00:42:45.000000000 +0100
++++ server.xml	2009-02-16 01:07:33.000000000 +0100
+@@ -8,7 +8,11 @@
+ <server xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="schema/server.xsd">
+     
+     <!-- default http listener -->
+-    <listener protocol="http" port="8088"/>
++    <listener protocol="http" port="@port@"/>
++    
++    <context>
++	<param name="chiba.configfile" value="chiba/chiba.xml"/>
++    </context>
+     
+     <!-- https listener 
+     
+@@ -47,18 +51,58 @@
+         <param name="form-encoding" value="UTF-8"/>
+         <param name="container-encoding" value="UTF-8"/>
+     </rest>
+-    <servlet enabled="no"
+-             context="/atom/*"
+-             class="org.exist.atom.http.AtomServlet"/>
+-
++    
++	<!--__________________________________-->
++	<!--    Starts configuration block    -->
++	<!--__________________________________-->
++	
++	<!-- Atom Publishing Protocol -->
++	<servlet enabled="yes"
++		context="/atom/*"
++		class="org.exist.atom.http.AtomServlet"/>
++	
++	<!-- Atomic wiki -->
++	<servlet enabled="yes"
++		context="/thumbs"
++		class="org.atomicwiki.servlets.GetThumbnail"/>
++	
++	<!-- XQueryURLRewrite -->
++	<filter enabled="yes"
++		path="/*"
++		class="org.exist.http.urlrewrite.XQueryURLRewrite">
++		
++		<param name="xquery" value="xmldb:exist:///db/dispatcher.xql"/>
++	</filter>
++		
+ 	<!--
+ 		Define Server Filters 
+ 	-->
+-	<filter enabled="no" path="/*" class="uk.gov.devonline.www.xforms.XFormsFilter"/>
+-
+-    <!--
+-        Define URL forwardings
+-    -->
++	<filter enabled="yes" path="/forms/*" class="org.chiba.agent.web.filter.XFormsFilter">
++		<param name="chiba.debug" value="false"/>
++		<param name="chiba.configfile" value="chiba/chiba.xml"/>
++		<param name="chiba.upload" value="/tmp"/>
++		<param name="useragent" value="dojo"/>
++	</filter>
++	
++	<servlet enabled="yes" context="/Flux/*" class="org.directwebremoting.servlet.DwrServlet">
++		<param name="debug" value="true"/>
++	</servlet>
++	
++	<servlet enabled="yes" context="/FluxHelper/*" class="org.chiba.agent.web.flux.FluxHelperServlet">
++	</servlet>
++	
++	<servlet enabled="yes" context="/PlainHtml/*" class="org.chiba.agent.web.servlet.PlainHtmlServlet">
++	</servlet>
++	
++	<servlet enabled="yes" context="/view" class="org.chiba.agent.web.servlet.ViewServlet">
++	</servlet>
++	<!--__________________________________-->
++	<!--    Finish configuration block    -->
++	<!--__________________________________-->
++	
++<!--
++Define URL forwardings
++-->
+     <forwarding>
+         <!-- 
+             Define a forwarding for requests to the server root, i.e.

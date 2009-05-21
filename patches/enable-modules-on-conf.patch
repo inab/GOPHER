@@ -1,0 +1,94 @@
+--- conf.xml.tmpl	2009-02-16 01:20:29.000000000 +0100
++++ conf.xml.tmpl.merge	2009-02-16 01:34:37.000000000 +0100
+@@ -108,8 +108,8 @@
+         you have some more memory to waste. If you deal with lots of 
+         collections, you can also increase the collectionCacheSize value 
+     -->
+-    <db-connection cacheSize="48M" collectionCache="24M" database="@database@"
+-        files="webapp/WEB-INF/data" pageSize="4096">
++    <db-connection cacheSize="@memory@" collectionCache="24M" database="native"
++        files="@datadir@" pageSize="4096">
+ 
+         <!--
+             Specifies the default permissions for all resources and collections
+@@ -243,8 +243,8 @@
+ 				backup to the same directory.
+         -->
+         <recovery enabled="yes" group-commit="no" 
+-			journal-dir="webapp/WEB-INF/data" size="100M"
+-            sync-on-commit="no" force-restart="no"
++			journal-dir="@datadir@" size="100M"
++            sync-on-commit="yes" force-restart="no"
+ 			consistency-check="yes"/>
+ 
+         <!-- 
+@@ -368,9 +368,7 @@
+                 connectionTimeout="10000" flushAfter="300" />            
+             -->
+             
+-			<!--
+ 			<module id="lucene-index" class="org.exist.indexing.lucene.LuceneIndex"/>
+-			-->
+ 
+ 			<!-- 
+                  The full text index is always required and should
+@@ -403,9 +401,7 @@
+             collection-specific configuration for a collection.
+         -->
+         <index>
+-            <fulltext attributes="true" default="all">
+-                <exclude path="/auth"/>
+-            </fulltext>
++            <fulltext attributes="false" default="none"/>
+         </index>
+     </indexer>
+ 
+@@ -498,6 +494,10 @@
+             <parameter name="backup" value="no"/>
+         </job>
+         -->
++
++	<job type="user" name="weeklyGOPHER" cron-trigger="0 23 * * 4 ?"
++		xquery="/db/GOPHER-logic/cronjob.xql"
++	/>
+         
+         <!-- 
+             Automatically creates a copy of the database .dbx files every 2 minutes
+@@ -626,7 +626,10 @@
+         and "string".  Anything else will be treated as type "string".
+         
+     -->
+-    <transformer class="org.apache.xalan.processor.TransformerFactoryImpl"/>
++    <transformer class="net.sf.saxon.TransformerFactoryImpl">
++    	<attribute name="http://saxon.sf.net/feature/version-warning"
++		 value="false" type="boolean"/>
++    </transformer>
+ 
+     <!--
+         Settings for XML validation
+@@ -640,7 +643,7 @@
+             to the parser.   
+             
+      -->
+-    <validation mode="auto">
++    <validation mode="no">
+         <!-- 
+             Specify the location of one or more catalog files. Catalogs are 
+             used to resolve external entities in XML documents.
+@@ -708,12 +711,14 @@
+             <module class="org.exist.xquery.modules.spatial.SpatialModule"
+                 uri="http://exist-db.org/xquery/spatial" />
+             -->
+-			<!--
+ 			<module class="org.exist.xquery.modules.lucene.LuceneModule"
+                 uri="http://exist-db.org/xquery/lucene"/>
+-			-->
+ 
+             <!-- Optional Modules -->
++            <module class="org.exist.xquery.modules.math.MathModule"
++                    uri="http://exist-db.org/xquery/math" />
++            <module class="org.exist.xquery.modules.httpclient.HTTPClientModule"
++                    uri="http://exist-db.org/xquery/httpclient" />
+             <!--
+             <module class="org.exist.xquery.modules.compression.CompressionModule"
+                     uri="http://exist-db.org/xquery/compression" />

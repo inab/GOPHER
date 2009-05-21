@@ -5,10 +5,12 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.InvocationTargetException;
 import java.net.URISyntaxException;
+import java.net.URL;
 import java.util.HashMap;
 
-import org.cnio.scombio.jmfernandez.GOPHER.GOPHERPrepare.PDBSeq;
+import org.cnio.scombio.jmfernandez.GOPHER.PDBSeq;
 import org.exist.dom.BinaryDocument;
 import org.exist.dom.DocumentImpl;
 import org.exist.dom.QName;
@@ -28,29 +30,32 @@ import org.exist.xquery.value.Type;
 public class CronGOPHERFunction
 	extends BasicFunction
 {
+	private final static String XCESC_URI = "http://www.cnio.es/scombio/xcesc/1.0";
+
 	private final static String COMPUTEUNIQUEENTRIES="compute-unique-entries";
 	
-	private final static String GOPHER_PREFIX = "gopher";
-	private final static String GOPHER_EXPERIMENT_ROOT="experiment";
-	private final static String GOPHER_TARGET_ELEMENT="target";
+	private final static String XCESC_PREFIX = "xcesc";
+	private final static String XCESC_EXPERIMENT_ROOT="experiment";
+	private final static String XCESC_TARGET_ELEMENT="target";
 	
-	private final static String GOPHER_PUBLICID_ATTRIBUTE="publicId";
-	private final static String GOPHER_DESCRIPTION_ATTRIBUTE="description";
-	private final static String GOPHER_ORIGIN_ATTRIBUTE="origin";
+	private final static String XCESC_PUBLICID_ATTRIBUTE="publicId";
+	private final static String XCESC_DESCRIPTION_ATTRIBUTE="description";
+	private final static String XCESC_ORIGIN_ATTRIBUTE="origin";
 	
-	private final static String GOPHER_QUERY_ELEMENT="query";
-	private final static String GOPHER_ID_ATTRIBUTE="id";
-	
-	private final static String PREPDB_PATH="/drives/databases/FastaDB/pdbpre";
-	private final static String PDB_PATH="/drives/databases/FastaDB/pdb";
+	private final static String XCESC_QUERY_ELEMENT="query";
+	private final static String XCESC_ID_ATTRIBUTE="queryId";
 	
 	public final static FunctionSignature signature[] = {
 		new FunctionSignature(
 				new QName(COMPUTEUNIQUEENTRIES, GOPHERModule.NAMESPACE_URI, GOPHERModule.PREFIX),
 				"It computes the unique PDB and PrePDB entries, compared to latest run",
 				new SequenceType[] {
+					new SequenceType(Type.STRING, Cardinality.ONE),			// URI of the dynamic core (in a jar) to be called
+					new SequenceType(Type.STRING, Cardinality.ONE),			// name of the static method to call in the dynamic core
 					new SequenceType(Type.STRING, Cardinality.ONE),			// Original filtered PrePDB in database
 					new SequenceType(Type.STRING, Cardinality.ONE),			// Original filtered PDB in database
+					new SequenceType(Type.STRING, Cardinality.ONE),			// New unfiltered PrePDB in database
+					new SequenceType(Type.STRING, Cardinality.ONE),			// New unfiltered PDB in database
 					new SequenceType(Type.STRING, Cardinality.ONE),			// Filesystem Directory Scratch area
 				},
 				new SequenceType(Type.NODE, Cardinality.ONE)
@@ -66,12 +71,12 @@ public class CronGOPHERFunction
 	
 	static {
 		// As these are mostly constants
-		QNAME_TARGET = new QName(GOPHER_TARGET_ELEMENT,GOPHERModule.GOPHER_URI,GOPHER_PREFIX);
-		QNAME_PUBLICID = new QName(GOPHER_PUBLICID_ATTRIBUTE);
-		QNAME_DESCRIPTION = new QName(GOPHER_DESCRIPTION_ATTRIBUTE);
-		QNAME_ORIGIN = new QName(GOPHER_ORIGIN_ATTRIBUTE);
-		QNAME_QUERY = new QName(GOPHER_QUERY_ELEMENT,GOPHERModule.GOPHER_URI,GOPHER_PREFIX);
-		QNAME_ID = new QName(GOPHER_ID_ATTRIBUTE);
+		QNAME_TARGET = new QName(XCESC_TARGET_ELEMENT,XCESC_URI,XCESC_PREFIX);
+		QNAME_PUBLICID = new QName(XCESC_PUBLICID_ATTRIBUTE);
+		QNAME_DESCRIPTION = new QName(XCESC_DESCRIPTION_ATTRIBUTE);
+		QNAME_ORIGIN = new QName(XCESC_ORIGIN_ATTRIBUTE);
+		QNAME_QUERY = new QName(XCESC_QUERY_ELEMENT,XCESC_URI,XCESC_PREFIX);
+		QNAME_ID = new QName(XCESC_ID_ATTRIBUTE);
 	};
 	
 	public CronGOPHERFunction(XQueryContext context, FunctionSignature signature) {
@@ -85,27 +90,33 @@ public class CronGOPHERFunction
 		MemTreeBuilder mtb=new MemTreeBuilder(context);
 		// Let's start building the document
 		mtb.startDocument();
-		QName QNAME_ROOT=new QName(GOPHER_EXPERIMENT_ROOT,GOPHERModule.GOPHER_URI,GOPHER_PREFIX);
+		QName QNAME_ROOT=new QName(XCESC_EXPERIMENT_ROOT,XCESC_URI,XCESC_PREFIX);
 		// Root element
 		mtb.startElement(QNAME_ROOT,null);
 		
 		// Let's calculate everything!
-		String gopherPrePDB=args[0].getStringValue();
-		String gopherPDB=args[1].getStringValue();
-		String scratchDirPath=args[2].getStringValue();
+		String dynCoreJar=args[0].getStringValue();
+		String dynCoreMethod=args[1].getStringValue();
+		String gopherPrePDB=args[2].getStringValue();
+		String gopherPDB=args[3].getStringValue();
+		String PREPDB_PATH=args[4].getStringValue();
+		String PDB_PATH=args[5].getStringValue();
+		String scratchDirPath=args[6].getStringValue();
+		
 		File scratchDir=new File(scratchDirPath);
 		scratchDir.mkdirs();
 		if(scratchDir.isDirectory()) {
-			File origPrePDBFile=new File(scratchDir,GOPHERPrepare.ORIG_PDBPREFILE);
-			File origPDBFile=new File(scratchDir,GOPHERPrepare.ORIG_PDBFILE);
+			File origPrePDBFile=new File(scratchDir,"prev-pdbpre.fas");
+			File origPDBFile=new File(scratchDir,"prev-pdb.fas");
 			fetchBinaryResource(gopherPrePDB,origPrePDBFile);
 			fetchBinaryResource(gopherPDB,origPDBFile);
 			
 			File prePDBFile=new File(PREPDB_PATH);
 			File PDBFile=new File(PDB_PATH);
-			GOPHERPrepare gp=new GOPHERPrepare();
+			GOPHERClassLoader gcl = null;
 			try {
-				HashMap<String,PDBSeq> leaders = gp.doGOPHERPrepare(origPrePDBFile, prePDBFile, origPDBFile, PDBFile, scratchDir);
+				gcl = new GOPHERClassLoader(new URL(dynCoreJar));
+				HashMap<String,PDBSeq> leaders = (HashMap<String,PDBSeq>)gcl.invokeClassMethod(dynCoreMethod, origPrePDBFile, prePDBFile, origPDBFile, PDBFile, scratchDir);
 				
 				//And now, let's create the in memory document!!!
 				int leadPos=0;
@@ -118,7 +129,7 @@ public class CronGOPHERFunction
 					// The FASTA Headers
 					mtb.addAttribute(QNAME_DESCRIPTION, pdb.iddesc);
 					// The FASTA origin
-					mtb.addAttribute(QNAME_ORIGIN, pdb.features.containsKey(GOPHERPrepare.ORIGIN_KEY)?(String)pdb.features.get(GOPHERPrepare.ORIGIN_KEY):"");
+					mtb.addAttribute(QNAME_ORIGIN, pdb.features.containsKey(PDBSeq.ORIGIN_KEY)?(String)pdb.features.get(PDBSeq.ORIGIN_KEY):"");
 					
 					mtb.startElement(QNAME_QUERY,null);
 					leadPos++;
@@ -129,8 +140,20 @@ public class CronGOPHERFunction
 					// End target element
 					mtb.endElement();
 				}
+			} catch(InvocationTargetException ite) {
+				throw new XPathException(getASTNode(),"Invocation error while generating GOPHER query candidates using "+dynCoreMethod+" from "+dynCoreJar,ite);
 			} catch(IOException ioe) {
 				throw new XPathException(getASTNode(),"I/O error while generating GOPHER query candidates",ioe);
+			} catch (ClassCastException cce) {
+				throw new XPathException(getASTNode(),"ClassCastException while trying to generate GOPHER query candidates",cce);
+			} catch (ClassNotFoundException cnfe) {
+				throw new XPathException(getASTNode(),"ClassNotFoundException while trying to generate GOPHER query candidates",cnfe);
+			} catch (NoSuchMethodException nsme) {
+				throw new XPathException(getASTNode(),"NoSuchMethodException while trying to generate GOPHER query candidates",nsme);
+			} finally {
+				gcl = null;
+				System.runFinalization();
+				System.gc();
 			}
 		} else {
 			throw new XPathException(getASTNode(),"Unable to use filesystem scratch area!!!");

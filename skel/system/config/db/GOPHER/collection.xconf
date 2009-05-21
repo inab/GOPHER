@@ -1,6 +1,6 @@
 <collection xmlns="http://exist-db.org/collection-config/1.0">
-	<index xmlns:gopher="http://www.cnio.es/scombio/gopher/1.0">
-    		<!--
+	<index xmlns:gopher="http://www.cnio.es/scombio/xcesc/1.0">
+    	<!--
         	<fulltext default="none" attributes="false" alphanum="true">
 			<include path="//mim:alias"/>
 			<include path="//mim:allelicVariant/@name"/>
@@ -42,7 +42,8 @@
 			<create qname="mim:term" />
 		</fulltext>
 		-->
-
+		
+		<!-- 
 		<lucene>
 			<analyzer class="org.apache.lucene.analysis.SimpleAnalyzer"/>
 
@@ -61,6 +62,7 @@
 			<text qname="@mimNumber" />
 			<text qname="mim:term" />
 		</lucene>
+		-->
 
 		<!--
         	<create path="//odb:link/@namespace" type="xs:string"/>
@@ -69,10 +71,25 @@
         	<create path="//mim:record/@mimNumber" type="xs:string"/>
         	<create path="//mim:geneSymbol" type="xs:string"/>
 		-->
-
-        	<create qname="@mimNumber" type="xs:string"/>
+		
+		<!-- For servers and users -->
         	<create qname="@id" type="xs:string"/>
-        	<create qname="@namespace" type="xs:string"/>
-        	<create qname="mim:geneSymbol" type="xs:string"/>
+		<!-- For servers -->
+        	<create qname="@managerId" type="xs:string"/>
+        	<create qname="@name" type="xs:string"/>
+        	<create qname="@type" type="xs:string"/>
+		<!-- For downTime -->
+		<create qname="@since" type="xs:dateTime"/>
+		<create qname="@until" type="xs:dateTime"/>
+		<!-- For users -->
+        	<create qname="@nickname" type="xs:string"/>
+		<!-- For target -->
+		<create qname="@publicId" type="xs:string"/>
+		<!-- For query -->
+		<create qname="@queryId" type="xs:string"/>
+		<!-- For job -->
+		<create qname="@targetId" type="xs:string"/>
+		<!-- For participant -->
+		<create qname="@ticket" type="xs:string"/>
 	</index>
 </collection>

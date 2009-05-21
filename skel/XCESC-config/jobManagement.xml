@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jobManagement
+    xmlns="http://www.cnio.es/scombio/xcesc/1.0/xquery/jobManagement"
+    collection="/db/GOPHER-data"
+    publicBaseURI="http://localhost:8088"
+    physicalScratch="/tmp"
+>
+    <queriesComputation
+        namespace="http://www.cnio.es/scombio/gopher/1.0/xquery/jobManagement/GOPHERCASP"
+        module="xmldb:exist:///db/GOPHER-logic/GOPHERCASP.xqm"
+        entryPoint="doQueriesCompuntation"
+        storagePattern="*"
+    />
+    
+    <custom key="PDB_PATH">/drives/databases/FastaDB/pdb</custom>   
+    <custom key="PREPDB_PATH">/drives/databases/FastaDB/pdbpre</custom>   
+    <custom key="dynCoreJar">xmldb:exist:///db/GOPHER-logic/GOPHERCASP.jar</custom>
+    <custom key="dynCoreMethod">StaticDoGOPHERPrepare</custom>
+    
+</jobManagement>

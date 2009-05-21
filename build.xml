@@ -9,11 +9,15 @@
 	<dirname property="project.home" file="${ant.file}"/>
 	<property file="${project.home}/build.properties"/>
 	
+	<property name="xmldb.uri" value="xmldb:exist://${deploy.host}:${deploy.eXist.port}/xmlrpc"/>
+	
 	<property name="src" location="src" />
 	<property name="build" location="build" />
 	<property name="libs" location="libs" />
 	<property name="weeklyGOPHER-eXist-module.dist.dir" location="weeklyGOPHER-eXist-module/dist" />
-	
+	<property name="AtomicWiki.dir" location="AtomicWiki" />
+	<property name="eXist.conf.dir" location="eXist-conf" />
+	<property name="GOPHER.patches.dir" location="patches" />
 	
 	<dirname property="project.home.parent" file="${project.home}"/>
 	
@@ -24,6 +28,22 @@
 	<property name="eXist.jar.rel" value="exist.jar"/>
 	<property name="eXist.jar" location="${weeklyGOPHER-eXist-module.eXist.dir}/${eXist.jar.rel}"/>
 	
+	<!-- Chiba bundle handling -->
+	<property name="chiba.bundle.src" value="${chiba.web.name}-${chiba.web.version}.war"/>
+	<property name="chiba.bundle.dir" value="${chiba.web.name}-${chiba.web.version}"/>
+	<property name="chiba.jar" value="${chiba.web.name}-${chiba.web.version}.jar"/>
+
+	<available file="${chiba.bundle.src}" property="chiba.bundle.src.present" description="Check for existence of Chiba Web bundle"/>
+	<available file="${chiba.bundle.dir}" property="chiba.bundle.present" description="Check for existence of uncompressed Chiba Web bundle"/>
+	<available file="${chiba.jar}" property="chiba.jar.present" description="Check for existence of Chiba Web jar"/>
+	
+	<!-- Saxon bundle handling -->
+	<property name="saxon.bundle.src" value="saxonb${saxon.version}j.zip"/>
+	<property name="saxon.bundle.dir" value="${saxon.name}-${saxon.version}"/>
+
+	<available file="${saxon.bundle.src}" property="saxon.bundle.src.present" description="Check for existence of Chiba Web bundle"/>
+	<available file="${saxon.bundle.dir}" property="saxon.bundle.present" description="Check for existence of uncompressed Chiba Web bundle"/>
+
 	<path id="exist-ant.classpath.core">
 		<fileset dir="${weeklyGOPHER-eXist-module.eXist.dir}">
 			<include name="${eXist.jar.rel}" />
@@ -73,23 +93,321 @@
 	</target>
 	
 	<target name="list" depends="init.eXist.extension" description="Listing">
-		<xdb:list uri="xmldb:exist://${deploy.host}:${deploy.eXist.port}/xmlrpc/db" user="${deploy.eXist.user}" password="${deploy.eXist.pass}" failonerror="true" resources="true" outputproperty="resources"/>
-		<xdb:list uri="xmldb:exist://${deploy.host}:${deploy.eXist.port}/xmlrpc/db" user="${deploy.eXist.user}" password="${deploy.eXist.pass}" failonerror="true" collections="true" outputproperty="collections" />
+		<xdb:list uri="${xmldb.uri}/db" user="${deploy.eXist.admin.user}" password="${deploy.eXist.admin.pass}" failonerror="true" resources="true" outputproperty="resources"/>
+		<xdb:list uri="${xmldb.uri}/db" user="${deploy.eXist.admin.user}" password="${deploy.eXist.admin.pass}" failonerror="true" collections="true" outputproperty="collections" />
 		<echo>Resources:${line.separator}${resources}${line.separator}and Collections:${line.separator}${collections}</echo>
 	</target>
+	
+	<target name="is.patched.conf.xml" depends="init">
+		<uptodate
+			property="already.patched.conf.xml"
+			targetfile="${eXist.conf.dir}/conf.xml"
+		>
+			<srcfiles file="${GOPHER.patches.dir}/enable-modules-on-conf.patch"/>
+			<srcfiles file="${weeklyGOPHER-eXist-module.eXist.dir}/conf.xml.tmpl"/>
+		</uptodate>
+	</target>
+	
+	<target name="is.patched.server.xml" depends="init">
+		<uptodate
+			property="already.patched.server.xml"
+			targetfile="${eXist.conf.dir}/server.xml"
+		>
+			<srcfiles file="${GOPHER.patches.dir}/enable-filters-on-server.patch"/>
+			<srcfiles file="${weeklyGOPHER-eXist-module.eXist.dir}/server.xml.tmpl"/>
+		</uptodate>
+	</target>
+	
+	<!-- Generating configuration files by patch -->
+	<target name="conditional.patch.conf.xml" depends="is.patched.conf.xml" unless="already.patched.conf.xml">
+		<patch
+			patchfile="${GOPHER.patches.dir}/enable-modules-on-conf.patch"
+			originalfile="${weeklyGOPHER-eXist-module.eXist.dir}/conf.xml.tmpl"
+			destfile="${eXist.conf.dir}/conf.xml.tmpl"
+		/>
+		<filter token="memory" value="${deploy.eXist.conf.memory}"/>
+		<filter token="datadir" value="../${deploy.eXist.data.dir.rel}"/>
+		<copy
+			file="${eXist.conf.dir}/conf.xml.tmpl"
+			tofile="${eXist.conf.dir}/conf.xml"
+			overwrite="true"
+			filtering="true"
+		/>
+	</target>
 
-	<target name="deploy.skel" depends="init.eXist.extension" description="Upload the skeleton">
-		<!-- First, XML content -->
-		<xdb:store uri="xmldb:exist://${deploy.host}:${deploy.eXist.port}/xmlrpc/db" user="${deploy.eXist.user}" password="${deploy.eXist.pass}" failonerror="true" createsubcollections="true">
+	<target name="conditional.patch.server.xml" depends="is.patched.server.xml" unless="already.patched.server.xml">
+		<patch
+			patchfile="${GOPHER.patches.dir}/enable-filters-on-server.patch"
+			originalfile="${weeklyGOPHER-eXist-module.eXist.dir}/server.xml.tmpl"
+			destfile="${eXist.conf.dir}/server.xml.tmpl"
+		/>
+		<filter token="port" value="${deploy.eXist.port}"/>
+		<copy
+			file="${eXist.conf.dir}/server.xml.tmpl"
+			tofile="${eXist.conf.dir}/server.xml"
+			overwrite="true"
+			filtering="true"
+		/>
+	</target>
+	
+	<!-- downloads the chiba-web bundle code -->
+	<target name="download-chiba-bundle" unless="chiba.bundle.src.present">
+		<echo message=""/>
+		<echo message="---------- Downloading chiba-bundle ----------"/>
+		<echo message=""/>
+		<get src="${chiba.download.mirror}/${chiba.bundle.src}" dest="${chiba.bundle.src}" verbose="true"/>
+		<echo message=""/>
+	</target>
+	
+	<!-- uncompresses the chiba-web bundle code -->
+	<target name="uncompress-chiba-bundle" depends="download-chiba-bundle" unless="chiba.bundle.present">
+		<echo message=""/>
+		<echo message="---------- Uncompressing chiba-bundle ----------"/>
+		<echo message=""/>
+		<unwar src="${chiba.bundle.src}" dest="${chiba.bundle.dir}"/>
+		<echo message=""/>
+	</target>
+	
+	<!-- uncompresses the chiba-web bundle code -->
+	<target name="build-chiba-jar" depends="uncompress-chiba-bundle" unless="chiba.jar.present">
+		<!-- Build Chiba-web jar -->
+		<jar
+			destfile="${chiba.jar}"
+			basedir="${chiba.bundle.dir}/WEB-INF/classes" />
+	</target>
+
+	<!-- downloads the Saxon bundle -->
+	<target name="download-saxon-bundle" unless="saxon.bundle.src.present">
+		<echo message=""/>
+		<echo message="---------- Downloading saxon-bundle ----------"/>
+		<echo message=""/>
+		<get src="${saxon.download.mirror}/${saxon.bundle.src}" dest="${saxon.bundle.src}" verbose="true"/>
+		<echo message=""/>
+	</target>
+	
+	<!-- uncompresses the Saxon bundle -->
+	<target name="uncompress-saxon-bundle" depends="download-saxon-bundle" unless="saxon.bundle.present">
+		<echo message=""/>
+		<echo message="---------- Uncompressing saxon-bundle ----------"/>
+		<echo message=""/>
+		<unzip src="${saxon.bundle.src}" dest="${saxon.bundle.dir}"/>
+		<echo message=""/>
+	</target>
+	
+	<target name="deploy.skel.meta"
+		depends="init.eXist.extension,conditional.patch.conf.xml,conditional.patch.server.xml,uncompress-saxon-bundle,build-chiba-jar,compile.AtomicWiki"
+		description="Remote eXist Meta-skeleton for GOPHER"
+	>
+		<!-- First, stop the patient -->
+		<sshexec
+			host="${deploy.host}"
+			username="${deploy.ssh.user}"
+			keyfile="${deploy.ssh.keyfile}"
+			passphrase="${deploy.ssh.passphrase}"
+			command="-f '${deploy.home.dir}/starteXist-GOPHER.sh' &amp;&amp; chmod -f +x '${deploy.home.dir}/starteXist-GOPHER.sh' &amp;&amp; '${deploy.home.dir}/starteXist-GOPHER.sh' stop"
+		/>
+		
+		<!-- Then, checkout code (if needed) -->
+		<sshexec
+			host="${deploy.host}"
+			username="${deploy.ssh.user}"
+			keyfile="${deploy.ssh.keyfile}"
+			passphrase="${deploy.ssh.passphrase}"
+			command="-d '${deploy.eXist.dir}' || svn co https://exist.svn.sourceforge.net/svnroot/exist/trunk/eXist '${deploy.eXist.dir}'"
+		/>
+		
+		<!-- Let's prepare it... -->
+		<sshexec
+			host="${deploy.host}"
+			username="${deploy.ssh.user}"
+			keyfile="${deploy.ssh.keyfile}"
+			passphrase="${deploy.ssh.passphrase}"
+			command="cd '${deploy.eXist.dir}' &amp;&amp; ant"
+		/>
+		
+		<sshexec
+			host="${deploy.host}"
+			username="${deploy.ssh.user}"
+			keyfile="${deploy.ssh.keyfile}"
+			passphrase="${deploy.ssh.passphrase}"
+			command="cd '${deploy.eXist.dir}' &amp;&amp; mkdir -p chiba WEB-INF"
+		/>
+		
+		<!-- Copying Startup script -->
+		<scp todir="${deploy.ssh.user}@${deploy.host}:${deploy.home.dir}" keyfile="${deploy.ssh.keyfile}" passphrase="${deploy.ssh.passphrase}" verbose="true">
+			<fileset dir="${eXist.conf.dir}">
+				<include name="starteXist-GOPHER.sh"/>
+			</fileset>
+		</scp>
+		
+		<!-- Copying Configuration files -->
+		<scp todir="${deploy.ssh.user}@${deploy.host}:${deploy.eXist.data.dir}" keyfile="${deploy.ssh.keyfile}" passphrase="${deploy.ssh.passphrase}" verbose="true">
+			<fileset dir="${eXist.conf.dir}">
+				<include name="conf.xml"/>
+				<include name="server.xml"/>
+			</fileset>
+		</scp>
+		
+		<!-- Copying additional Chiba configuration files -->
+		<scp todir="${deploy.ssh.user}@${deploy.host}:${deploy.eXist.dir}/chiba" keyfile="${deploy.ssh.keyfile}" passphrase="${deploy.ssh.passphrase}" verbose="true">
+			<fileset dir="${eXist.conf.dir}">
+				<include name="chiba.xml"/>
+				<include name="log4j.xml"/>
+			</fileset>
+		</scp>
+		
+		<!-- Copying Core Libraries -->
+		<scp todir="${deploy.ssh.user}@${deploy.host}:${deploy.eXist.dir}/lib/user" keyfile="${deploy.ssh.keyfile}" passphrase="${deploy.ssh.passphrase}" verbose="true">
+			<!-- The ones from Saxon -->
+			<fileset dir="${saxon.bundle.dir}">
+				<include name="saxon?.jar"/>
+				<include name="saxon?-dom.jar"/>
+				<include name="saxon?-xpath.jar"/>
+			</fileset>
+			<!-- The ones needed by AtomicWiki -->
+			<fileset dir="${AtomicWiki.dir}">
+				<include name="*.jar"/>
+			</fileset>
+			<fileset dir="${AtomicWiki.dir}/java/lib/tools">
+				<include name="atiki-modules*.jar"/>
+				<include name="WikiModel*.jar"/>
+			</fileset>
+			<!-- And the ones from Chiba -->
+			<fileset dir=".">
+				<include name="${chiba.jar}"/>
+			</fileset>
+			<fileset dir="${chiba.bundle.dir}/WEB-INF/lib">
+				<include name="dwr*.jar"/>
+				<include name="javax-activation*.jar"/>
+				<include name="javax-mail*.jar"/>
+			</fileset>
+		</scp>
+		
+		<!-- Copying Chiba Resources directory -->
+		<scp todir="${deploy.ssh.user}@${deploy.host}:${deploy.eXist.dir}/chiba/resources" keyfile="${deploy.ssh.keyfile}" passphrase="${deploy.ssh.passphrase}" verbose="true">
+			<fileset dir="${chiba.bundle.dir}/resources">
+				<include name="**"/>
+			</fileset>
+		</scp>
+		
+		<!-- And waking up the patient! -->
+		<sshexec
+			host="${deploy.host}"
+			username="${deploy.ssh.user}"
+			keyfile="${deploy.ssh.keyfile}"
+			passphrase="${deploy.ssh.passphrase}"
+			command="nohup '${deploy.home.dir}/starteXist-GOPHER.sh' start &amp;"
+		/>
+		
+	</target>
+	
+	<target name="create-admin-user">
+		<antcall target="create-update-user">
+			<param name="the.user" value="${deploy.eXist.admin.user}"/>
+			<param name="the.pass" value="${deploy.eXist.admin.pass}"/>
+			<param name="the.group" value="${deploy.eXist.group}"/>
+			<param name="the.admin.pass" value="${admin.pass}"/>
+			<param name="the.failonerror" value="false"/>
+		</antcall>
+	</target>
+
+	<target name="create-gopher-user">
+		<antcall target="create-update-user">
+			<param name="the.user" value="${deploy.eXist.admin.user}"/>
+			<param name="the.pass" value="${deploy.eXist.admin.pass}"/>
+			<param name="the.group" value="${deploy.eXist.group}"/>
+			<param name="the.admin.pass" value="${admin.pass}"/>
+			<param name="the.failonerror" value="false"/>
+		</antcall>
+		<antcall target="create-update-user">
+			<param name="the.user" value="${deploy.eXist.gopher.user}"/>
+			<param name="the.pass" value="${deploy.eXist.gopher.pass}"/>
+			<param name="the.group" value="${deploy.eXist.group}"/>
+			<param name="the.admin.pass" value="${deploy.eXist.admin.pass}"/>
+			<param name="the.failonerror" value="true"/>
+		</antcall>
+	</target>
+	
+	<!-- This is a meta-target -->
+	<target name="create-update-user" depends="init.eXist.extennsion">
+		<loadfile property="the.xquery" srcFile="${GOPHER.patches.dir}/createOrUpdateUser.xq">
+			<filterchain>
+				<replacetokens>
+					<token key="USER" value="${the.user}"/>
+					<token key="PASS" value="${the.pass}"/>
+					<token key="GROUP" value="${the.group}"/>
+				</replacetokens>
+			</filterchain>
+		</loadfile>
+		<xdb:query
+			uri="${xmldb.uri}/db"
+			query="${the.xquery}"
+			failonerror="${the.failonerror}"
+			user="${admin.user}"
+			password="${the.admin.pass}"
+		/>
+	</target>
+    
+	<target
+		name="deploy.skel.meta.admin"
+		description="Remote eXist Meta-skeleton for GOPHER with admin resetting"
+	>
+		<!-- Zero, the users, so admin can have no password! -->
+		<antcall target="create-update-user">
+			<param name="the.user" value="${deploy.eXist.admin.user}"/>
+			<param name="the.pass" value="${deploy.eXist.admin.pass}"/>
+			<param name="the.group" value="${deploy.eXist.group}"/>
+			<param name="the.admin.pass" value="${admin.pass}"/>
+			<param name="the.failonerror" value="false"/>
+		</antcall>
+	</target>
+
+	<target
+		name="deploy.skel.meta.users"
+		description="Remote eXist Meta-skeleton for GOPHER with user resetting"
+	>
+		<!-- Zero, the users, so admin can have no password! -->
+		<antcall target="create-update-user">
+			<param name="the.user" value="${deploy.eXist.admin.user}"/>
+			<param name="the.pass" value="${deploy.eXist.admin.pass}"/>
+			<param name="the.group" value="${deploy.eXist.group}"/>
+			<param name="the.admin.pass" value="${deploy.eXist.admin.pass}"/>
+			<param name="the.failonerror" value="true"/>
+		</antcall>
+		<antcall target="create-update-user">
+			<param name="the.user" value="${deploy.eXist.gopher.user}"/>
+			<param name="the.pass" value="${deploy.eXist.gopher.pass}"/>
+			<param name="the.group" value="${deploy.eXist.group}"/>
+			<param name="the.admin.pass" value="${deploy.eXist.admin.pass}"/>
+			<param name="the.failonerror" value="true"/>
+		</antcall>
+	</target>
+
+	<target name="deploy.skel" depends="init.eXist.extension,deploy.skel.meta.users" description="Upload the skeleton (at last!)">
+		<!-- First, the meta-skeleton XML content -->
+		<xdb:store uri="${xmldb.uri}/db" user="${deploy.eXist.admin.user}" password="${deploy.eXist.admin.pass}" failonerror="true" createsubcollections="true">
+			<fileset dir="skel">
+				<include name="db/system/**/*.xsd" />
+				<include name="db/system/**/*.xsl" />
+				<include name="db/system/**/*.xconf" />
+				<include name="db/system/**/*.xml" />
+			</fileset>
+		</xdb:store>
+		<!-- Second, GOPHER XML content -->
+		<xdb:store uri="${xmldb.uri}/db" user="${deploy.eXist.gopher.user}" password="${deploy.eXist.gopher.pass}" failonerror="true" createsubcollections="true">
 			<fileset dir="skel">
 				<include name="**/*.xsd" />
 				<include name="**/*.xsl" />
 				<include name="**/*.xconf" />
 				<include name="**/*.xml" />
+				<exclude name="db/system/**/*.xsd" />
+				<exclude name="db/system/**/*.xsl" />
+				<exclude name="db/system/**/*.xconf" />
+				<exclude name="db/system/**/*.xml" />
 			</fileset>
 		</xdb:store>
-		<!-- Then, non XML content -->
-		<xdb:store uri="xmldb:exist://${deploy.host}:${deploy.eXist.port}/xmlrpc/db" user="${deploy.eXist.user}" password="${deploy.eXist.pass}" failonerror="true" createsubcollections="true">
+		<!-- Then, GOPHER non XML content -->
+		<xdb:store uri="${xmldb.uri}/db" user="${deploy.eXist.gopher.user}" password="${deploy.eXist.gopher.pass}" failonerror="true" createsubcollections="true">
 			<fileset dir="skel" defaultexcludes="no">
 				<exclude name="**/*.xsd" />
 				<exclude name="**/*.xsl" />
@@ -101,7 +419,7 @@
 		</xdb:store>
 	</target>
 
-	<target name="deploy.jars" depends="compile.weeklyGOPHER-eXist-module" description="It copies the eXist weeklyGOPHER library JAR files to the eXist installation">
+	<target name="deploy.gopher.jars" depends="compile.weeklyGOPHER-eXist-module" description="It copies the eXist weeklyGOPHER library JAR files to the eXist installation">
 		<scp todir="${deploy.ssh.user}@${deploy.host}:${deploy.eXist.dir}/lib/user" keyfile="${deploy.ssh.keyfile}" passphrase="${deploy.ssh.passphrase}" verbose="true">
 			<fileset dir="${weeklyGOPHER-eXist-module.dist.dir}">
 				<include name="*.jar"/>
@@ -109,11 +427,7 @@
 		</scp>
 	</target>
 	
-	<target name="deploy" depends="deploy.jars,deploy.skel" description="Installation procedure">
-	</target>
-	
-	<target name="clean" depends="clean.weeklyGOPHER-eXist-module" description="clean up ${ant.project.name}">
-		<!-- Something, please! -->
+	<target name="deploy" depends="deploy.gopher.jars,deploy.skel.meta.admin,deploy.AtomicWiki,deploy.skel" description="Installation procedure">
 	</target>
 	
 	<target name="compile.weeklyGOPHER-eXist-module" depends="init" description="compiles weeklyGOPHER-eXist-module">
@@ -124,8 +438,76 @@
 		<ant inheritAll="false" inheritRefs="false" dir="${weeklyGOPHER-eXist-module.eXist.dir}" />
 	</target>
 	
+	<target name="clean" depends="clean.weeklyGOPHER-eXist-module" description="clean up ${ant.project.name}">
+		<!-- Something, please! -->
+	</target>
+	
 	<target name="clean.weeklyGOPHER-eXist-module" description="clean up weeklyGOPHER-eXist-module">
 		<ant inheritAll="false" inheritRefs="false" dir="${weeklyGOPHER-eXist-module.dir}" target="clean" />
+	</target>
+	
+	<target name="compile.AtomicWiki" depends="compile.eXist" description="compiles AtomicWiki">
+		<ant inheritAll="false" inheritRefs="false" dir="${AtomicWiki.dir}">
+			<property name="exist.dist" location="${weeklyGOPHER-eXist-module.eXist.dir}"/>
+		</ant>
+	</target>
+	
+	<target
+		name="deploy.AtomicWiki"
+		depends="compile.AtomicWiki,init.eXist.extension"
+		description="deploys AtomicWiki files into the database"
+	>
+		<ant inheritAll="false" inheritRefs="false" dir="${AtomicWiki.dir}" target="setup">
+			<property name="exist.dist" location="${weeklyGOPHER-eXist-module.eXist.dir}"/>
+			<property name="xmldb.uri" value="${xmldb.uri}"/>
+			<property name="admin.password" value="${deploy.eXist.admin.pass}"/>
+		</ant>
+		<!-- And the last step! -->
+		<xdb:store uri="${xmldb.uri}/db" user="${deploy.eXist.admin.user}" password="${deploy.eXist.admin.pass}" failonerror="true" createsubcollections="true">
+			<fileset dir="${AtomicWiki.dir}">
+				<include name="assets/**" />
+				<include name="images/**" />
+				<include name="scripts/**" />
+				<include name="styles/**" />
+				<include name="*.png" />
+				<include name="*.jpg" />
+				<include name="*.xq*" />
+				<exclude name="dispatcher.xql" />
+				<exclude name="**/.svn" />
+				<exclude name="**/.svn/**" />
+			</fileset>
+		</xdb:store>
+		<xdb:store uri="${xmldb.uri}/db" user="${deploy.eXist.admin.user}" password="${deploy.eXist.admin.pass}" failonerror="true" createsubcollections="true">
+			<fileset dir="${AtomicWiki.dir}">
+				<include name="*.xml" />
+			</fileset>
+		</xdb:store>
+	</target>
+	
+	<target
+		name="deploy.chiba"
+		depends="uncompress-chiba-bundle,init.eXist.extension"
+		description="deploys Chiba files into the database"
+	>
+		<xdb:store uri="${xmldb.uri}/db/chiba" user="${deploy.eXist.admin.user}" password="${deploy.eXist.admin.pass}" failonerror="true" createsubcollections="true">
+			<fileset dir="${chiba.bundle.dir}">
+				<include name="resources/**/*.xsd" />
+				<include name="resources/**/*.xsl" />
+				<include name="resources/**/*.xconf" />
+				<include name="resources/**/*.xml" />
+			</fileset>
+		</xdb:store>
+		<xdb:store uri="${xmldb.uri}/db/chiba" user="${deploy.eXist.admin.user}" password="${deploy.eXist.admin.pass}" failonerror="true" createsubcollections="true">
+			<fileset dir="${chiba.bundle.dir}" defaultexcludes="no">
+				<exclude name="resources/**/*.xsd" />
+				<exclude name="resources/**/*.xsl" />
+				<exclude name="resources/**/*.xconf" />
+				<exclude name="resources/**/*.xml" />
+				<exclude name="**/.svn" />
+				<exclude name="**/.svn/**" />
+			</fileset>
+		</xdb:store>
+		<!-- TBD -->
 	</target>
 	
 </project>

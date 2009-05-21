@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema
+    xmlns:xs="http://www.w3.org/2001/XMLSchema"
+    xmlns:job="http://www.cnio.es/scombio/xcesc/1.0/xquery/jobManagement"
+    elementFormDefault="qualified"
+    targetNamespace="http://www.cnio.es/scombio/xcesc/1.0/xquery/jobManagement"
+>
+    <xs:annotation>
+        <xs:documentation><![CDATA[XCESC job management configuration schema]]></xs:documentation>
+    </xs:annotation>
+    
+    <xs:element name="jobManagement">
+        <xs:annotation>
+            <xs:documentation><![CDATA[The root element for the job management configuration data]]></xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="queriesComputation" minOccurs="1" maxOccurs="1">
+                    <xs:annotation>
+                        <xs:documentation><![CDATA[]]></xs:documentation>
+                    </xs:annotation>
+                    <xs:complexType>
+                        <xs:attribute name="namespace" type="xs:anyURI" use="required">
+                            <xs:annotation>
+                                <xs:documentation><![CDATA[The namespace of the module to use]]></xs:documentation>
+                            </xs:annotation>
+                        </xs:attribute>
+                        <xs:attribute name="module" type="xs:anyURI" use="required">
+                            <xs:annotation>
+                                <xs:documentation><![CDATA[The location of the module to use]]></xs:documentation>
+                            </xs:annotation>
+                        </xs:attribute>
+                        <xs:attribute name="entryPoint" type="xs:string" use="required">
+                            <xs:annotation>
+                                <xs:documentation><![CDATA[The name of the entry point function in the module to use. Its arity is 1]]></xs:documentation>
+                            </xs:annotation>
+                        </xs:attribute>
+                    </xs:complexType>
+                </xs:element>
+                <xs:element name="custom" minOccurs="0" maxOccurs="unbounded">
+                    <xs:annotation>
+                        <xs:documentation><![CDATA[Custom pairs of key/value elements, used for custom configurations. The values are inside]]></xs:documentation>
+                    </xs:annotation>
+                    <xs:complexType>
+                        <xs:complexContent>
+                            <xs:extension base="xs:anyType">
+                                <xs:attribute name="key" use="required" type="xs:string">
+                                    <xs:annotation>
+                                        <xs:documentation><![CDATA[The key]]></xs:documentation>
+                                    </xs:annotation>
+                                </xs:attribute>
+                            </xs:extension>
+                        </xs:complexContent>
+                    </xs:complexType>
+                </xs:element>
+            </xs:sequence>
+            <xs:attribute name="collection" use="required" type="xs:string">
+                <xs:annotation>
+                    <xs:documentation><![CDATA[The collection where all the job data is going to be stored]]></xs:documentation>
+                </xs:annotation>
+            </xs:attribute>
+            <xs:attribute name="publicBaseURI" use="required" type="xs:anyURI">
+                <xs:annotation>
+                    <xs:documentation><![CDATA[The public base URI for this XCESC installation.]]></xs:documentation>
+                </xs:annotation>
+            </xs:attribute>
+            <xs:attribute name="physicalScratch" use="required" type="xs:string">
+                <xs:annotation>
+                    <xs:documentation><![CDATA[A physical directory in the server where temporal information can be stored]]></xs:documentation>
+                </xs:annotation>
+            </xs:attribute>
+        </xs:complexType>
+    </xs:element>
+</xs:schema>

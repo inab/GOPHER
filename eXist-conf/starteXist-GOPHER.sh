@@ -13,7 +13,7 @@ EXISTDATACONF_HOME="${BASEBRANCHES}/dataconf-${BRANCH}"
 SERVERXML="${EXISTDATACONF_HOME}/server.xml"
 export EXIST_HOME EXISTCONF_HOME
 
-JAVA_OPTIONS="-Xmx768m -Xms384m -Dfile.encoding=UTF-8 -Dserver.xml=${SERVERXML}"
+JAVA_OPTIONS="-Xmx768m -Xms384m -Dfile.encoding=UTF-8 -Dserver.xml=${SERVERXML} -Djavax.xml.transform.TrsformerFactory=net.sf.saxon.TransformerFactoryImpl"
 export JAVA_OPTIONS
 
 JAVA_HOME="${HOME}/ibm-java-i386-60"

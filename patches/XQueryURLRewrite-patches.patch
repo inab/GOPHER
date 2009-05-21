@@ -1,0 +1,27 @@
+Index: src/org/exist/http/urlrewrite/XQueryURLRewrite.java
+===================================================================
+--- src/org/exist/http/urlrewrite/XQueryURLRewrite.java	(revision 8569)
++++ src/org/exist/http/urlrewrite/XQueryURLRewrite.java	(working copy)
+@@ -444,6 +444,8 @@
+             // Is the module source stored in the database?
+             try {
+                 XmldbURI locationUri = XmldbURI.xmldbUriFor(query);
++		if(moduleLoadPath==null)
++			moduleLoadPath=locationUri.removeLastSegment().toString();
+                 DocumentImpl sourceDoc = null;
+                 try {
+                     sourceDoc = broker.getXMLResource(locationUri.toCollectionPathURI(), Lock.READ_LOCK);
+Index: src/org/exist/xquery/XQueryContext.java
+===================================================================
+--- src/org/exist/xquery/XQueryContext.java	(revision 8569)
++++ src/org/exist/xquery/XQueryContext.java	(working copy)
+@@ -2015,6 +2015,9 @@
+ 				module = loadBuiltInModule(namespaceURI, location);
+ 			} else {
+ 				Source source;
++				if(moduleLoadPath==null) {
++					moduleLoadPath="xmldb:exist:///db";
++				}
+                 if (location.startsWith(XmldbURI.XMLDB_URI_PREFIX) ||
+                         (location.indexOf(':') < 0 &&
+                         moduleLoadPath.startsWith(XmldbURI.XMLDB_URI_PREFIX))) {

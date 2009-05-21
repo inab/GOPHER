@@ -3,17 +3,21 @@
 :)
 xquery version "1.0";
 
-module namespace mgmt="http://www.cnio.es/scombio/gopher/1.0/xquery/systemManagement";
+module namespace mgmt="http://www.cnio.es/scombio/xcesc/1.0/xquery/systemManagement";
 
 declare namespace util="http://exist-db.org/xquery/util";
 declare namespace xmldb="http://exist-db.org/xquery/xmldb";
 
-declare namespace gopher="http://www.cnio.es/scombio/gopher/1.0";
+declare namespace xcesc="http://www.cnio.es/scombio/xcesc/1.0";
 
-declare variable $mgmt:adminPass as xs:string := "";
+declare variable $mgmt:configCol as xs:string := "/db/XCESC-config";
 
-declare variable $mgmt:mgmtCol as xs:string := "/db/GOPHER-data";
-declare variable $mgmt:mgmtDoc as xs:string := "managementData.xml";
+declare variable $mgmt:adminUser as xs:string := collection($mgmt:configCol)//mgmt:systemManagement[1]/mgmt:admin/@user/string();
+declare variable $mgmt:adminPass as xs:string := collection($mgmt:configCol)//mgmt:systemManagement[1]/mgmt:admin/@password/string();
+
+declare variable $mgmt:mgmtCol as xs:string := collection($mgmt:configCol)//mgmt:systemManagement[1]/@collection/string();
+declare variable $mgmt:mgmtDoc as xs:string := collection($mgmt:configCol)//mgmt:systemManagement[1]/@managementDoc/string();
+
 declare variable $mgmt:mgmtDocPath as xs:string := string-join(($mgmt:mgmtCol,$mgmt:mgmtDoc),'/');
 
 (:::::::::::::::::::::::)
@@ -21,12 +25,12 @@ declare variable $mgmt:mgmtDocPath as xs:string := string-join(($mgmt:mgmtCol,$m
 (:::::::::::::::::::::::)
 
 declare function mgmt:getManagementDoc()
-	as element(gopher:managementData)
+	as element(xcesc:managementData)
 {
 	if(doc-available($mgmt:mgmtDocPath)) then (
 		doc($mgmt:mgmtDocPath)/element()
 	) else (
-		let $newDoc := <gopher:managementData><gopher:users/><gopher:servers/></gopher:managementData>
+		let $newDoc := <xcesc:managementData><xcesc:users/><xcesc:servers/></xcesc:managementData>
 		return doc(xmldb:store($mgmt:mgmtCol,$mgmt:mgmtDoc,$newDoc,'application/xml'))/element()
 	)
 };
@@ -46,7 +50,7 @@ declare function mgmt:changeServerOwnership($oldOwnerId as xs:string,$serverId a
 		if(empty($userDoc)) then
 			error((),string-join(("On server ownership change, user",$newOwnerId,"was not found"),' '))
 		else
-			let $serverDoc := $mgmtDoc//gopher:server[@id=$serverId and @managerId=$oldOwnerId]
+			let $serverDoc := $mgmtDoc//xcesc:server[@id=$serverId and @managerId=$oldOwnerId]
 			return
 				if(empty($serverDoc)) then
 					 error((),string-join(("On server ownership change, server",$serverId,"is not owned by",$oldOwnerId),' '))
@@ -56,21 +60,21 @@ declare function mgmt:changeServerOwnership($oldOwnerId as xs:string,$serverId a
 };
 
 (: It creates a server :)
-declare function mgmt:createServer($name as xs:string,$managerId as xs:string,$uri as xs:anyURI,$description as xs:string?,$params as element(gopher:param)+,$references as element(gopher:reference)*)
+declare function mgmt:createServer($name as xs:string,$managerId as xs:string,$uri as xs:anyURI,$isParticipant as xs:boolean,$description as xs:string?,$params as element(xcesc:param)+,$references as element(xcesc:reference)*)
 	as xs:string? 
 {
 	(# exist:batch-transaction #) {
 		let $mgmtDoc:=mgmt:getManagementDoc()
 		return
-			if($mgmtDoc//gopher:user[@id=$managerId]) then
+			if($mgmtDoc//xcesc:user[@id=$managerId]) then
 				let $id:=util:uuid()
-				let $newServer:=<gopher:server id="{$id}" name="{$name}" managerId="{$managerId}" uri="{$uri}">
-					<gopher:description><![CDATA[{$description}]]></gopher:description>
-					<gopher:otherParams>{$params}</gopher:otherParams>
+				let $newServer:=<xcesc:server id="{$id}" name="{$name}" managerId="{$managerId}" uri="{$uri}" type="{if($isParticipant) then 'participant' else 'evaluator'}">
+					<xcesc:description><![CDATA[{$description}]]></xcesc:description>
+					<xcesc:otherParams>{$params}</xcesc:otherParams>
 					{$references}
-				</gopher:server>
+				</xcesc:server>
 				return (
-					update insert $newServer into $mgmtDoc//gopher:servers,
+					update insert $newServer into $mgmtDoc//xcesc:servers,
 					$id
 				)
 			else
@@ -83,7 +87,7 @@ declare function mgmt:deleteServer($managerId as xs:string,$id as xs:string)
 	as empty() 
 {
 	(# exist:batch-transaction #) {
-		let $serverDoc := mgmt:getManagementDoc()//gopher:server[@id=$id and @managerId=$managerId]
+		let $serverDoc := mgmt:getManagementDoc()//xcesc:server[@id=$id and @managerId=$managerId]
 		return
 			if(empty($serverDoc)) then
 				 error((),string-join(("On server deletion",$id,"owned by",$managerId,"is unknown"),' '))
@@ -94,7 +98,7 @@ declare function mgmt:deleteServer($managerId as xs:string,$id as xs:string)
 
 (: It returns the set of available online servers :)
 declare function mgmt:getOnlineServers()
-	as element(gopher:server)*
+	as element(xcesc:server)*
 {
 	(# exist:batch-transaction #) {
 		let $currentDateTime:=current-dateTime()
@@ -104,39 +108,39 @@ declare function mgmt:getOnlineServers()
 
 (: It returns the set of available online servers :)
 declare function mgmt:getOnlineServers($currentDateTime as xs:dateTime)
-	as element(gopher:server)*
+	as element(xcesc:server)*
 {
 	(# exist:batch-transaction #) {
 		let $mgmtDoc:=mgmt:getManagementDoc()
-		return $mgmtDoc//gopher:server[@id=$mgmtDoc//gopher:user[@status='enabled']/@id][empty(gopher:downTime[xs:dateTime(@from)<=$currentDateTime][empty(@to) or xs:dateTime(@to)>$currentDateTime])]
+		return $mgmtDoc//xcesc:server[@id=$mgmtDoc//xcesc:user[@status='enabled']/@id][empty(xcesc:downTime[xs:dateTime(@since)<=$currentDateTime][empty(@until) or xs:dateTime(@until)>$currentDateTime])]
 	}
 };
 
 (: It obtains the whole server configuration :)
 declare function mgmt:getServer($id as xs:string+)
-	as element(gopher:server)*
+	as element(xcesc:server)*
 {
-	mgmt:getManagementDoc()//gopher:server[@id=$id]
+	mgmt:getManagementDoc()//xcesc:server[@id=$id]
 };
 
 (: It obtains the whole server configuration :)
 declare function mgmt:getServersFromName($name as xs:string+)
-	as element(gopher:server)*
+	as element(xcesc:server)*
 {
-	mgmt:getManagementDoc()//gopher:server[@name=$name]
+	mgmt:getManagementDoc()//xcesc:server[@name=$name]
 };
 
 (: It updates most pieces of the server declaration :)
-declare function mgmt:updateServer($managerId as xs:string,$serverConfig as element(gopher:server))
+declare function mgmt:updateServer($managerId as xs:string,$serverConfig as element(xcesc:server))
 	as empty() 
 {
 	(# exist:batch-transaction #) {
 		let $serverDoc:=mgmt:getServer($serverConfig/@id)[@managerId = $managerId]
 		return
 			if($serverDoc) then (
-				for $server in $serverDoc[gopher:description != $serverConfig/gopher:description]
+				for $server in $serverDoc[xcesc:description != $serverConfig/xcesc:description]
 				return
-					update replace $serverDoc/gopher:description with $serverConfig/gopher:description
+					update replace $serverDoc/xcesc:description with $serverConfig/xcesc:description
 				,
 				for $server in $serverDoc[@name != $serverConfig/@name]
 				return
@@ -146,24 +150,24 @@ declare function mgmt:updateServer($managerId as xs:string,$serverConfig as elem
 				return
 					update value $serverDoc/@uri with $serverConfig/@uri
 				,
-				if(not(deep-equal($serverDoc/gopher:otherParams,$serverConfig/gopher:otherParams))) then
-					update replace $serverDoc/gopher:otherParams with $serverConfig/gopher:otherParams
+				if(not(deep-equal($serverDoc/xcesc:otherParams,$serverConfig/xcesc:otherParams))) then
+					update replace $serverDoc/xcesc:otherParams with $serverConfig/xcesc:otherParams
 				else
 					()
 				,
-				if(not(deep-equal($serverDoc/gopher:reference,$serverConfig/gopher:reference))) then
-					update replace $serverDoc/gopher:reference with $serverConfig/gopher:reference
+				if(not(deep-equal($serverDoc/xcesc:reference,$serverConfig/xcesc:reference))) then
+					update replace $serverDoc/xcesc:reference with $serverConfig/xcesc:reference
 				else
 					()
 				,
-				for $newDown in $serverDoc/gopher:downTime
-				let $oldDown := $serverConfig/gopher:downTime[@from=$newDown/@from] 
+				for $newDown in $serverDoc/xcesc:downTime
+				let $oldDown := $serverConfig/xcesc:downTime[@since=$newDown/@since] 
 				return
 					if(empty($oldDown)) then
 						update insert $newDown into $serverDoc
 					else
-						if(empty($oldDown/@to) and exists($newDown/@to)) then
-							update insert $newDown/@to into $oldDown
+						if(empty($oldDown/@until) and exists($newDown/@until)) then
+							update insert $newDown/@until into $oldDown
 						else
 							()
 			) else
@@ -176,20 +180,20 @@ declare function mgmt:updateServer($managerId as xs:string,$serverConfig as elem
 (:::::::::)
 
 (: User creation :)
-declare function mgmt:createUser($nickname as xs:string,$firstName as xs:string,$lastName as xs:string,$organization as xs:string,$eMails as element(gopher:eMail)+,$references as element(gopher:reference)*)
+declare function mgmt:createUser($nickname as xs:string,$firstName as xs:string,$lastName as xs:string,$organization as xs:string,$eMails as element(xcesc:eMail)+,$references as element(xcesc:reference)*)
 	as xs:string?
 {
 	(# exist:batch-transaction #) {
 		let $mgmtDoc:=mgmt:getManagementDoc()
 		return
-			if(empty($mgmtDoc//gopher:user[@nickname=$nickname])) then
+			if(empty($mgmtDoc//xcesc:user[@nickname=$nickname])) then
 				let $id:=util:uuid()
-				let $newUser:=<gopher:user id="{$id}" nickname="{$nickname}" firstName="{$firstName}" lastName="{$lastName}" organization="{$organization}" status="enabled">
+				let $newUser:=<xcesc:user id="{$id}" nickname="{$nickname}" firstName="{$firstName}" lastName="{$lastName}" organization="{$organization}" status="enabled">
 					{$eMails}
 					{$references}
-				</gopher:user>
+				</xcesc:user>
 				return (
-					update insert $newUser into $mgmtDoc//gopher:users,
+					update insert $newUser into $mgmtDoc//xcesc:users,
 					$id
 				)
 			else
@@ -203,7 +207,7 @@ declare function mgmt:deleteUser($id as xs:string,$nickname as xs:string)
 {
 	(# exist:batch-transaction #) {
 	let $mgmtDoc := mgmt:getManagementDoc()
-		let $userDoc := $mgmtDoc//gopher:user[@id=$id and @nickname=$nickname]
+		let $userDoc := $mgmtDoc//xcesc:user[@id=$id and @nickname=$nickname]
 		return
 			if(empty($userDoc)) then
 				 error((),string-join(("On user deletion,",$id,"is not allowed to erase",$nickname,"or some of them are unknown"),' '))
@@ -214,20 +218,20 @@ declare function mgmt:deleteUser($id as xs:string,$nickname as xs:string)
 
 (: It obtains the whole user configuration, by id :)
 declare function mgmt:getUserFromId($id as xs:string)
-	as element(gopher:user)?
+	as element(xcesc:user)?
 {
-	mgmt:getManagementDoc()//gopher:user[@id=$id]
+	mgmt:getManagementDoc()//xcesc:user[@id=$id]
 };
 
 (: It obtains the whole user configuration, by nickname :)
 declare function mgmt:getUserFromNickname($nickname as xs:string)
-	as element(gopher:user)?
+	as element(xcesc:user)?
 {
-	mgmt:getManagementDoc()//gopher:user[@nickname=$nickname]
+	mgmt:getManagementDoc()//xcesc:user[@nickname=$nickname]
 };
 
 (: It updates most pieces of the user declaration :)
-declare function mgmt:updateUser($id as xs:string,$userConfig as element(gopher:user))
+declare function mgmt:updateUser($id as xs:string,$userConfig as element(xcesc:user))
 	as empty() 
 {
 	(# exist:batch-transaction #) {
@@ -250,13 +254,13 @@ declare function mgmt:updateUser($id as xs:string,$userConfig as element(gopher:
 				return
 					update value $userDoc/@organization with $userConfig/@organization
 				,
-				if(not(deep-equal($userDoc/gopher:eMail,$userConfig/gopher:eMail))) then
-					update replace $userDoc/gopher:eMail with $userConfig/gopher:eMail
+				if(not(deep-equal($userDoc/xcesc:eMail,$userConfig/xcesc:eMail))) then
+					update replace $userDoc/xcesc:eMail with $userConfig/xcesc:eMail
 				else
 					()
 				,
-				if(not(deep-equal($userDoc/gopher:reference,$userConfig/gopher:reference))) then
-					update replace $userDoc/gopher:reference with $userConfig/gopher:reference
+				if(not(deep-equal($userDoc/xcesc:reference,$userConfig/xcesc:reference))) then
+					update replace $userDoc/xcesc:reference with $userConfig/xcesc:reference
 				else
 					()
 			) else

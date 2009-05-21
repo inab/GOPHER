@@ -3,50 +3,53 @@
 :)
 xquery version "1.0";
 
-module namespace job="http://www.cnio.es/scombio/gopher/1.0/xquery/jobManagement";
+module namespace job="http://www.cnio.es/scombio/xcesc/1.0/xquery/jobManagement";
 
-import module namespace mgmt="http://www.cnio.es/scombio/gopher/1.0/xquery/systemManagement" at "systemManagement.xqm";
-import module namespace gmod="http://www.cnio.es/scombio/gopher/1.0/xquery/javaModule" at "java:org.cnio.scombio.jmfernandez.GOPHER.GOPHERModule";
+import module namespace mgmt="http://www.cnio.es/scombio/xcesc/1.0/xquery/systemManagement" at "xmldb:exist:///db/XCESC-logic/systemManagement.xqm";
 
 declare namespace httpclient="http://exist-db.org/xquery/httpclient";
 declare namespace util="http://exist-db.org/xquery/util";
 declare namespace xmldb="http://exist-db.org/xquery/xmldb";
 
-declare namespace gopher="http://www.cnio.es/scombio/gopher/1.0";
+declare namespace xcesc="http://www.cnio.es/scombio/xcesc/1.0";
 
 (: The results collection :)
-declare variable $job:resultsBaseCol as xs:string := 'rounds'; 
-declare variable $job:resultsCol as xs:string := string-join(($mgmt:mgmtCol,$job:resultsBaseCol),'/');
+declare variable $job:dataCol as xs:string := collection($mgmt:configCol)//job:jobManagement[1]/@collection/string();
+declare variable $job:resultsBaseCol as xs:string := 'rounds';
+declare variable $job:resultsCol as xs:string := string-join(($job:dataCol,$job:resultsBaseCol),'/');
 
 (: Last round document :)
 declare variable $job:lastRoundDoc as xs:string := 'lastRound.xml';
 declare variable $job:lastRoundDocPath  as xs:string := string-join(($job:resultsCol,$job:lastRoundDoc),'/');
 
-(: Binary FASTA files :)
-declare variable $job:pdbfile as xs:string := 'filtered-pdb.fas';
-declare variable $job:pdbprefile as xs:string := 'filtered-pdbpre.fas';
-declare variable $job:blastReportFile as xs:string := 'blastReport.txt';
-declare variable $job:physicalScratch as xs:string := '/tmp';
+(: Scratch dir and storage patterns :)
+declare variable $job:physicalScratch as xs:string := collection($mgmt:configCol)//job:jobManagement[1]/@physicalScratch/string();
 
 (: Queries document :)
 declare variable $job:queriesDoc as xs:string := 'roundData.xml';
 
 (: BaseURL :)
-declare variable $job:logicCol as xs:string := 'GOPHER-logic';
-declare variable $job:pobox as xs:string := 'pobox.xql';
-declare variable $job:poboxURI as xs:string := string-join(('http://localhost:8088',$job:logicCol,$job:pobox),'/');
+declare variable $job:logicCol as xs:string := 'XCESC-logic';
+declare variable $job:publicBaseURI as xs:string := collection($mgmt:configCol)//job:jobManagement[1]/@publicBaseURI/string();
+declare variable $job:pobox as xs:string := 'pobox.xq';
+declare variable $job:poboxURI as xs:string := string-join(($job:publicBaseURI,$job:logicCol,$job:pobox),'/');
+declare variable $job:evapobox as xs:string := 'evapobox.xql';
+declare variable $job:evaURI as xs:string := string-join(($job:publicBaseURI,$job:logicCol,$job:evapobox),'/');
+
+(: Misc :)
+declare variable $job:partServer as xs:string := "participant";
 
 (:::::::::::::::::::::::)
 (: Last Round Document :)
 (:::::::::::::::::::::::)
 
 declare function job:getLastRoundDocument()
-	as element(gopher:lastRound)
+	as element(xcesc:lastRound)
 {
 	if(doc-available($job:lastRoundDocPath)) then (
 		doc($job:lastRoundDocPath)/element()
 	) else (
-		let $newDoc := <gopher:lastRound date=""/>
+		let $newDoc := <xcesc:lastRound date=""/>
 		return doc(xmldb:store($job:resultsCol,$job:lastRoundDoc,$newDoc,'application/xml'))/element()
 	)
 };
@@ -58,7 +61,7 @@ declare function job:getLastRoundDocument()
 	and then it stores them and the queries document
 :)
 declare function job:doQueriesComputation($currentDateTime as xs:dateTime)
-	as element(gopher:experiment)
+	as element(xcesc:experiment)
 {
 	(# exist:batch-transaction #) {
 		(: First, get the last round document :)
@@ -68,17 +71,18 @@ declare function job:doQueriesComputation($currentDateTime as xs:dateTime)
 		let $lastDateTime:=$lastDoc/@timeStamp
 		let $lastDate:=xs:date($lastDateTime)
 		let $lastCol:=string-join(($job:resultsCol,$lastDate),'/')
-		let $oldpdb:=string-join(($lastCol,$job:pdbfile),'/')
-		let $oldpdbpre:=string-join(($lastCol,$job:pdbprefile),'/')
+		let $physicalScratch:=string-join(($job:physicalScratch,$currentDate),'/')
 		let $roundCol:=xmldb:create-collection($job:resultsCol,$currentDate)
 		let $newCol:=string-join(($job:resultsCol,$currentDate),'/')
-		let $newpdb:=string-join(($newCol,$job:pdbfile),'/')
-		let $newpdbpre:=string-join(($newCol,$job:pdbprefile),'/')
-		let $physicalScratch:=string-join(($job:physicalScratch,$currentDate),'/')
+		
+		let $queriesComputation := collection($mgmt:configCol)//job:jobManagement[1]/job:queriesComputation
+		let $dynLoad := util:import-module($queriesComputation/@namespace,'dyn',$queriesComputation/@module),
+			util:function(QName($queriesComputation/@namespace,$queriesComputation/@entryPoint),3)
 		(: Sixth, let's compute the unique entries :)
-		let $queriesDoc:=gmod:compute-unique-entries($oldpdbpre,$oldpdb,$physicalScratch)
+		let $queriesDoc := util:call($dynLoad,$lastCol,$newCol,$physicalScratch)
+		
 		(: Seventh, time to store and update! :)
-		let $stored:=xmldb:store-files-from-pattern($newCol,$physicalScratch,'*')
+		let $stored:=xmldb:store-files-from-pattern($newCol,$physicalScratch,$queriesComputation/@storagePattern)
 		let $storedExperiment:=xmldb:store($newCol,$job:queriesDoc,$queriesDoc,'application/xml')/element()
 		return
 			update value $lastDoc/@timeStamp with $currentDateTime,
@@ -87,31 +91,35 @@ declare function job:doQueriesComputation($currentDateTime as xs:dateTime)
 	}
 };
 
-declare function job:doRound($currentDate as xs:date,$storedExperiment as element(gopher:experiment),$onlineServers as element(gopher:server)*)
+declare function job:doRound($currentDate as xs:date,$storedExperiment as element(xcesc:experiment),$onlineServers as element(xcesc:server)*)
 	as empty()
 {
 	(: Fourth, get online servers based on currentDateTime :)
-	let $querySet:=$storedExperiment//gopher:query
+	let $querySet:=$storedExperiment//xcesc:query
+	let $targetSet:=$storedExperiment//xcesc:target
 	let $jobs:=for $job in $querySet
-		return <gopher:job targetId="{$job/@id}" status="submitted"/>
+		return <xcesc:job targetId="{$job/@queryId}" status="submitted"/>
 	(: Fifth, submit jobs!!!! :)
 	for $onlineServer in $onlineServers
 		let $ticketId:=util:uuid()
 		let $poboxURI := string-join(($job:poboxURI,$currentDate,$ticketId),'/')
-		let $queries:=<gopher:queries callback="{$poboxURI}">{$querySet}</gopher:queries>		 
+		let $queries:=if($onlineServer/@type=$job:partServer) then
+			return <xcesc:queries callback="{$poboxURI}">{$querySet}</xcesc:queries>
+		else
+			return <xcesc:toEvaluate callback="{$poboxURI}">{$targetSet}</xcesc:toEvaluate>
 		let $sendDateTime:=current-dateTime()
 		let $ret:=httpclient:post($onlineServer/@uri,$queries,false,())
 	return
 		(# exist:batch-transaction #) {
-			update insert <gopher:participant ticket="{$ticketId}" startStamp="{$sendDateTime}">
+			update insert <xcesc:participant ticket="{$ticketId}" startStamp="{$sendDateTime}">
 			{$onlineServer}
 			{
-				if($ret/@statusCode='200') then
+				if($ret/@statusCode='200' or $ret/@statusCode='202') then
 					$jobs
 				else
-					<gopher:errorMessage statusCode="$ret/@statusCode">{$ret/httpclient:body/*}</gopher:errorMessage>
+					<xcesc:errorMessage statusCode="$ret/@statusCode">{$ret/httpclient:body/*}</xcesc:errorMessage>
 			}
-			</gopher:participant>  into $storedExperiment
+			</xcesc:participant>  into $storedExperiment
 		}
 };
 
@@ -144,7 +152,7 @@ declare function job:doTestRoundFromNames($baseRound as xs:string,$serverNames a
 	job:doTestRound($baseRound,mgmt:getServersFromName($serverNames))
 };
 
-declare function job:doTestRound($baseRound as xs:string,$servers as element(gopher:server)+)
+declare function job:doTestRound($baseRound as xs:string,$servers as element(xcesc:server)+)
 	as xs:string
 {
 	let $newRound:=util:uuid()
@@ -164,16 +172,16 @@ declare function job:doTestRound($baseRound as xs:string,$servers as element(gop
 		return $newRound
 };
 
-declare function job:joinResults($round as xs:string,$ticket as xs:string,$answers as gopher:answers)
+declare function job:joinResults($round as xs:string,$ticket as xs:string,$answers as xcesc:answers)
 	as xs:positiveInteger
 {
 	(# exist:batch-transaction #) {
-		let $partElem:=doc(string-join(($job:resultsCol,$round,$job:queriesDoc),'/'))//gopher:participant[@ticket=$ticket]
+		let $partElem:=doc(string-join(($job:resultsCol,$round,$job:queriesDoc),'/'))//xcesc:participant[@ticket=$ticket]
 		return
 			if(exists($partElem)) then
 				(
-				for $answer in $answers//gopher:answer,$job in $partElem//gopher:job[@targetId=$answer/@targetId]
-				let $matches:=$answer//gopher:match
+				for $answer in $answers//xcesc:answer,$job in $partElem//xcesc:job[@targetId=$answer/@targetId]
+				let $matches:=$answer//xcesc:match
 				return
 					(
 						update insert attribute stopStamp { current-dateTime() } into $job,

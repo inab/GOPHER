@@ -13,8 +13,7 @@ import org.exist.xquery.FunctionDef;
 public class GOPHERModule
 	extends AbstractInternalModule
 {
-	public final static String GOPHER_URI = "http://www.cnio.es/scombio/gopher/1.0";
-	public final static String NAMESPACE_URI = GOPHER_URI+"/xquery/javaModule";
+	public final static String NAMESPACE_URI = "http://www.cnio.es/scombio/gopher/1.0/xquery/javaModule";
 	
 	public final static String PREFIX = "gmod";
 	

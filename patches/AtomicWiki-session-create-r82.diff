@@ -1,0 +1,20 @@
+Index: webapp/index.xql
+===================================================================
+--- webapp/index.xql	(revision 82)
++++ webapp/index.xql	(working copy)
+@@ -407,7 +407,6 @@
+ };
+ 
+ declare function blog:login() as xs:string* {
+-    session:create(),
+     let $user := request:get-parameter("user", ())
+     let $pass := request:get-parameter("password", ())
+     let $loggedIn :=
+@@ -500,6 +499,7 @@
+ 	let $id := request:get-parameter("id", ())
+ 	let $path := request:get-parameter("feed", ())
+ 	let $quiet := request:get-parameter("quiet", ())
++	let $sempty := session:create()
+ 	let $user := session:get-attribute("user")
+ 	let $pass := session:get-attribute("password")
+ 	let $loginStatus as xs:string* :=

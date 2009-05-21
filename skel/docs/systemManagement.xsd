@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema
+    xmlns:xs="http://www.w3.org/2001/XMLSchema"
+    xmlns:mgmt="http://www.cnio.es/scombio/xcesc/1.0/xquery/systemManagement"
+    elementFormDefault="qualified"
+    targetNamespace="http://www.cnio.es/scombio/xcesc/1.0/xquery/systemManagement"
+>
+    <xs:annotation>
+        <xs:documentation><![CDATA[XCESC system management configuration schema]]></xs:documentation>
+    </xs:annotation>
+    
+    <xs:element name="systemManagement">
+        <xs:annotation>
+            <xs:documentation><![CDATA[The root element for this piece of configuration]]></xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="admin" minOccurs="1" maxOccurs="1">
+                    <xs:complexType>
+                        <xs:attribute name="user" use="required" type="xs:string">
+                            <xs:annotation>
+                                <xs:documentation><![CDATA[The eXist XCESC superuser]]></xs:documentation>
+                            </xs:annotation>
+                        </xs:attribute>
+                        <xs:attribute name="password" use="required" type="xs:string">
+                            <xs:annotation>
+                                <xs:documentation><![CDATA[The eXist XCESC superpass]]></xs:documentation>
+                            </xs:annotation>
+                        </xs:attribute>
+                    </xs:complexType>
+                </xs:element>
+            </xs:sequence>
+            
+            <xs:attribute name="collection" use="required" type="xs:string">
+                <xs:annotation>
+                    <xs:documentation><![CDATA[The collection where the management data (users, groups, registered servers) is going to be stored]]></xs:documentation>
+                </xs:annotation>
+            </xs:attribute>
+            
+            <xs:attribute name="managementDoc" use="required" type="xs:string">
+                <xs:annotation>
+                    <xs:documentation><![CDATA[The name of the document where management data (users, groups, registered servers) is being stored]]></xs:documentation>
+                </xs:annotation>
+            </xs:attribute>
+        </xs:complexType>
+    </xs:element>
+</xs:schema>

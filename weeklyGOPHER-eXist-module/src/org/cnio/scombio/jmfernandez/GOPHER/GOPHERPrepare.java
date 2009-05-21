@@ -30,8 +30,6 @@ public class GOPHERPrepare {
 	protected final static double BLAST_EVALUE=1e-5;
 	protected final static int BLAST_HITS=500;
 	
-	protected final static String ORIGIN_KEY="origin";
-	
 	protected final static String PDBPRE_LABEL="pdbpre";
 	protected final static String PDBPREFILE=PDBPRE_LABEL+".fas";
 	protected final static String PDB_LABEL="pdb";
@@ -52,20 +50,6 @@ public class GOPHERPrepare {
 	protected final static String ORIG_PDBFILE=ORIGPRE+PDBFILE;
 	
 	protected static String queryParticle="Query=";
-	
-	public class PDBSeq {
-		public String id;
-		public String iddesc;
-		public StringBuilder sequence;
-		public HashMap<String,Object> features;
-		
-		public PDBSeq(String id,String iddesc,StringBuilder sequence) {
-			this.id=id;
-			this.iddesc=iddesc;
-			this.sequence=sequence;
-			this.features=new HashMap<String,Object>();
-		}
-	}
 	
 	public class StreamRedirector
 		extends Thread
@@ -362,7 +346,7 @@ public class GOPHERPrepare {
 					throw new IOException("PDB Id "+pdbCode+" was not found! Perhaps the FASTA header was garbled");
 				}
 				PDBSeq leaderSeq=paq.get(pdbCode);
-				leaderSeq.features.put(ORIGIN_KEY, PDBPREFIX.equals(procHeader[0])?PDB_LABEL:PDBPRE_LABEL);
+				leaderSeq.features.put(PDBSeq.ORIGIN_KEY, PDBPREFIX.equals(procHeader[0])?PDB_LABEL:PDBPRE_LABEL);
 				leaders.put(leaderSeq.id,leaderSeq);
 			}
 		}
@@ -696,6 +680,13 @@ public class GOPHERPrepare {
 		}
 	}
 	
+	public static HashMap<String,PDBSeq> StaticDoGOPHERPrepare(File origprepdb,File newprepdb,File origpdb,File newpdb,File workdir,boolean first)
+		throws IOException
+	{
+		GOPHERPrepare gp=new GOPHERPrepare();
+		return gp.doGOPHERPrepare(origprepdb,newprepdb,origpdb,newpdb,workdir,first);
+	}
+
 	public final static void main(String[] args) {
 		if(args.length>=5) {
 			File origprepdb=new File(args[0]);
@@ -710,10 +701,10 @@ public class GOPHERPrepare {
 			try {
 				GOPHERPrepare gp=new GOPHERPrepare();
 				gp.doGOPHERPrepare(origprepdb,newprepdb,origpdb,newpdb,workdir,first);
-				System.exit(0);
+				DoExit(0);
 			} catch(IOException ioe) {
 				System.err.println(ioe.getMessage());
-				System.exit(1);
+				DoExit(1);
 			}
 		} else {
 			System.err.println("FATAL ERROR: This program needs at least 5 params, in order:\n"
@@ -730,7 +721,11 @@ public class GOPHERPrepare {
 +"*	The unfiltered, current week, PDB database file in FASTA format.\n"
 +"*	The filtered, current week, PDB database file in FASTA format (to be generated).\n"
 +"*	The working directory where to store all the intermediate files.");
-			System.exit(1);
+			DoExit(1);
 		}
+	}
+	
+	protected final static void DoExit(int status) {
+		System.exit(status);
 	}
 }
