@@ -8,6 +8,10 @@
 	-->
 	<dirname property="project.home" file="${ant.file}"/>
 	<property file="${project.home}/build.properties"/>
+	<xmlproperty file="${project.home}/skel/XCESC-config/systemManagement.xml"/>
+	<property name="deploy.eXist.gopher.user" value="${systemManagement.admin(user)}"></property>
+	<property name="deploy.eXist.gopher.pass" value="${systemManagement.admin(password)}"></property>
+	<property name="deploy.eXist.group" value="${systemManagement.admin(group)}"></property>
 	
 	<property name="xmldb.uri" value="xmldb:exist://${deploy.host}:${deploy.eXist.port}/xmlrpc"/>
 	
@@ -21,6 +25,9 @@
 	
 	<dirname property="project.home.parent" file="${project.home}"/>
 	
+	<property name="GOPHERPrepare.dir.rel" value="GOPHERPrepare" />
+	<property name="GOPHERPrepare.dir" location="${GOPHERPrepare.dir.rel}" />
+	<property name="GOPHERPrepare.dist.dir" location="${GOPHERPrepare.dir.rel}/dist" />
 	<property name="weeklyGOPHER-eXist-module.dir.rel" value="weeklyGOPHER-eXist-module" />
 	<property name="weeklyGOPHER-eXist-module.dir" location="${weeklyGOPHER-eXist-module.dir.rel}" />
 	<property name="weeklyGOPHER-eXist-module.dist.dir" location="${weeklyGOPHER-eXist-module.dir.rel}/dist" />
@@ -329,7 +336,7 @@
 	</target>
 	
 	<!-- This is a meta-target -->
-	<target name="create-update-user" depends="init.eXist.extennsion">
+	<target name="create-update-user" depends="init.eXist.extension">
 		<loadfile property="the.xquery" srcFile="${GOPHER.patches.dir}/createOrUpdateUser.xq">
 			<filterchain>
 				<replacetokens>
@@ -428,6 +435,10 @@
 	</target>
 	
 	<target name="deploy" depends="deploy.gopher.jars,deploy.skel.meta.admin,deploy.AtomicWiki,deploy.skel" description="Installation procedure">
+	</target>
+	
+	<target name="compile.GOPHERPrepare" depends="init" description="compiles GOPHERPrepare">
+		<ant inheritAll="false" inheritRefs="false" dir="${weeklyGOPHER-eXist-module.dir}" />
 	</target>
 	
 	<target name="compile.weeklyGOPHER-eXist-module" depends="init" description="compiles weeklyGOPHER-eXist-module">

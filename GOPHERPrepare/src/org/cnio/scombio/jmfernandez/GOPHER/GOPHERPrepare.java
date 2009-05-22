@@ -17,6 +17,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import org.cnio.scombio.jmfernandez.GOPHER.PDBSeq;
 
 public class GOPHERPrepare {
 	protected final static int MINSEQLENGTH=30;

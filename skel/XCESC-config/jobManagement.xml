@@ -14,7 +14,7 @@
     
     <custom key="PDB_PATH">/drives/databases/FastaDB/pdb</custom>   
     <custom key="PREPDB_PATH">/drives/databases/FastaDB/pdbpre</custom>   
-    <custom key="dynCoreJar">xmldb:exist:///db/GOPHER-logic/GOPHERCASP.jar</custom>
+    <custom key="dynCoreJar">xmldb:exist:///db/GOPHER-logic/GOPHERPrepare.jar</custom>
     <custom key="dynCoreMethod">StaticDoGOPHERPrepare</custom>
     
 </jobManagement>

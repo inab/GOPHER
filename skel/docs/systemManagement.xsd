@@ -19,12 +19,17 @@
                     <xs:complexType>
                         <xs:attribute name="user" use="required" type="xs:string">
                             <xs:annotation>
-                                <xs:documentation><![CDATA[The eXist XCESC superuser]]></xs:documentation>
+                                <xs:documentation><![CDATA[The eXist XCESC instance superuser]]></xs:documentation>
                             </xs:annotation>
                         </xs:attribute>
                         <xs:attribute name="password" use="required" type="xs:string">
                             <xs:annotation>
-                                <xs:documentation><![CDATA[The eXist XCESC superpass]]></xs:documentation>
+                                <xs:documentation><![CDATA[The eXist XCESC instance superpass]]></xs:documentation>
+                            </xs:annotation>
+                        </xs:attribute>
+                        <xs:attribute name="group" use="required" type="xs:string">
+                            <xs:annotation>
+                                <xs:documentation><![CDATA[The eXist XCESC instance group]]></xs:documentation>
                             </xs:annotation>
                         </xs:attribute>
                     </xs:complexType>

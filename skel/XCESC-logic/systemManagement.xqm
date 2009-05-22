@@ -60,7 +60,7 @@ declare function mgmt:changeServerOwnership($oldOwnerId as xs:string,$serverId a
 };
 
 (: It creates a server :)
-declare function mgmt:createServer($name as xs:string,$managerId as xs:string,$uri as xs:anyURI,$isParticipant as xs:boolean,$description as xs:string?,$params as element(xcesc:param)+,$references as element(xcesc:reference)*)
+declare function mgmt:createServer($name as xs:string,$managerId as xs:string,$uri as xs:anyURI,$isParticipant as xs:boolean,$description as xs:string?,$domains as xs:string+,$params as element(xcesc:param)+,$references as element(xcesc:reference)*)
 	as xs:string? 
 {
 	(# exist:batch-transaction #) {
@@ -70,6 +70,11 @@ declare function mgmt:createServer($name as xs:string,$managerId as xs:string,$u
 				let $id:=util:uuid()
 				let $newServer:=<xcesc:server id="{$id}" name="{$name}" managerId="{$managerId}" uri="{$uri}" type="{if($isParticipant) then 'participant' else 'evaluator'}">
 					<xcesc:description><![CDATA[{$description}]]></xcesc:description>
+					{
+						for $domain in $domains
+						return
+							<xcesc:kind>{$domain}</xcesc:kind>
+					}
 					<xcesc:otherParams>{$params}</xcesc:otherParams>
 					{$references}
 				</xcesc:server>
