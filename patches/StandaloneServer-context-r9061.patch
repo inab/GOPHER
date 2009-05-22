@@ -1,0 +1,68 @@
+Index: src/org/exist/StandaloneServer.java
+===================================================================
+--- src/org/exist/StandaloneServer.java	(revision 9061)
++++ src/org/exist/StandaloneServer.java	(working copy)
+@@ -82,6 +82,9 @@
+    }
+     private final static Logger LOG = Logger.getLogger(StandaloneServer.class);
+     
++    // Servlet context-wide related constants
++    private final static String CONTEXT_KEY_PREFIX="context.param.";
++    
+     //  command-line options
+ 	private final static int HELP_OPT = 'h';
+     private final static int DEBUG_OPT = 'd';
+@@ -286,6 +289,17 @@
+ 	File eXistHome=ConfigurationHelper.getExistHome();
+ 	if(eXistHome!=null)
+ 		context.setResourceBase(eXistHome.getAbsolutePath());
++	
++	// Setting up Servlet context-wide properties, needed by
++	// some servlets like Chiba-Web 3.0.0b1
++	final int conKeyPrefLength=CONTEXT_KEY_PREFIX.length();
++	Enumeration propen=props.propertyNames();
++	while(propen.hasMoreElements()) {
++		String name=(String)propen.nextElement();
++		if(name.startsWith(CONTEXT_KEY_PREFIX)) {
++			context.setInitParameter(name.substring(conKeyPrefLength), props.getProperty(name));
++		}
++	}
+         
+         WebApplicationHandler webappHandler = new WebApplicationHandler();
+                 
+@@ -454,6 +468,10 @@
+                 {
+                 	configureFilter(elem);
+                 }
++                else if ("context".equals(name))
++                {
++                    properties.putAll(parseParams(elem, name));
++                }
+                 else if ("servlet".equals(name)) {
+                     String className = elem.getAttribute("class");
+                     configurations.add(className);
+Index: schema/server.xsd
+===================================================================
+--- schema/server.xsd	(revision 9061)
++++ schema/server.xsd	(working copy)
+@@ -55,6 +55,13 @@
+                         <xs:attribute name="address" type="xs:string" use="optional"/>
+                     </xs:complexType>
+                 </xs:element>
++                <xs:element name="context" minOccurs="0" maxOccurs="unbounded">
++                    <xs:complexType>
++                        <xs:sequence>
++                            <xs:element ref="param" minOccurs="0" maxOccurs="unbounded"/>
++                        </xs:sequence>
++                    </xs:complexType>
++                </xs:element>
+                 <xs:element name="webdav" type="service"/>
+                 <xs:element name="xmlrpc" type="service"/>
+                 <xs:element name="rest" type="service"/>
+@@ -122,4 +129,4 @@
+             </xs:sequence>
+         </xs:complexType>
+     </xs:element>
+-</xs:schema>
+\ No newline at end of file
++</xs:schema>
