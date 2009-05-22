@@ -2,7 +2,6 @@
 <jobManagement
     xmlns="http://www.cnio.es/scombio/xcesc/1.0/xquery/jobManagement"
     collection="/db/GOPHER-data"
-    publicBaseURI="http://localhost:8088"
     physicalScratch="/tmp"
 >
     <queriesComputation

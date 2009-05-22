@@ -1,0 +1,13 @@
+Index: java/src/org/exist/xquery/modules/wiki/Parse.java
+===================================================================
+--- java/src/org/exist/xquery/modules/wiki/Parse.java	(revision 104)
++++ java/src/org/exist/xquery/modules/wiki/Parse.java	(working copy)
+@@ -58,7 +58,7 @@
+             return (NodeImpl) builder.getDocument().getFirstChild();
+         } catch (WikiParserException e) {
+             LOG.warn(e.getMessage(), e);
+-            throw new XPathException(getASTNode(), "An error occurred while parsing wiki text: " + e.getMessage(), e);
++            throw new XPathException(this, "An error occurred while parsing wiki text: " + e.getMessage(), e);
+         } finally {
+             context.popDocumentContext();
+         }

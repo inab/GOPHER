@@ -59,11 +59,6 @@
                     <xs:documentation><![CDATA[The collection where all the job data is going to be stored]]></xs:documentation>
                 </xs:annotation>
             </xs:attribute>
-            <xs:attribute name="publicBaseURI" use="required" type="xs:anyURI">
-                <xs:annotation>
-                    <xs:documentation><![CDATA[The public base URI for this XCESC installation.]]></xs:documentation>
-                </xs:annotation>
-            </xs:attribute>
             <xs:attribute name="physicalScratch" use="required" type="xs:string">
                 <xs:annotation>
                     <xs:documentation><![CDATA[A physical directory in the server where temporal information can be stored]]></xs:documentation>

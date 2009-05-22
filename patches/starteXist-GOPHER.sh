@@ -4,21 +4,23 @@
 LC_ALL=C
 export LC_ALL
 
-#VAPORDIRS="${HOME}/projects/bioVapor"
-#JAVALIBDIRS="${JAVALIBDIRS}/ensembl-exist/dist"
-BRANCH="GOPHER"
-BASEBRANCHES="/databases/eXist"
-EXIST_HOME="${BASEBRANCHES}/eXist-${BRANCH}"
-EXISTDATACONF_HOME="${BASEBRANCHES}/dataconf-${BRANCH}"
-SERVERXML="${EXISTDATACONF_HOME}/server.xml"
+BRANCH="@branch@"
+BASEBRANCHES="@basedir@"
+EXIST_HOME="${BASEBRANCHES}/eXist${BRANCH}"
+EXISTDATACONF_HOME="${BASEBRANCHES}/dataconf${BRANCH}"
+EXIST_DATADIR="@datadir@"
+EXIST_CONFDIR="@confdir@"
+SERVERXML="${EXIST_CONFDIR}/server.xml"
 export EXIST_HOME EXISTCONF_HOME
 
 JAVA_OPTIONS="-Xmx768m -Xms384m -Dfile.encoding=UTF-8 -Dserver.xml=${SERVERXML} -Djavax.xml.transform.TrsformerFactory=net.sf.saxon.TransformerFactoryImpl"
 export JAVA_OPTIONS
 
-JAVA_HOME="${HOME}/ibm-java-i386-60"
-#JAVA_HOME=/usr/lib/jvm/java-6-sun
-export JAVA_HOME
+if [ -d "${HOME}/ibm-java-i386-60" ] ; then
+	JAVA_HOME="${HOME}/ibm-java-i386-60"
+	#JAVA_HOME=/usr/lib/jvm/java-6-sun
+	export JAVA_HOME
+fi
 
 # Exist by-passes Java CLASSPATH
 # so, let's follow their role.
@@ -39,7 +41,7 @@ case "$status" in
 			echo "eXist instance ${BRANCH} is ALREADY running with pid $EXISTPID" 1>&2
 			RETVAL=1
 		else
-			cp -pf "${EXISTDATACONF_HOME}/conf.xml" "${EXIST_HOME}"
+			cp -pf "${EXIST_CONFDIR}/conf.xml" "${EXIST_HOME}"
 			exec bash "${EXIST_HOME}/bin/server.sh"
 		fi
 		;;
@@ -82,7 +84,7 @@ case "$status" in
 			echo "eXist instance ${BRANCH} is ALREADY running with pid $EXISTPID" 1>&2
 			RETVAL=1
 		else
-			cp -pf "${EXISTDATACONF_HOME}/conf.xml" "${EXIST_HOME}"
+			cp -pf "${EXIST_CONFDIR}/conf.xml" "${EXIST_HOME}"
 			CLIENT_JAVA_OPTIONS="$JAVA_OPTIONS"
 			export CLIENT_JAVA_OPTIONS
 			exec bash "${EXIST_HOME}/bin/client.sh" -l

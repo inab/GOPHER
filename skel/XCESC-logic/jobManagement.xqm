@@ -30,11 +30,10 @@ declare variable $job:queriesDoc as xs:string := 'roundData.xml';
 
 (: BaseURL :)
 declare variable $job:logicCol as xs:string := 'XCESC-logic';
-declare variable $job:publicBaseURI as xs:string := collection($mgmt:configCol)//job:jobManagement[1]/@publicBaseURI/string();
 declare variable $job:pobox as xs:string := 'pobox.xq';
-declare variable $job:poboxURI as xs:string := string-join(($job:publicBaseURI,$job:logicCol,$job:pobox),'/');
+declare variable $job:poboxURI as xs:string := string-join(($mgmt:publicBaseURI,$job:logicCol,$job:pobox),'/');
 declare variable $job:evapobox as xs:string := 'evapobox.xql';
-declare variable $job:evaURI as xs:string := string-join(($job:publicBaseURI,$job:logicCol,$job:evapobox),'/');
+declare variable $job:evaURI as xs:string := string-join(($mgmt:publicBaseURI,$job:logicCol,$job:evapobox),'/');
 
 (: Misc :)
 declare variable $job:partServer as xs:string := "participant";

@@ -18,6 +18,8 @@ declare variable $mgmt:adminPass as xs:string := collection($mgmt:configCol)//mg
 declare variable $mgmt:mgmtCol as xs:string := collection($mgmt:configCol)//mgmt:systemManagement[1]/@collection/string();
 declare variable $mgmt:mgmtDoc as xs:string := collection($mgmt:configCol)//mgmt:systemManagement[1]/@managementDoc/string();
 
+declare variable $mgmt:publicBaseURI as xs:string := collection($mgmt:configCol)//mgmt:systemManagement[1]/@publicBaseURI/string();
+
 declare variable $mgmt:mgmtDocPath as xs:string := string-join(($mgmt:mgmtCol,$mgmt:mgmtDoc),'/');
 
 (:::::::::::::::::::::::)

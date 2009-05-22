@@ -9,6 +9,7 @@
 	<dirname property="project.home" file="${ant.file}"/>
 	<property file="${project.home}/build.properties"/>
 	<xmlproperty file="${project.home}/skel/XCESC-config/systemManagement.xml"/>
+	<xmlproperty file="${project.home}/skel/XCESC-config/jobManagement.xml"/>
 	<property name="deploy.eXist.gopher.user" value="${systemManagement.admin(user)}"></property>
 	<property name="deploy.eXist.gopher.pass" value="${systemManagement.admin(password)}"></property>
 	<property name="deploy.eXist.group" value="${systemManagement.admin(group)}"></property>
@@ -22,6 +23,7 @@
 	<property name="AtomicWiki.dir" location="AtomicWiki" />
 	<property name="eXist.conf.dir" location="eXist-conf" />
 	<property name="GOPHER.patches.dir" location="patches" />
+	<property name="GOPHER.startup" value="starteXist${deploy.eXist.basebranch}.sh"/>
 	
 	<dirname property="project.home.parent" file="${project.home}"/>
 	
@@ -125,6 +127,15 @@
 		</uptodate>
 	</target>
 	
+	<target name="is.patched.startup" depends="init">
+		<uptodate
+			property="already.patched.startup"
+			targetfile="${eXist.conf.dir}/${GOPHER.startup}"
+		>
+			<srcfiles file="${GOPHER.patches.dir}/starteXist-GOPHER.sh"/>
+		</uptodate>
+	</target>
+	
 	<!-- Generating configuration files by patch -->
 	<target name="conditional.patch.conf.xml" depends="is.patched.conf.xml" unless="already.patched.conf.xml">
 		<patch
@@ -133,7 +144,7 @@
 			destfile="${eXist.conf.dir}/conf.xml.tmpl"
 		/>
 		<filter token="memory" value="${deploy.eXist.conf.memory}"/>
-		<filter token="datadir" value="../${deploy.eXist.data.dir.rel}"/>
+		<filter token="datadir" value="${deploy.eXist.data.dir.conf.xml}"/>
 		<copy
 			file="${eXist.conf.dir}/conf.xml.tmpl"
 			tofile="${eXist.conf.dir}/conf.xml"
@@ -149,9 +160,23 @@
 			destfile="${eXist.conf.dir}/server.xml.tmpl"
 		/>
 		<filter token="port" value="${deploy.eXist.port}"/>
+		<filter token="tmpdir" value="${jobManagement(physicalScratch)}"/>
 		<copy
 			file="${eXist.conf.dir}/server.xml.tmpl"
 			tofile="${eXist.conf.dir}/server.xml"
+			overwrite="true"
+			filtering="true"
+		/>
+	</target>
+	
+	<target name="conditional.patch.startup" depends="is.patched.startup" unless="already.patched.startup">
+		<filter token="basedir" value="${deploy.home.dir}"/>
+		<filter token="branch" value="${deploy.eXist.basebranch}"/>
+		<filter token="datadir" value="${deploy.eXist.startup.datadir}"/>
+		<filter token="confdir" value="${deploy.eXist.startup.confdir}"/>
+		<copy
+			file="${GOPHER.patches.dir}/starteXist-GOPHER.sh"
+			tofile="${eXist.conf.dir}/${GOPHER.startup}"
 			overwrite="true"
 			filtering="true"
 		/>
@@ -202,7 +227,7 @@
 	</target>
 	
 	<target name="deploy.skel.meta"
-		depends="init.eXist.extension,conditional.patch.conf.xml,conditional.patch.server.xml,uncompress-saxon-bundle,build-chiba-jar,compile.AtomicWiki"
+		depends="init.eXist.extension,conditional.patch.conf.xml,conditional.patch.server.xml,conditional.patch.startup,uncompress-saxon-bundle,build-chiba-jar,compile.AtomicWiki"
 		description="Remote eXist Meta-skeleton for GOPHER"
 	>
 		<!-- First, stop the patient -->
@@ -211,7 +236,7 @@
 			username="${deploy.ssh.user}"
 			keyfile="${deploy.ssh.keyfile}"
 			passphrase="${deploy.ssh.passphrase}"
-			command="-f '${deploy.home.dir}/starteXist-GOPHER.sh' &amp;&amp; chmod -f +x '${deploy.home.dir}/starteXist-GOPHER.sh' &amp;&amp; '${deploy.home.dir}/starteXist-GOPHER.sh' stop"
+			command="-f '${deploy.home.dir}/${GOPHER.startup}' &amp;&amp; chmod -f +x '${deploy.home.dir}/${GOPHER.startup}' &amp;&amp; '${deploy.home.dir}/${GOPHER.startup}' stop"
 		/>
 		
 		<!-- Then, checkout code (if needed) -->
@@ -243,7 +268,7 @@
 		<!-- Copying Startup script -->
 		<scp todir="${deploy.ssh.user}@${deploy.host}:${deploy.home.dir}" keyfile="${deploy.ssh.keyfile}" passphrase="${deploy.ssh.passphrase}" verbose="true">
 			<fileset dir="${eXist.conf.dir}">
-				<include name="starteXist-GOPHER.sh"/>
+				<include name="${GOPHER.startup}"/>
 			</fileset>
 		</scp>
 		
@@ -303,7 +328,7 @@
 			username="${deploy.ssh.user}"
 			keyfile="${deploy.ssh.keyfile}"
 			passphrase="${deploy.ssh.passphrase}"
-			command="nohup '${deploy.home.dir}/starteXist-GOPHER.sh' start &amp;"
+			command="nohup '${deploy.home.dir}/${GOPHER.startup}' start &amp;"
 		/>
 		
 	</target>
@@ -472,6 +497,9 @@
 			<property name="exist.dist" location="${weeklyGOPHER-eXist-module.eXist.dir}"/>
 			<property name="xmldb.uri" value="${xmldb.uri}"/>
 			<property name="admin.password" value="${deploy.eXist.admin.pass}"/>
+			<property name="wiki.admin.user" value="${deploy.eXist.wiki.admin.user}"/>
+			<property name="wiki.admin.password" value="${deploy.eXist.wiki.admin.pass}"/>
+			<property name="wiki.base-uri" value="${systemManagement(publicBaseURI)}"/>
 		</ant>
 		<!-- And the last step! -->
 		<xdb:store uri="${xmldb.uri}/db" user="${deploy.eXist.admin.user}" password="${deploy.eXist.admin.pass}" failonerror="true" createsubcollections="true">
@@ -483,7 +511,9 @@
 				<include name="*.png" />
 				<include name="*.jpg" />
 				<include name="*.xq*" />
+				<!--
 				<exclude name="dispatcher.xql" />
+				-->
 				<exclude name="**/.svn" />
 				<exclude name="**/.svn/**" />
 			</fileset>

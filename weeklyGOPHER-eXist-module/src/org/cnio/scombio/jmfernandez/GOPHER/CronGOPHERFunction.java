@@ -141,22 +141,22 @@ public class CronGOPHERFunction
 					mtb.endElement();
 				}
 			} catch(InvocationTargetException ite) {
-				throw new XPathException(getASTNode(),"Invocation error while generating GOPHER query candidates using "+dynCoreMethod+" from "+dynCoreJar,ite);
+				throw new XPathException(this,"Invocation error while generating GOPHER query candidates using "+dynCoreMethod+" from "+dynCoreJar,ite);
 			} catch(IOException ioe) {
-				throw new XPathException(getASTNode(),"I/O error while generating GOPHER query candidates",ioe);
+				throw new XPathException(this,"I/O error while generating GOPHER query candidates",ioe);
 			} catch (ClassCastException cce) {
-				throw new XPathException(getASTNode(),"ClassCastException while trying to generate GOPHER query candidates",cce);
+				throw new XPathException(this,"ClassCastException while trying to generate GOPHER query candidates",cce);
 			} catch (ClassNotFoundException cnfe) {
-				throw new XPathException(getASTNode(),"ClassNotFoundException while trying to generate GOPHER query candidates",cnfe);
+				throw new XPathException(this,"ClassNotFoundException while trying to generate GOPHER query candidates",cnfe);
 			} catch (NoSuchMethodException nsme) {
-				throw new XPathException(getASTNode(),"NoSuchMethodException while trying to generate GOPHER query candidates",nsme);
+				throw new XPathException(this,"NoSuchMethodException while trying to generate GOPHER query candidates",nsme);
 			} finally {
 				gcl = null;
 				System.runFinalization();
 				System.gc();
 			}
 		} else {
-			throw new XPathException(getASTNode(),"Unable to use filesystem scratch area!!!");
+			throw new XPathException(this,"Unable to use filesystem scratch area!!!");
 		}
 		
 		// End root element
@@ -178,9 +178,9 @@ public class CronGOPHERFunction
 		try {
 			prePDBdoc = context.getBroker().getXMLResource(XmldbURI.xmldbUriFor(thedocpath), Lock.READ_LOCK);
 			if(prePDBdoc==null) {
-				throw new XPathException(getASTNode(), thedocpath + ": unable to find resource");
+				throw new XPathException(this, thedocpath + ": unable to find resource");
 			} else if(prePDBdoc.getResourceType()!=DocumentImpl.BINARY_FILE) {
-				throw new XPathException(getASTNode(), thedocpath + ": is not a binary resource");
+				throw new XPathException(this, thedocpath + ": is not a binary resource");
 			}
 			BinaryDocument bin = (BinaryDocument) prePDBdoc;
 			is = context.getBroker().getBinaryResource(bin);
@@ -192,11 +192,11 @@ public class CronGOPHERFunction
 				bos.write(buffer, 0, readed);
 			}
 		} catch(URISyntaxException usy) {
-			throw new XPathException(getASTNode(), "Invalid resource uri",usy);
+			throw new XPathException(this, "Invalid resource uri",usy);
 		} catch(PermissionDeniedException pde) {
-			throw new XPathException(getASTNode(), thedocpath + ": permission denied to read resource");
+			throw new XPathException(this, thedocpath + ": permission denied to read resource");
 		} catch(IOException ioe) {
-			throw new XPathException(getASTNode(),thedocpath + ": I/O error while reading resource",ioe);
+			throw new XPathException(this, thedocpath + ": I/O error while reading resource",ioe);
 		} finally {
 			if(prePDBdoc!=null) {
 				prePDBdoc.getUpdateLock().release(Lock.READ_LOCK);

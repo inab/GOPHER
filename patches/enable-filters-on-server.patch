@@ -55,7 +55,7 @@
 +	<filter enabled="yes" path="/forms/*" class="org.chiba.agent.web.filter.XFormsFilter">
 +		<param name="chiba.debug" value="false"/>
 +		<param name="chiba.configfile" value="chiba/chiba.xml"/>
-+		<param name="chiba.upload" value="/tmp"/>
++		<param name="chiba.upload" value="@tmpdir@"/>
 +		<param name="useragent" value="dojo"/>
 +	</filter>
 +	
