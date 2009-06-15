@@ -441,7 +441,7 @@
 			keyfile="${deploy.ssh.keyfile}"
 			trust="yes"
 			passphrase="${deploy.ssh.passphrase}"
-			command="cd '${deploy.eXist.dir}' &amp;&amp; mkdir -p chiba/resources/WEB-INF"
+			command="cd '${deploy.eXist.dir}' &amp;&amp; mkdir -p chiba/resources WEB-INF"
 		/>
 		
 		<!-- Copying Startup script -->
@@ -494,6 +494,22 @@
 			</fileset>
 			<fileset dir="${chiba.bundle.dir}">
 				<include name="resources/**"/>
+				
+				<exclude name="**/.svn"/>
+				<exclude name="**/.svn/**"/>
+			</fileset>
+		</scp>
+		
+		<scp
+			todir="${deploy.ssh.user}@${deploy.host}:${deploy.eXist.dir}/WEB-INF"
+			keyfile="${deploy.ssh.keyfile}"
+			trust="yes"
+			passphrase="${deploy.ssh.passphrase}"
+		>
+			<fileset dir="${chiba.bundle.dir}/WEB-INF">
+				<include name="chiba-version.info"/>
+				<include name="chiba.profile.js"/>
+				<include name="dwr.xml"/>
 			</fileset>
 		</scp>
 		
@@ -655,7 +671,7 @@
 			</fileset>
 		</xdb:store>
 		<!-- Then, GOPHER non XML content -->
-		<xdb:store uri="${xmldb.uri}/db" user="${deploy.eXist.gopher.user}" password="${deploy.eXist.gopher.pass}" failonerror="true" createsubcollections="true">
+		<xdb:store uri="${xmldb.uri}/db" user="${deploy.eXist.gopher.user}" password="${deploy.eXist.gopher.pass}" failonerror="true" createsubcollections="true" type="binary">
 			<fileset dir="skel" defaultexcludes="no">
 				<exclude name="**/*.xsd" />
 				<exclude name="**/*.xsl" />
@@ -665,6 +681,21 @@
 				<exclude name="**/.svn/**" />
 			</fileset>
 		</xdb:store>
+		
+		<!-- And ghost collections -->
+		<xdb:create uri="${xmldb.uri}/db"
+			user="${deploy.eXist.gopher.user}"
+			password="${deploy.eXist.gopher.pass}"
+			failonerror="true"
+			collection="${jobManagement(collection)}"
+		/>
+		<xdb:create uri="${xmldb.uri}/db/${jobManagement(collection)}"
+			user="${deploy.eXist.gopher.user}"
+			password="${deploy.eXist.gopher.pass}"
+			failonerror="true"
+			collection="${jobManagement(roundsSubCollection)}"
+		/>
+		
 	</target>
 
 	<target name="deploy.gopher.jars" depends="compile.weeklyGOPHER-eXist-module" description="It copies the eXist weeklyGOPHER library JAR files to the eXist installation">
@@ -680,7 +711,7 @@
 		</scp>
 	</target>
 	
-	<target name="deploy" depends="deploy.skel.meta.admin,deploy.AtomicWiki,deploy.skel" description="Installation procedure, with the eXist instance working">
+	<target name="deploy" depends="deploy.skel.meta.admin,deploy.AtomicWiki,deploy.chiba,deploy.skel" description="Installation procedure, with the eXist instance working">
 		<!-- At this point the database instance must be running! -->
 	</target>
 	
@@ -903,6 +934,12 @@
 		depends="uncompress-chiba-bundle,init.eXist.extension"
 		description="deploys Chiba files into the database"
 	>
+		<xdb:create uri="${xmldb.uri}/db"
+			user="${deploy.eXist.admin.user}"
+			password="${deploy.eXist.admin.pass}"
+			failonerror="true"
+			collection="chiba"
+		/>
 		<xdb:store uri="${xmldb.uri}/db/chiba" user="${deploy.eXist.admin.user}" password="${deploy.eXist.admin.pass}" failonerror="true" createsubcollections="true">
 			<fileset dir="${chiba.bundle.dir}">
 				<include name="resources/**/*.xsd" />
@@ -911,8 +948,10 @@
 				<include name="resources/**/*.xml" />
 			</fileset>
 		</xdb:store>
-		<xdb:store uri="${xmldb.uri}/db/chiba" user="${deploy.eXist.admin.user}" password="${deploy.eXist.admin.pass}" failonerror="true" createsubcollections="true">
+		<xdb:store uri="${xmldb.uri}/db/chiba" user="${deploy.eXist.admin.user}" password="${deploy.eXist.admin.pass}" failonerror="true" createsubcollections="true" type="binary">
 			<fileset dir="${chiba.bundle.dir}" defaultexcludes="no">
+				<include name="resources/**" />
+				
 				<exclude name="resources/**/*.xsd" />
 				<exclude name="resources/**/*.xsl" />
 				<exclude name="resources/**/*.xconf" />

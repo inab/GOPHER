@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <jobManagement
     xmlns="http://www.cnio.es/scombio/xcesc/1.0/xquery/jobManagement"
-    collection="/db/GOPHER-data"
+    collection="GOPHER-data"
+    roundsSubCollection="rounds"
     physicalScratch="/tmp"
 >
     <queriesComputation

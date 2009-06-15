@@ -13,8 +13,8 @@ import module namespace xmldb="http://exist-db.org/xquery/xmldb";
 import module namespace mgmt="http://www.cnio.es/scombio/xcesc/1.0/xquery/systemManagement" at "xmldb:exist:///db/XCESC-logic/systemManagement.xqm";
 
 (: The results collection :)
-declare variable $job:dataCol as xs:string := collection($mgmt:configCol)//job:jobManagement[1]/@collection/string();
-declare variable $job:resultsBaseCol as xs:string := 'rounds';
+declare variable $job:dataCol as xs:string := concat(('/db/',collection($mgmt:configCol)//job:jobManagement[1]/@collection/string()));
+declare variable $job:resultsBaseCol as xs:string := collection($mgmt:configCol)//job:jobManagement[1]/@roundsSubCollection/string();
 declare variable $job:resultsCol as xs:string := string-join(($job:dataCol,$job:resultsBaseCol),'/');
 
 (: Last round document :)
