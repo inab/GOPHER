@@ -5,10 +5,10 @@ xquery version "1.0";
 
 module namespace mgmt="http://www.cnio.es/scombio/xcesc/1.0/xquery/systemManagement";
 
-declare namespace util="http://exist-db.org/xquery/util";
-declare namespace xmldb="http://exist-db.org/xquery/xmldb";
-
 declare namespace xcesc="http://www.cnio.es/scombio/xcesc/1.0";
+
+import module namespace util="http://exist-db.org/xquery/util";
+import module namespace xmldb="http://exist-db.org/xquery/xmldb";
 
 declare variable $mgmt:configCol as xs:string := "/db/XCESC-config";
 
@@ -109,7 +109,7 @@ declare function mgmt:getOnlineServers()
 {
 	(# exist:batch-transaction #) {
 		let $currentDateTime:=current-dateTime()
-		return mgmt:getOnlineServer($currentDateTime)
+		return mgmt:getOnlineServers($currentDateTime)
 	}
 };
 

@@ -1,5 +1,5 @@
---- conf.xml.tmpl	2009-02-16 01:20:29.000000000 +0100
-+++ conf.xml.tmpl.merge	2009-02-16 01:34:37.000000000 +0100
+--- ../weeklyGOPHER-eXist-module/eXist/conf.xml.tmpl	2009-06-12 16:07:51.000000000 +0200
++++ conf.xml.tmpl	2009-06-14 22:40:25.000000000 +0200
 @@ -108,8 +108,8 @@
          you have some more memory to waste. If you deal with lots of 
          collections, you can also increase the collectionCacheSize value 
@@ -7,7 +7,7 @@
 -    <db-connection cacheSize="48M" collectionCache="24M" database="@database@"
 -        files="webapp/WEB-INF/data" pageSize="4096">
 +    <db-connection cacheSize="@memory@" collectionCache="24M" database="native"
-+        files="@datadir@" pageSize="4096">
++        files="@data.dir@" pageSize="4096">
  
          <!--
              Specifies the default permissions for all resources and collections
@@ -17,22 +17,12 @@
          <recovery enabled="yes" group-commit="no" 
 -			journal-dir="webapp/WEB-INF/data" size="100M"
 -            sync-on-commit="no" force-restart="no"
-+			journal-dir="@datadir@" size="100M"
++			journal-dir="@data.dir@" size="100M"
 +            sync-on-commit="yes" force-restart="no"
  			consistency-check="yes"/>
  
          <!-- 
-@@ -368,9 +368,7 @@
-                 connectionTimeout="10000" flushAfter="300" />            
-             -->
-             
--			<!--
- 			<module id="lucene-index" class="org.exist.indexing.lucene.LuceneIndex"/>
--			-->
- 
- 			<!-- 
-                  The full text index is always required and should
-@@ -403,9 +401,7 @@
+@@ -401,9 +401,7 @@
              collection-specific configuration for a collection.
          -->
          <index>
@@ -43,7 +33,7 @@
          </index>
      </indexer>
  
-@@ -498,6 +494,10 @@
+@@ -496,7 +494,23 @@
              <parameter name="backup" value="no"/>
          </job>
          -->
@@ -52,9 +42,22 @@
 +		xquery="/db/XCESC-logic/cronjob.xql"
 +	/>
          
++        <job type="system" name="backup"
++            class="org.exist.storage.BackupSystemTask" 
++            cron-trigger="0 0 */6 * * ?">
++            <parameter name="dir" value="@backup.dir@"/>
++            <parameter name="suffix" value=".zip"/>
++            <parameter name="prefix" value="XCESC-backup-"/>
++            <parameter name="collection" value="/db"/>
++            <parameter name="user" value="@admin.user@"/>
++            <parameter name="password" value="@admin.pass@"/>
++            <parameter name="zip-files-max" value="28"/>
++        </job>
++	
          <!-- 
              Automatically creates a copy of the database .dbx files every 2 minutes
-@@ -626,7 +626,10 @@
+             
+@@ -624,7 +638,10 @@
          and "string".  Anything else will be treated as type "string".
          
      -->
@@ -66,7 +69,7 @@
  
      <!--
          Settings for XML validation
-@@ -640,7 +643,7 @@
+@@ -638,7 +655,7 @@
              to the parser.   
              
       -->
@@ -75,20 +78,31 @@
          <!-- 
              Specify the location of one or more catalog files. Catalogs are 
              used to resolve external entities in XML documents.
-@@ -708,12 +711,14 @@
-             <module class="org.exist.xquery.modules.spatial.SpatialModule"
-                 uri="http://exist-db.org/xquery/spatial" />
-             -->
--			<!--
- 			<module class="org.exist.xquery.modules.lucene.LuceneModule"
-                 uri="http://exist-db.org/xquery/lucene"/>
--			-->
+@@ -769,11 +786,26 @@
+                     uri="http://exist-db.org/xquery/xmldiff" />
+             <module class="org.exist.xquery.modules.cache.CacheModule"
+                 uri="http://exist-db.org/xquery/cache" />
++            -->
  
-             <!-- Optional Modules -->
+             <module class="org.exist.xquery.modules.jfreechart.JFreeChartModule"
+                     uri="http://exist-db.org/xquery/jfreechart"/> 
++
++			<module uri="http://www.w3.org/2005/Atom"
++				src="resource:org/exist/atomic/atom.xql"/>
++			<module uri="http://atomic.exist-db.org/xq/config"
++				src="resource:org/exist/atomic/configuration.xql"/>
++			<module uri="http://atomic.exist-db.org/xquery/data"
++				src="resource:org/exist/atomic/data.xql"/>
++			<module uri="http://atomic.exist-db.org/xquery/render"
++				src="resource:org/exist/atomic/render.xql"/>
++			<module uri="http://atomic.exist-db.org/x2cw"
++				src="resource:org/exist/atomic/XHTML2CommonWiki.xql"/>
+                
+-            -->
 +            <module class="org.exist.xquery.modules.math.MathModule"
 +                    uri="http://exist-db.org/xquery/math" />
 +            <module class="org.exist.xquery.modules.httpclient.HTTPClientModule"
 +                    uri="http://exist-db.org/xquery/httpclient" />
-             <!--
-             <module class="org.exist.xquery.modules.compression.CompressionModule"
-                     uri="http://exist-db.org/xquery/compression" />
+         </builtin-modules>
+     </xquery>
+ 

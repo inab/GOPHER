@@ -1,0 +1,16 @@
+Index: build.xml
+===================================================================
+--- build.xml	(revision 105)
++++ build.xml	(working copy)
+@@ -230,9 +230,9 @@
+         </xdb:store>
+         <xdb:xquery uri="${xmldb.uri}/db" initdb="true" configuration="${exist.configuration}"
+             user="admin" password="${admin.password}">
+-            for $resource in xmldb:get-child-resources("${xmldb.uri}/db/atom")
++            for $resource in xmldb:get-child-resources("xmldb:exist:///db/atom")
+             return
+-                xmldb:set-resource-permissions("${xmldb.uri}/db/atom", $resource, 
++                xmldb:set-resource-permissions("xmldb:exist:///db/atom", $resource, 
+                     "${wiki.admin.user}", "bloggers", 508)
+         </xdb:xquery>
+     </target>

@@ -1,0 +1,164 @@
+xquery version "1.0";
+
+declare namespace exist="http://exist.sourceforge.net/NS/exist";
+declare namespace conf="http://atomic.exist-db.org/config";
+
+import module namespace atom="http://www.w3.org/2005/Atom"; 
+import module namespace text="http://exist-db.org/xquery/text";
+import module namespace request="http://exist-db.org/xquery/request";
+import module namespace util="http://exist-db.org/xquery/util";
+
+import module namespace gui="http://www.cnio.es/scombio/xcesc/1.0/xquery/guiManagement" at "xmldb:exist:///db/XCESC-logic/guiManagement.xqm";
+
+declare function exist:extract-feed($uri as xs:string)  as xs:string {
+    let $path := gui:extract-path($uri)
+	return
+        replace($path, "^/*(.*?)/*?$", "$1")
+};
+
+declare function exist:extract-page($uri as xs:string) as xs:string+ {
+    let $path := gui:extract-path($uri)
+    return
+        if (ends-with($path, '/')) then
+            exist:extract-feed($path)
+        else
+            subsequence(text:groups($path, '^/?(.*)/([^/]+)$'), 2)
+};
+
+declare function exist:feed-config($feed as xs:string, $action as xs:string?) as xs:string {
+    let $mode := 
+        if ($action = ('new', 'edit')) then
+            'edit'
+        else
+            'read'
+    let $path := concat(atom:wiki-root(), $feed)
+    let $configs :=
+        for $config in collection(atom:wiki-root())/conf:feed-config
+        let $cname := util:collection-name($config)
+        where starts-with($path, $cname)
+        order by string-length($cname) descending
+        return $config
+    return
+        if (empty($configs)) then
+            'view.xql'
+        else
+            let $feedConfig := $configs[1]
+            let $view := 
+                if ($feedConfig/conf:view[@type = $mode]) then 
+                    $feedConfig/conf:view[@type = $mode]
+                else
+                    $feedConfig/conf:view[1]
+            return
+                concat(util:collection-name($feedConfig), "/", $view/@render)
+};
+
+let $origuri := request:get-uri()
+let $uri := substring-after($origuri, $gui:AtomicVirtualRoot)
+let $action := request:get-parameter('action', ())[1]
+let $addFeed := request:get-parameter('add-feed', ())
+let $quiet := request:get-parameter("quiet", ())
+return
+    if (not(starts-with($uri , '/'))) then
+	<exist:dispatch>
+		<exist:redirect url="{$gui:AtomicVirtualRoot}/"/>
+	</exist:dispatch>
+    else if (matches($uri, "^/(scripts|styles|assets|images|AtomicWiki.png|logo.jpg|setup.xql)")) then
+	<exist:dispatch>
+		<exist:forward url="{$gui:AtomicRoot}/{$uri}"/>
+	</exist:dispatch>
+
+    else if (matches($uri, "^/(xmlrpc|atom/|webdav|thumbs|db)")) then
+	<exist:dispatch>
+		<exist:redirect url="{$uri}"/>
+	</exist:dispatch>
+
+    else if (starts-with($uri, "/rest")) then
+	let $newuri := substring-after($uri, '/rest')
+	return
+		<exist:dispatch>
+			<exist:forward url="{$newuri}"/>
+		</exist:dispatch>
+
+    else if (not(ends-with($uri, 'setup.html') or doc-available("/db/atom/configuration.xml"))) then
+	<exist:dispatch>
+    		<exist:forward url="{$gui:AtomicRoot}/setup.html">
+			<exist:set-header name="Cache-Control" value="no-cache"/>
+		</exist:forward>
+	</exist:dispatch>    
+
+    else if (ends-with($uri, '.xql')) then
+        if (ends-with($uri, 'upload.xql')) then (
+		util:log("DEBUG", ("FEED: ", request:get-parameter("feed", ()))),
+		<exist:dispatch>
+			<exist:forward url="{$gui:AtomicRoot}/upload.xql"/>
+		</exist:dispatch>
+        ) else
+		<exist:dispatch>
+			<exist:forward url="{$gui:AtomicRoot}/{replace($uri, '.*/([^/]+)$', '$1')}"/>
+		</exist:dispatch>
+            
+    else if ($addFeed) then
+	<exist:dispatch>
+		<exist:redirect url="{$gui:AtomicVirtualRoot}{replace($uri, '^(.*/)[^/]*$', '$1')}{$addFeed}/?create=y"/>
+	</exist:dispatch>
+        
+    else if ($action eq 'preview') then
+        <exist:dispatch>
+    		<exist:forward url="{$gui:AtomicRoot}/preview.xql">
+            		<exist:add-parameter name="feed" value="{exist:extract-feed($origuri)}"/>
+		</exist:forward>
+        </exist:dispatch>
+        
+    else if ($action = ('store-comment', 'load-comment')) then (
+		util:log("DEBUG", ("URL: ", $uri)),
+        <exist:dispatch>
+		<exist:forward url="${gui:AtomicRoot}/comment.xql">
+            		<exist:add-parameter name="feed" value="{exist:extract-feed($origuri)}"/>
+		</exist:forward>
+        </exist:dispatch>
+    )
+    else if (matches($uri, "\.\w+\??")) then
+        <exist:dispatch>
+		<exist:forward url="{atom:wiki-root()}{$uri}"/>
+	</exist:dispatch>
+            
+    else
+        let $params := exist:extract-page($origuri)
+	(:
+		let $alert := util:log-system-err(($origuri,' ',$params," /{exist:feed-config($feed, $action)}"))
+	:)
+        return
+		if (count($params) eq 2) then
+			<exist:dispatch>
+				<exist:forward url="{$gui:AtomicRoot}/index.xql">
+					<exist:add-parameter name="feed" value="{$params[1]}"/>
+					<exist:add-parameter name="ref" value="{$params[2]}"/>
+				</exist:forward>
+				{
+					if (not($quiet)) then
+						<exist:view>
+							<exist:forward url="/{exist:feed-config($params[1], $action)}"/>
+						</exist:view>
+					else
+						()
+				}
+			</exist:dispatch>
+		else
+			let $feed := exist:extract-feed($origuri)
+			(:
+				let $alert := util:log-system-err(($origuri,' ',$feed,'  ',exist:feed-config($feed, $action)))
+			:)
+			return
+				<exist:dispatch>
+					<exist:forward url="{$gui:AtomicRoot}/index.xql">
+						<exist:add-parameter name="feed" value="{$feed}"/>
+					</exist:forward>
+					{
+						if (not($quiet)) then
+							<exist:view>
+								<exist:forward url="/{exist:feed-config($feed, $action)}"/>
+							</exist:view>
+						else
+							()
+					}
+				</exist:dispatch>

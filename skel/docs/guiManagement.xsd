@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema
+    xmlns:xs="http://www.w3.org/2001/XMLSchema"
+    xmlns:gui="http://www.cnio.es/scombio/xcesc/1.0/xquery/guiManagement"
+    elementFormDefault="qualified"
+    targetNamespace="http://www.cnio.es/scombio/xcesc/1.0/xquery/guiManagement"
+>
+    <xs:annotation>
+        <xs:documentation><![CDATA[XCESC GUI management configuration schema]]></xs:documentation>
+    </xs:annotation>
+    
+    <xs:element name="guiManagement">
+        <xs:annotation>
+            <xs:documentation><![CDATA[GUI management configuration file]]></xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+            <xs:attribute name="AtomicWiki-logic" type="xs:string" use="required">
+                <xs:annotation>
+                    <xs:documentation><![CDATA[The collection where AtomicWiki logic is going to live]]></xs:documentation>
+                </xs:annotation>
+            </xs:attribute>
+            <xs:attribute name="AtomicWiki-VirtualRoot" type="xs:string" use="required">
+                <xs:annotation>
+                    <xs:documentation><![CDATA[The virtual collection where AtomicWiki is going to live]]></xs:documentation>
+                </xs:annotation>
+            </xs:attribute>
+            <xs:attribute name="XForms-root" type="xs:string" use="required">
+                <xs:annotation>
+                    <xs:documentation><![CDATA[The path where Chiba helps with XForms]]></xs:documentation>
+                </xs:annotation>
+            </xs:attribute>
+        </xs:complexType>
+    </xs:element>
+</xs:schema>

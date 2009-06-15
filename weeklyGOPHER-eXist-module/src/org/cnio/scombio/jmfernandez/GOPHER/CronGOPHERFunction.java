@@ -23,9 +23,11 @@ import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
+import org.exist.xquery.value.NodeValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
+import org.exist.xquery.value.ValueSequence;
 
 public class CronGOPHERFunction
 	extends BasicFunction
@@ -86,14 +88,7 @@ public class CronGOPHERFunction
 	@Override
 	public Sequence eval(Sequence[] args, Sequence contextSequence)
 		throws XPathException
-	{
-		MemTreeBuilder mtb=new MemTreeBuilder(context);
-		// Let's start building the document
-		mtb.startDocument();
-		QName QNAME_ROOT=new QName(XCESC_EXPERIMENT_ROOT,XCESC_URI,XCESC_PREFIX);
-		// Root element
-		mtb.startElement(QNAME_ROOT,null);
-		
+	{	
 		// Let's calculate everything!
 		String dynCoreJar=args[0].getStringValue();
 		String dynCoreMethod=args[1].getStringValue();
@@ -119,26 +114,46 @@ public class CronGOPHERFunction
 				HashMap<String,PDBSeq> leaders = (HashMap<String,PDBSeq>)gcl.invokeClassMethod(dynCoreMethod, origPrePDBFile, prePDBFile, origPDBFile, PDBFile, scratchDir);
 				
 				//And now, let's create the in memory document!!!
-				int leadPos=0;
-				for(PDBSeq pdb: leaders.values()) {
-					// Start target element
-					mtb.startElement(QNAME_TARGET,null);
-					
-					// The publicId
-					mtb.addAttribute(QNAME_PUBLICID, pdb.id);
-					// The FASTA Headers
-					mtb.addAttribute(QNAME_DESCRIPTION, pdb.iddesc);
-					// The FASTA origin
-					mtb.addAttribute(QNAME_ORIGIN, pdb.features.containsKey(PDBSeq.ORIGIN_KEY)?(String)pdb.features.get(PDBSeq.ORIGIN_KEY):"");
-					
-					mtb.startElement(QNAME_QUERY,null);
-					leadPos++;
-					mtb.addAttribute(QNAME_ID, Integer.toString(leadPos));
-					mtb.cdataSection(pdb.sequence);
+				context.pushDocumentContext();
+				try {
+					MemTreeBuilder mtb=context.getDocumentBuilder();
+					// Let's start building the document
+					mtb.startDocument();
+					QName QNAME_ROOT=new QName(XCESC_EXPERIMENT_ROOT,XCESC_URI,XCESC_PREFIX);
+					// Root element
+					mtb.startElement(QNAME_ROOT,null);
+
+					int leadPos=0;
+					for(PDBSeq pdb: leaders.values()) {
+						// Start target element
+						mtb.startElement(QNAME_TARGET,null);
+
+						// The publicId
+						mtb.addAttribute(QNAME_PUBLICID, pdb.id);
+						// The FASTA Headers
+						mtb.addAttribute(QNAME_DESCRIPTION, pdb.iddesc);
+						// The FASTA origin
+						mtb.addAttribute(QNAME_ORIGIN, pdb.features.containsKey(PDBSeq.ORIGIN_KEY)?(String)pdb.features.get(PDBSeq.ORIGIN_KEY):"");
+
+						mtb.startElement(QNAME_QUERY,null);
+						leadPos++;
+						mtb.addAttribute(QNAME_ID, Integer.toString(leadPos));
+						mtb.cdataSection(pdb.sequence);
+						mtb.endElement();
+
+						// End target element
+						mtb.endElement();
+					}
+
+					// End root element
 					mtb.endElement();
-					
-					// End target element
-					mtb.endElement();
+					// The end
+					mtb.endDocument();
+					ValueSequence seq=new ValueSequence();
+					seq.add((NodeValue)mtb.getDocument().getFirstChild());
+					return seq;
+				} finally {
+					context.popDocumentContext();
 				}
 			} catch(InvocationTargetException ite) {
 				throw new XPathException(this,"Invocation error while generating GOPHER query candidates using "+dynCoreMethod+" from "+dynCoreJar,ite);
@@ -159,13 +174,8 @@ public class CronGOPHERFunction
 			throw new XPathException(this,"Unable to use filesystem scratch area!!!");
 		}
 		
-		// End root element
-		mtb.endElement();
-		// The end
-		mtb.endDocument();
-		
-		// And now, let's return!
-		return mtb.getDocument();
+		// And now, we should return!
+		// return Sequence.EMPTY_SEQUENCE;
 	}
 	
 	protected void fetchBinaryResource(String thedocpath,File localFile)

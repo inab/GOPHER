@@ -5,13 +5,12 @@ xquery version "1.0";
 
 module namespace job="http://www.cnio.es/scombio/xcesc/1.0/xquery/jobManagement";
 
-import module namespace mgmt="http://www.cnio.es/scombio/xcesc/1.0/xquery/systemManagement" at "xmldb:exist:///db/XCESC-logic/systemManagement.xqm";
-
-declare namespace httpclient="http://exist-db.org/xquery/httpclient";
-declare namespace util="http://exist-db.org/xquery/util";
-declare namespace xmldb="http://exist-db.org/xquery/xmldb";
-
 declare namespace xcesc="http://www.cnio.es/scombio/xcesc/1.0";
+
+import module namespace httpclient="http://exist-db.org/xquery/httpclient";
+import module namespace util="http://exist-db.org/xquery/util";
+import module namespace xmldb="http://exist-db.org/xquery/xmldb";
+import module namespace mgmt="http://www.cnio.es/scombio/xcesc/1.0/xquery/systemManagement" at "xmldb:exist:///db/XCESC-logic/systemManagement.xqm";
 
 (: The results collection :)
 declare variable $job:dataCol as xs:string := collection($mgmt:configCol)//job:jobManagement[1]/@collection/string();

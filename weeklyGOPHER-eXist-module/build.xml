@@ -13,10 +13,12 @@ weeklyGOPHER-eXist-module glue classes by jmfernandez Ant script</description>
 	<property name="dist" location="dist" />
 	
 	<property name="eXist.dir.rel" value="eXist"/>
-	<property name="eXist.dir" location="${eXist.dir.rel}"/>
+	<property name="eXist.dir" location="${ant.file.dir}/${eXist.dir.rel}"/>
 	
 	<property name="eXist.jar.rel" value="exist.jar"/>
 	<property name="eXist.jar" location="${eXist.dir}/${eXist.jar.rel}"/>
+	
+	<available file="${eXist.jar}" property="eXist.archive.present"/>
 	
 	<path id="org.cnio.scombio.jmfernandez.weeklyGOPHER.javalibs">
 		<fileset dir="${eXist.dir}">
@@ -30,11 +32,7 @@ weeklyGOPHER-eXist-module glue classes by jmfernandez Ant script</description>
 		<tstamp/>
 	</target>
 
-	<target name="bootstrap.eXist.exists" depends="init">
-		<available file="${eXist.jar}" property="eXist.archive.present"/>
-	</target>
-	
-	<target name="conditional.bootstrap.eXist" depends="bootstrap.eXist.exists" unless="eXist.archive.present">
+	<target name="conditional.bootstrap.eXist" unless="eXist.archive.present">
 		<antcall target="bootstrap.eXist"/>
 	</target>
 	

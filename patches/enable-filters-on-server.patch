@@ -1,5 +1,5 @@
---- server.xml	2009-01-24 00:42:45.000000000 +0100
-+++ server.xml	2009-02-16 01:07:33.000000000 +0100
+--- server.xml.tmpl	2009-05-12 20:06:24.000000000 +0200
++++ server.xml.tmpl	2009-06-14 15:19:11.000000000 +0200
 @@ -8,7 +8,11 @@
  <server xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="schema/server.xsd">
      
@@ -8,12 +8,12 @@
 +    <listener protocol="http" port="@port@"/>
 +    
 +    <context>
-+	<param name="chiba.configfile" value="chiba/chiba.xml"/>
++    	<param name="chiba.configfile" value="chiba/chiba.xml"/>
 +    </context>
      
      <!-- https listener 
      
-@@ -47,18 +51,58 @@
+@@ -47,18 +51,55 @@
          <param name="form-encoding" value="UTF-8"/>
          <param name="container-encoding" value="UTF-8"/>
      </rest>
@@ -21,7 +21,7 @@
 -             context="/atom/*"
 -             class="org.exist.atom.http.AtomServlet"/>
 -
-+    
++	
 +	<!--__________________________________-->
 +	<!--    Starts configuration block    -->
 +	<!--__________________________________-->
@@ -38,10 +38,10 @@
 +	
 +	<!-- XQueryURLRewrite -->
 +	<filter enabled="yes"
-+		path="/*"
++		path="/@AtomicVirtual@/*"
 +		class="org.exist.http.urlrewrite.XQueryURLRewrite">
 +		
-+		<param name="xquery" value="xmldb:exist:///db/dispatcher.xql"/>
++		<param name="xquery" value="xmldb:exist:///db/@AtomicLogic@/dispatcher.xql"/>
 +	</filter>
 +		
  	<!--
@@ -49,10 +49,10 @@
  	-->
 -	<filter enabled="no" path="/*" class="uk.gov.devonline.www.xforms.XFormsFilter"/>
 -
--    <!--
--        Define URL forwardings
--    -->
-+	<filter enabled="yes" path="/forms/*" class="org.chiba.agent.web.filter.XFormsFilter">
+-    <filter enabled="no" path="/*" class="org.exist.http.urlrewrite.XQueryURLRewrite">
+-        <param name="xquery" value="controller.xql"/>
+-    </filter>
++	<filter enabled="yes" path="/@XForms.dir@/*" class="org.chiba.agent.web.filter.XFormsFilter">
 +		<param name="chiba.debug" value="false"/>
 +		<param name="chiba.configfile" value="chiba/chiba.xml"/>
 +		<param name="chiba.upload" value="@tmpdir@"/>
@@ -75,9 +75,6 @@
 +	<!--    Finish configuration block    -->
 +	<!--__________________________________-->
 +	
-+<!--
-+Define URL forwardings
-+-->
-     <forwarding>
-         <!-- 
-             Define a forwarding for requests to the server root, i.e.
+ 
+     <!--
+         Define URL forwardings

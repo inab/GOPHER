@@ -11,15 +11,41 @@ EXISTDATACONF_HOME="${BASEBRANCHES}/dataconf${BRANCH}"
 EXIST_DATADIR="@datadir@"
 EXIST_CONFDIR="@confdir@"
 SERVERXML="${EXIST_CONFDIR}/server.xml"
+SERVERXMLNOREWRITE="${EXIST_CONFDIR}/server.xml.norewrite"
 export EXIST_HOME EXISTCONF_HOME
 
-JAVA_OPTIONS="-Xmx768m -Xms384m -Dfile.encoding=UTF-8 -Dserver.xml=${SERVERXML} -Djavax.xml.transform.TrsformerFactory=net.sf.saxon.TransformerFactoryImpl"
+if [ $# = 0 ] ; then
+	status=start
+else
+	status="$1"
+fi
+
+JAVA_OPTIONS="-Xmx768m -Xms384m -Dfile.encoding=UTF-8 -Djavax.xml.transform.TransformerFactory=net.sf.saxon.TransformerFactoryImpl"
+# Deciding the configuration file to use
+case "$status" in
+	startnw)
+		JAVA_OPTIONS="$JAVA_OPTIONS -Dserver.xml=${SERVERXMLNOREWRITE}"
+		;;
+	*)
+		JAVA_OPTIONS="$JAVA_OPTIONS -Dserver.xml=${SERVERXML}"
+		;;
+esac
 export JAVA_OPTIONS
 
+# And the JVM to use
 if [ -d "${HOME}/ibm-java-i386-60" ] ; then
 	JAVA_HOME="${HOME}/ibm-java-i386-60"
 	#JAVA_HOME=/usr/lib/jvm/java-6-sun
 	export JAVA_HOME
+else
+	if [ -z "${JAVA_HOME}" ] ; then
+		if [ -f /usr/bin/java-config ] ; then
+			JAVA_HOME="$(/usr/bin/java-config -O)"
+		else
+			echo "Unable to start eXist with JAVA_HOME variable unset" 1>&2
+			exit 1
+		fi
+	fi
 fi
 
 # Exist by-passes Java CLASSPATH
@@ -28,20 +54,19 @@ fi
 
 #cp "${VAPORDIRS}"/mime-types.xml "${EXIST_HOME}"
 
-if [ $# = 0 ] ; then
-	status=start
-else
-	status="$1"
-fi
-
 EXISTPID=$(pgrep -f "exist.home=${EXIST_HOME} ")
 case "$status" in
-	start)
+	start|startnw)
 		if [ -n "$EXISTPID" ] ; then
 			echo "eXist instance ${BRANCH} is ALREADY running with pid $EXISTPID" 1>&2
 			RETVAL=1
 		else
-			cp -pf "${EXIST_CONFDIR}/conf.xml" "${EXIST_HOME}"
+			# If data dir is outside eXist, perhaps we have to create the directory just before first startup.
+			mkdir -p "$EXIST_DATADIR"
+
+			if [ "${EXIST_CONFDIR}" != "${EXIST_HOME}" ] ; then
+				cp -pf "${EXIST_CONFDIR}/conf.xml" "${EXIST_CONFDIR}/atom-services.xml" "${EXIST_HOME}"
+			fi
 			exec bash "${EXIST_HOME}/bin/server.sh"
 		fi
 		;;
@@ -84,7 +109,9 @@ case "$status" in
 			echo "eXist instance ${BRANCH} is ALREADY running with pid $EXISTPID" 1>&2
 			RETVAL=1
 		else
-			cp -pf "${EXIST_CONFDIR}/conf.xml" "${EXIST_HOME}"
+			if [ "${EXIST_CONFDIR}" != "${EXIST_HOME}" ] ; then
+				cp -pf "${EXIST_CONFDIR}/conf.xml" "${EXIST_CONFDIR}/atom-services.xml" "${EXIST_HOME}"
+			fi
 			CLIENT_JAVA_OPTIONS="$JAVA_OPTIONS"
 			export CLIENT_JAVA_OPTIONS
 			exec bash "${EXIST_HOME}/bin/client.sh" -l

@@ -24,4 +24,5 @@ ant \
 "-Ddeploy.eXist.conf.dir.rel=eXist" \
 '-Ddeploy.eXist.startup.confdir=\$EXIST_HOME' \
 '-Ddeploy.eXist.startup.datadir=\$EXIST_HOME/'"$DEPLOY_EXIST_DATA_DIR_REL" \
-"$@"
+deploy.skel.meta
+

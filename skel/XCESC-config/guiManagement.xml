@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<guiManagement
+    xmlns="http://www.cnio.es/scombio/xcesc/1.0/xquery/guiManagement"
+    AtomicWiki-logic="Atomic-logic"
+    AtomicWiki-VirtualRoot="Atomic"
+    XForms-root="forms"
+>
+</guiManagement>

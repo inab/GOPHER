@@ -21,7 +21,7 @@
     -->
 
     <appender name="ROLLING_FILE" class="org.apache.log4j.RollingFileAppender">
-        <param name="File" value="chiba/chiba.log"/>
+        <param name="File" value="${exist.home}/chiba/chiba.log"/>
         <param name="MaxFileSize" value="10MB"/>
         <layout class="org.apache.log4j.PatternLayout">
             <param name="ConversionPattern" value="%-5p %c %x: %m%n"/>    
