@@ -22,15 +22,15 @@
         <property name="useragent.plainhtml.path" value="/PlainHtml"
                   description="request mapping for action url if in unscripted mode (used to set the action attribute of the rendered form)"/>
 
-        <property name="xslt.path" value="chiba/resources/xslt"
+        <property name="xslt.path" value="resources/xslt"
                   description="directory location for XSLT files relative to context"/>
         <property name="xslt.default" value="dojo.xsl" description="default XSLT file to be used to generate the UI"/>
         <property name="useragent.default" value="dojo" description="default user agent when no specific one is requested by request param, attribute or header"/>
         <property name="xslt.cache.enabled" value="true" description="flag for XSLT caching"/>
 
-        <property name="scriptPath" value="/chiba/resources/scripts/"
+        <property name="scriptPath" value="/resources/scripts/"
                   description="directory for script files relative to context"/>
-        <property name="CSSPath" value="/chiba/resources/styles/"
+        <property name="CSSPath" value="/resources/styles/"
                   description="directory for Chiba CSS files relative to context"/>
 
         <!--
@@ -49,7 +49,7 @@
         <property name="defaultProcessorBase" value="remote"
                   description="optional parameter - 'local' or 'remote' operation of Chiba XForms Processor"/>
 
-        <property name="error.page" value="chiba/resources/jsp/error.jsp"
+        <property name="error.page" value="resources/jsp/error.jsp"
                   description="location of error-page relative to context"/>
 
         <property name="forms.uri.relative" value="false"

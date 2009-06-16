@@ -441,7 +441,7 @@
 			keyfile="${deploy.ssh.keyfile}"
 			trust="yes"
 			passphrase="${deploy.ssh.passphrase}"
-			command="cd '${deploy.eXist.dir}' &amp;&amp; mkdir -p chiba/resources WEB-INF"
+			command="cd '${deploy.eXist.dir}' &amp;&amp; mkdir -p chiba resources WEB-INF"
 		/>
 		
 		<!-- Copying Startup script -->
@@ -492,12 +492,6 @@
 				<include name="chiba.xml"/>
 				<include name="log4j.xml"/>
 			</fileset>
-			<fileset dir="${chiba.bundle.dir}">
-				<include name="resources/**"/>
-				
-				<exclude name="**/.svn"/>
-				<exclude name="**/.svn/**"/>
-			</fileset>
 		</scp>
 		
 		<scp
@@ -514,6 +508,7 @@
 		</scp>
 		
 		<!-- Copying additional Atomic configuration files -->
+		<!-- Copying additional Chiba resource files -->
 		<scp
 			todir="${deploy.ssh.user}@${deploy.host}:${deploy.eXist.dir}"
 			keyfile="${deploy.ssh.keyfile}"
@@ -522,6 +517,12 @@
 		>
 			<fileset dir="${AtomicWiki.dir}">
 				<include name="etc/**"/>
+			</fileset>
+			<fileset dir="${chiba.bundle.dir}">
+				<include name="resources/**"/>
+				
+				<exclude name="**/.svn"/>
+				<exclude name="**/.svn/**"/>
 			</fileset>
 		</scp>
 		
@@ -671,7 +672,7 @@
 			</fileset>
 		</xdb:store>
 		<!-- Then, GOPHER non XML content -->
-		<xdb:store uri="${xmldb.uri}/db" user="${deploy.eXist.gopher.user}" password="${deploy.eXist.gopher.pass}" failonerror="true" createsubcollections="true" type="binary">
+		<xdb:store uri="${xmldb.uri}/db" user="${deploy.eXist.gopher.user}" password="${deploy.eXist.gopher.pass}" failonerror="true" createsubcollections="true">
 			<fileset dir="skel" defaultexcludes="no">
 				<exclude name="**/*.xsd" />
 				<exclude name="**/*.xsl" />
@@ -934,30 +935,27 @@
 		depends="uncompress-chiba-bundle,init.eXist.extension"
 		description="deploys Chiba files into the database"
 	>
+		<!--
 		<xdb:create uri="${xmldb.uri}/db"
 			user="${deploy.eXist.admin.user}"
 			password="${deploy.eXist.admin.pass}"
 			failonerror="true"
 			collection="chiba"
 		/>
-		<xdb:store uri="${xmldb.uri}/db/chiba" user="${deploy.eXist.admin.user}" password="${deploy.eXist.admin.pass}" failonerror="true" createsubcollections="true">
+		-->
+		<xdb:store uri="${xmldb.uri}/db" user="${deploy.eXist.admin.user}" password="${deploy.eXist.admin.pass}" failonerror="true" createsubcollections="true">
 			<fileset dir="${chiba.bundle.dir}">
-				<include name="resources/**/*.xsd" />
-				<include name="resources/**/*.xsl" />
-				<include name="resources/**/*.xconf" />
-				<include name="resources/**/*.xml" />
-			</fileset>
-		</xdb:store>
-		<xdb:store uri="${xmldb.uri}/db/chiba" user="${deploy.eXist.admin.user}" password="${deploy.eXist.admin.pass}" failonerror="true" createsubcollections="true" type="binary">
-			<fileset dir="${chiba.bundle.dir}" defaultexcludes="no">
 				<include name="resources/**" />
 				
-				<exclude name="resources/**/*.xsd" />
-				<exclude name="resources/**/*.xsl" />
-				<exclude name="resources/**/*.xconf" />
-				<exclude name="resources/**/*.xml" />
+				<exclude name="**/*.html"/>
 				<exclude name="**/.svn" />
 				<exclude name="**/.svn/**" />
+			</fileset>
+		</xdb:store>
+		<xdb:store uri="${xmldb.uri}/db" user="${deploy.eXist.admin.user}" password="${deploy.eXist.admin.pass}" failonerror="true" createsubcollections="true" type="binary">
+			<fileset dir="${chiba.bundle.dir}" defaultexcludes="no">
+				<include name="resources/*.html" />
+				<include name="resources/**/*.html" />
 			</fileset>
 		</xdb:store>
 		<!-- TBD -->
