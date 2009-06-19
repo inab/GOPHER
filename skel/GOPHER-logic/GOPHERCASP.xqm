@@ -20,7 +20,29 @@ declare variable $casp:blastReportFile as xs:string := 'blastReport.txt';
 declare variable $casp:PREPDB as xs:string := collection($mgmt:configCol)//job:jobManagement[1]/job:custom[@key='PREPDB_PATH'][1]/string();
 declare variable $casp:PDB as xs:string := collection($mgmt:configCol)//job:jobManagement[1]/job:custom[@key='PDB_PATH'][1]/string();
 declare variable $casp:dynCoreJar as xs:string := collection($mgmt:configCol)//job:jobManagement[1]/job:custom[@key='dynCoreJar'][1]/string();
-declare variable $casp:dynCoreMethod as xs:string := collection($mgmt:configCol)//job:jobManagement[1]/job:custom[@key='dynCoreMethod'][1]/string();
+declare variable $casp:dynCoreQueryMethod as xs:string := collection($mgmt:configCol)//job:jobManagement[1]/job:custom[@key='dynCoreQueryMethod'][1]/string();
+declare variable $casp:dynCoreSeedMethod as xs:string := collection($mgmt:configCol)//job:jobManagement[1]/job:custom[@key='dynCoreSeedMethod'][1]/string();
+
+(:
+	This function calls the underlying implementation to generate the seed further used
+	to generate the queries
+:)
+declare function casp:doSeed($physicalScratch as xs:string)
+	as document-node(element(xcesc:experiment))
+{
+		(: Sixth, let's compute the unique entries :)
+		return
+			gmod:generate-seed(
+				$casp:dynCoreJar,
+				$casp:dynCoreSeedMethod,
+				$casp:PREPDB,
+				$casp:PDB,
+				$casp:pdbprefile,
+				$casp:pdbfile,
+				$physicalScratch,
+				collection($mgmt:configCol)//job:jobManagement[1]/job:custom[@key='ENV'][1]/env
+			)
+};
 
 (:
 	This function calls the underlying implementation to calculate the queries,
@@ -35,5 +57,14 @@ declare function casp:doQueriesComputation($lastCol as xs:string,$newCol as xs:s
 		let $newpdbpre:=string-join(($newCol,$casp:pdbprefile),'/')
 		(: Sixth, let's compute the unique entries :)
 		return
-			gmod:compute-unique-entries($casp:dynCoreJar,$casp:dynCoreMethod,$oldpdbpre,$oldpdb,$casp:PREPDB,$casp:PDB,$physicalScratch)
+			gmod:compute-unique-entries(
+				$casp:dynCoreJar,
+				$casp:dynCoreQueryMethod,
+				$oldpdbpre,
+				$oldpdb,
+				$casp:PREPDB,
+				$casp:PDB,
+				$physicalScratch,
+				collection($mgmt:configCol)//job:jobManagement[1]/job:custom[@key='ENV'][1]/env
+			)
 };

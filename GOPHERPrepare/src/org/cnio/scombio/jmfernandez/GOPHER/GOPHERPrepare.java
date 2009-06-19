@@ -15,14 +15,13 @@ import java.io.PrintWriter;
 import java.nio.channels.FileChannel;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.cnio.scombio.jmfernandez.GOPHER.PDBSeq;
 
 public class GOPHERPrepare {
 	protected final static int MINSEQLENGTH=30;
-	protected final static int HAREA=20;
-	protected final static int HMIN=3;
 	protected final static double CDHIT_IDENTITY=0.97;
 	protected final static int CDHIT_WORD_SIZE=5;
 	protected final static String BLAST_PATH="dc_blastall";
@@ -50,7 +49,42 @@ public class GOPHERPrepare {
 	protected final static String ORIG_PDBPREFILE=ORIGPRE+PDBPREFILE;
 	protected final static String ORIG_PDBFILE=ORIGPRE+PDBFILE;
 	
-	protected static String queryParticle="Query=";
+	// The beginning of the protein sequence
+	protected final static int HMIN=3;
+	protected final static int N_TERM_HAREA=30;
+	protected final static String[] N_TERM={
+		"M.*[HX]{"+HMIN+",}.*ENLYF[QG]",
+		"[HX]{"+HMIN+",}.*ENLYF[QG]",
+		"M.*[HX]{"+HMIN+",}.*GLVPRGS",
+		"[HX]{"+HMIN+",}.*GLVPRGS",
+	};
+	
+	// The end of the protein sequence
+	protected final static int C_TERM_HAREA=20;
+	protected final static String[] C_TERM={
+		"LE[HX]{"+HMIN+",}",
+		"EG[HX]{"+HMIN+",}",
+		"GS?[HX]{"+HMIN+",}",
+		"R[HX]{"+HMIN+",}",
+		"[HX]{5,}",
+	};
+	
+	protected static Pattern[] N_TERM_PAT=new Pattern[N_TERM.length];
+	protected static Pattern[] C_TERM_PAT=new Pattern[C_TERM.length];
+	
+	static {
+		int patpos=0;
+		for(String pat: N_TERM) {
+			N_TERM_PAT[patpos++]=Pattern.compile("^"+pat);
+		}
+		
+		patpos=0;
+		for(String pat: C_TERM) {
+			C_TERM_PAT[patpos++]=Pattern.compile(pat+"$");
+		}
+	};
+	
+	protected final static String queryParticle="Query=";
 	
 	public class StreamRedirector
 		extends Thread
@@ -84,24 +118,27 @@ public class GOPHERPrepare {
 		}
 	}
 	
-	protected Pattern hdpattern;
-	protected Pattern hxpattern;
 	protected Pattern PDBHEADERPAT;
 	protected Pattern blhitspat;
 	protected PrintStream logStream;
 	
 	File leadersdb;
 	File leadersReport;
+	Map<String,String> envp;
 	
-	public GOPHERPrepare(PrintStream logStream)
+	public GOPHERPrepare(PrintStream logStream,Map<String,String> envp)
 	{
-		hdpattern=Pattern.compile("[HX]{"+HMIN+",}");
-		hxpattern=Pattern.compile("^[HX]+");
 		PDBHEADERPAT=Pattern.compile("PDB:([^ :]+)[ :]");
 		blhitspat=Pattern.compile("\\([0-9]+ letters?\\)");
 		this.logStream=logStream;
+		this.envp=envp;
 		leadersdb=null;
 		leadersReport=null;
+	}
+	
+	public GOPHERPrepare(PrintStream logStream)
+	{
+		this(logStream,null);
 	}
 	
 	public GOPHERPrepare()
@@ -126,45 +163,48 @@ public class GOPHERPrepare {
 	
 	/**
 		This method takes a one-line sequence, and it removes
-		histidine heads and/or tails. Optional second parameter
-		drives the behavior (0 or negative is head, 1 is tail, 2 is both).
+		cloning artifacts from N and C terminal.
 	*/
 	protected String pruneSequence(String cutseq) {
-		return pruneSequence(cutseq,0);
-	}
-	
-	/**
-		This method takes a one-line sequence, and it removes
-		histidine heads and/or tails. Optional second parameter
-		drives the behavior (0 or negative is head, 1 is tail, 2 is both).
-	*/
-	protected String pruneSequence(String cutseq,int mode) {
-		if(mode>0) {
-			if(mode >= 2) {
-				return pruneSequence(pruneSequence(cutseq),1);
-			}
-
-			cutseq=new StringBuilder(cutseq).reverse().toString();
-		}
+		if(cutseq.length()>=MINSEQLENGTH) {
+			boolean foundPat;
 		
-		Matcher m;
-		if(cutseq.length()>=MINSEQLENGTH && (m=hdpattern.matcher(cutseq.substring(0,HAREA))).find()) {
-			// Let's get last match
-			int lastpos;
+			// Let's prune those cloning artifacts!!!
 			do {
-				lastpos=m.start();
-			} while(m.find());
+				foundPat=false;
+				int cutlen=cutseq.length();
+				int firstPos=cutlen-C_TERM_HAREA;
+				String tail = cutseq.substring(firstPos,cutlen);
+				for(Pattern pat: C_TERM_PAT) {
+					Matcher m=pat.matcher(tail);
+					if(m.find()) {
+						cutseq=cutseq.substring(0,firstPos+m.start());
+						
+						foundPat=true;
+						break;
+					}
+				}
+			} while(foundPat && cutseq.length()>=MINSEQLENGTH);
 			
-			// And now the length
-			Matcher lastmatcher = hxpattern.matcher(cutseq.substring(lastpos));
-			lastmatcher.find();
-			int headpos=lastpos+lastmatcher.end();
-			
-			// So the pos is...
-			cutseq=cutseq.substring(headpos);
+			// On both sides!
+			if(cutseq.length()>=MINSEQLENGTH) {
+				do {
+					foundPat=false;
+					String head = cutseq.substring(0,N_TERM_HAREA);
+					for(Pattern pat: N_TERM_PAT) {
+						Matcher m=pat.matcher(head);
+						if(m.find()) {
+							cutseq=cutseq.substring(m.end());
+							
+							foundPat=true;
+							break;
+						}
+					}
+				} while(foundPat && cutseq.length()>=MINSEQLENGTH);
+			}
 		}
 
-		return (mode>0)?(new StringBuilder(cutseq).reverse().toString()):cutseq;
+		return cutseq;
 	}
 	
 	protected boolean filterFASTAFile(File origFile,File newFile,File filtFile,File analFile)
@@ -222,14 +262,15 @@ public class GOPHERPrepare {
 				boolean survivor=false;
 
 				// Reset file pointer for further usage
+				boolean doLast=true;
 				NEW = new BufferedReader(new FileReader(newFile));
-				while((line=NEW.readLine())!=null) {
-					if(line.charAt(0)=='>') {
+				while((line=NEW.readLine())!=null || doLast) {
+					if(line==null || line.charAt(0)=='>') {
 						// We have a candidate sequence!
 						if(description!=null && sequence.length()>=MINSEQLENGTH) {
-							String cutseq=pruneSequence(sequence.toString().toUpperCase(),2);
+							String cutseq=pruneSequence(sequence.toString().toUpperCase());
 
-							// Has passed the filter?
+							// Has passed the filters?
 							if(cutseq.length()>=MINSEQLENGTH) {
 								// Let's save it!
 								FILT.println(description);
@@ -240,28 +281,17 @@ public class GOPHERPrepare {
 								}
 							}
 						}
-
-						// New header is it in the "chosen one" list?
-						description=line;
-						sequence=new StringBuilder();
-						survivor=candidate.containsKey(line.substring(1));
+						
+						if(line!=null) {
+							// New header is it in the "chosen one" list?
+							description=line;
+							sequence=new StringBuilder();
+							survivor=candidate.containsKey(line.substring(1));
+						} else {
+							doLast=false;
+						}
 					} else if(sequence!=null) {
 						sequence.append(line.replace("\t",""));
-					}
-				}
-
-				if(description!=null && sequence.length()>=MINSEQLENGTH) {
-					String cutseq=pruneSequence(sequence.toString().toUpperCase(),2);
-
-					// Has passed the filter?
-					if(cutseq.length()>=MINSEQLENGTH) {
-						// Let's save it!
-						FILT.println(description);
-						FILT.println(cutseq);
-						if(survivor) {
-							ANAL.println(description);
-							ANAL.println(cutseq);
-						}
 					}
 				}
 			} finally {
@@ -418,14 +448,12 @@ public class GOPHERPrepare {
 			"-n",Integer.toString(CDHIT_WORD_SIZE),
 			"-M",Integer.toString(cdmem)
 		};
-		Runtime r=Runtime.getRuntime();
 		
 		logStream.println("NOTICE: Launching @CDHIT2Dparams");
-		Process p = r.exec(CDHIT2Dparams);
+		Process p = launchProgram(CDHIT2Dparams,envp,workdir,true);
+		// No need to redirect error, because it is already redirected!
 		StreamRedirector sro=new StreamRedirector(p.getInputStream(),logStream,logStream);
-		StreamRedirector sre=new StreamRedirector(p.getErrorStream(),logStream,logStream);
 		sro.start();
-		sre.start();
 		
 		try {
 			int retval = p.waitFor();
@@ -445,11 +473,9 @@ public class GOPHERPrepare {
 		};
 		
 		logStream.println("NOTICE: Launching @CDHITparams");
-		p = r.exec(CDHITparams);
+		p = launchProgram(CDHITparams,envp,workdir,true);
 		sro=new StreamRedirector(p.getInputStream(),logStream,logStream);
-		sre=new StreamRedirector(p.getErrorStream(),logStream,logStream);
 		sro.start();
-		sre.start();
 		try {
 			int retval = p.waitFor();
 			if(retval!=0)
@@ -479,10 +505,10 @@ public class GOPHERPrepare {
 		} catch(IOException ioe) {
 			throw new IOException("ERROR: unable to create BLAST report "+leadersReport.getAbsolutePath()+". Reason: "+ioe.getMessage());
 		}
-		p = r.exec(BLASTparams);
+		p = launchProgram(BLASTparams,envp,workdir,false);
 		try {
 			sro=new StreamRedirector(p.getInputStream(),lrs,logStream);
-			sre=new StreamRedirector(p.getErrorStream(),logStream,logStream);
+			StreamRedirector sre=new StreamRedirector(p.getErrorStream(),logStream,logStream);
 			sro.start();
 			sre.start();
 			try {
@@ -557,6 +583,64 @@ public class GOPHERPrepare {
 		}
 	}
 	
+	protected Process launchProgram(String[] args,Map<String,String> addedEnv,File workdir,boolean redirectError)
+		throws IOException
+	{
+		String[] pbargs=null;
+		
+		// Do we have to patch the arguments? What a shame!
+		// And all this work because a chicken and egg problem!!
+		if(addedEnv!=null && addedEnv.containsKey("PATH")) {
+			pbargs=new String[] {"sh","-c",null};
+			StringBuilder sb=new StringBuilder();
+			
+			boolean spaceSep=false;
+			Pattern p = Pattern.compile("(?s)['\"$&><;{}()\\[\\]\t\n ]");
+			for(String param:args) {
+				if(spaceSep)
+					sb.append(' ');
+				else
+					spaceSep=true;
+				
+				// Patch on these cases
+				// NB: matches behaves like using ^ $
+				if(p.matcher(param).find()) {
+					// Surround the parameter with quotes
+					sb.append("'").append(param.replaceAll("('+)", "'\"$1\"'")).append("'");
+				} else {
+					sb.append(param);
+				}
+			}
+			
+			pbargs[2]=sb.toString();
+		} else {
+			// Easy case :-)
+			pbargs=args;
+		}
+		
+		ProcessBuilder pb=new ProcessBuilder(pbargs);
+		
+		// Now, the environment variables
+		String pathSep=System.getProperty("path.separator", ":");
+		if(addedEnv!=null) {
+			Map<String,String> ENV = pb.environment();
+			for(Map.Entry<String, String> entry:addedEnv.entrySet()) {
+				String key=entry.getKey();
+				ENV.put(key, entry.getValue()+(ENV.containsKey(key)?(pathSep+ENV.get(key)):""));
+			}
+		}
+		
+		// The working directory
+		if(workdir!=null)
+			pb.directory(workdir);
+		
+		// And the redirection
+		if(redirectError)
+			pb.redirectErrorStream(true);
+		
+		return pb.start();
+	}
+	
 	protected static void copyFile(File origFile,File newFile)
 		throws FileNotFoundException, IOException
 	{
@@ -615,7 +699,7 @@ public class GOPHERPrepare {
 
 		File Wnewprepdb=new File(workdir,PDBPREFILE);
 		try {
-			if(!Wnewprepdb.equals(newprepdb))
+			if(!first && !Wnewprepdb.equals(newprepdb))
 				copyFile(newprepdb,Wnewprepdb);
 		} catch(IOException ioe) {
 			throw new IOException("FATAL ERROR: Unable to copy "+newprepdb.getAbsolutePath()+" to "+Wnewprepdb.getAbsolutePath()+" due "+ioe.getMessage()+". Reason:"+ioe.getMessage());
@@ -623,7 +707,7 @@ public class GOPHERPrepare {
 		
 		File Wnewpdb=new File(workdir,PDBFILE);
 		try {
-			if(!Wnewpdb.equals(newpdb))
+			if(!first && !Wnewpdb.equals(newpdb))
 				copyFile(newpdb,Wnewpdb);
 		} catch(IOException ioe) {
 			throw new IOException("FATAL ERROR: Unable to copy "+newpdb.getAbsolutePath()+" to "+Wnewpdb.getAbsolutePath()+" due "+ioe.getMessage()+". Reason:"+ioe.getMessage());
@@ -681,11 +765,17 @@ public class GOPHERPrepare {
 		}
 	}
 	
-	public static HashMap<String,PDBSeq> StaticDoGOPHERPrepare(File origprepdb,File newprepdb,File origpdb,File newpdb,File workdir,boolean first)
+	public static HashMap<String,PDBSeq> StaticDoGOPHERPrepare(File origprepdb,File newprepdb,File origpdb,File newpdb,File workdir,boolean first,File logfile,Map<String,String> envp)
 		throws IOException
 	{
-		GOPHERPrepare gp=new GOPHERPrepare();
-		return gp.doGOPHERPrepare(origprepdb,newprepdb,origpdb,newpdb,workdir,first);
+		PrintStream lps = (logfile!=null)?new PrintStream(logfile):System.err;
+		try {
+			GOPHERPrepare gp=new GOPHERPrepare(lps,envp);
+			return gp.doGOPHERPrepare(origprepdb,newprepdb,origpdb,newpdb,workdir,first);
+		} finally {
+			if(logfile!=null)
+				lps.close();
+		}
 	}
 
 	public final static void main(String[] args) {

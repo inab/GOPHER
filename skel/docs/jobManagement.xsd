@@ -30,9 +30,14 @@
                                 <xs:documentation><![CDATA[The location of the module to use]]></xs:documentation>
                             </xs:annotation>
                         </xs:attribute>
-                        <xs:attribute name="entryPoint" type="xs:string" use="required">
+                        <xs:attribute name="seedEntryPoint" type="xs:string" use="required">
                             <xs:annotation>
-                                <xs:documentation><![CDATA[The name of the entry point function in the module to use. Its arity is 1]]></xs:documentation>
+                                <xs:documentation><![CDATA[The name of the entry point function in the module to use when a query must be generated. Its arity is 1]]></xs:documentation>
+                            </xs:annotation>
+                        </xs:attribute>
+                        <xs:attribute name="queriesEntryPoint" type="xs:string" use="required">
+                            <xs:annotation>
+                                <xs:documentation><![CDATA[The name of the entry point function in the module to use when the seed must be generated for the first time. Its arity is 1]]></xs:documentation>
                             </xs:annotation>
                         </xs:attribute>
                     </xs:complexType>

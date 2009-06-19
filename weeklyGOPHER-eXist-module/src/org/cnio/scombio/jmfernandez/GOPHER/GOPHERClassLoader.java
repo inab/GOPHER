@@ -98,19 +98,20 @@ public class GOPHERClassLoader extends URLClassLoader {
 			NoSuchMethodException,
 			InvocationTargetException
 	{
-		invokeClassMethod("main",(Object)args);
+		invokeClassMethod("main",void.class,(Object)args);
 	}
 	
 	/**
 	 * This method invokes the first found public static void main method from the provided URLs.
 	 * It is basically a combined, optimized version of invokeMainClass and getMainClassName. 
 	 * @param name The name of the class with the public static void main method to invoke. 
+	 * @param retvalClass The retval Class for the return value. 
 	 * @param args The parameters for the main method invocation
 	 * @throws ClassNotFoundException
 	 * @throws NoSuchMethodException
 	 * @throws InvocationTargetException
 	 */
-	public Object invokeClassMethod(String methodName,Object... params)
+	public <T> T invokeClassMethod(String methodName, Class<T> retvalClass, Object... params)
 		throws ClassNotFoundException,
 			IOException,
 			NoSuchMethodException,
@@ -118,7 +119,7 @@ public class GOPHERClassLoader extends URLClassLoader {
 	{
 		ClassNotFoundException toThrow1=null;
 		NoSuchMethodException toThrow2=null;
-		Object retval=null;
+		T retval=null;
 		for(URL url: getURLs()) {
 			URL u = new URL("jar","", url+"!/");
 			JarURLConnection juc = (JarURLConnection)u.openConnection();
@@ -136,10 +137,10 @@ public class GOPHERClassLoader extends URLClassLoader {
 					Method m = c.getMethod(methodName, paramClasses);
 					m.setAccessible(true);
 					int mods = m.getModifiers();
-					if(m.getReturnType() != void.class || !Modifier.isStatic(mods) || !Modifier.isPublic(mods)) {
+					if(m.getReturnType() != retvalClass || !Modifier.isStatic(mods) || !Modifier.isPublic(mods)) {
 						throw new NoSuchMethodException(methodName);
 					}
-					retval = m.invoke(null, params);
+					retval = retvalClass.cast(m.invoke(null, params));
 					toThrow1 = null;
 					toThrow2 = null;
 					break;

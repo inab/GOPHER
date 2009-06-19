@@ -9,6 +9,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.HashMap;
+import java.util.Map;
 
 import org.cnio.scombio.jmfernandez.GOPHER.PDBSeq;
 import org.exist.dom.BinaryDocument;
@@ -28,6 +29,8 @@ import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
 import org.exist.xquery.value.ValueSequence;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
 
 public class CronGOPHERFunction
 	extends BasicFunction
@@ -35,6 +38,7 @@ public class CronGOPHERFunction
 	private final static String XCESC_URI = "http://www.cnio.es/scombio/xcesc/1.0";
 
 	private final static String COMPUTEUNIQUEENTRIES="compute-unique-entries";
+	private final static String GENERATESEED="generate-seed";
 	
 	private final static String XCESC_PREFIX = "xcesc";
 	private final static String XCESC_EXPERIMENT_ROOT="experiment";
@@ -47,21 +51,50 @@ public class CronGOPHERFunction
 	private final static String XCESC_QUERY_ELEMENT="query";
 	private final static String XCESC_ID_ATTRIBUTE="queryId";
 	
+	private final static SequenceType[] FUNC_SIGNATURE=new SequenceType[] {
+		new SequenceType(Type.STRING, Cardinality.ONE),			// URI of the dynamic core (in a jar) to be called
+		new SequenceType(Type.STRING, Cardinality.ONE),			// name of the static method to call in the dynamic core
+		new SequenceType(Type.STRING, Cardinality.ONE),			// Original filtered PrePDB in database
+		new SequenceType(Type.STRING, Cardinality.ONE),			// Original filtered PDB in database
+		new SequenceType(Type.STRING, Cardinality.ONE),			// New unfiltered PrePDB in database
+		new SequenceType(Type.STRING, Cardinality.ONE),			// New unfiltered PDB in database
+		new SequenceType(Type.STRING, Cardinality.ONE),			// Filesystem Directory Scratch area
+		new SequenceType(Type.ELEMENT, Cardinality.ZERO_OR_MORE),		// Environment variables to use
+	};
+	
 	public final static FunctionSignature signature[] = {
 		new FunctionSignature(
-				new QName(COMPUTEUNIQUEENTRIES, GOPHERModule.NAMESPACE_URI, GOPHERModule.PREFIX),
-				"It computes the unique PDB and PrePDB entries, compared to latest run",
-				new SequenceType[] {
-					new SequenceType(Type.STRING, Cardinality.ONE),			// URI of the dynamic core (in a jar) to be called
-					new SequenceType(Type.STRING, Cardinality.ONE),			// name of the static method to call in the dynamic core
-					new SequenceType(Type.STRING, Cardinality.ONE),			// Original filtered PrePDB in database
-					new SequenceType(Type.STRING, Cardinality.ONE),			// Original filtered PDB in database
-					new SequenceType(Type.STRING, Cardinality.ONE),			// New unfiltered PrePDB in database
-					new SequenceType(Type.STRING, Cardinality.ONE),			// New unfiltered PDB in database
-					new SequenceType(Type.STRING, Cardinality.ONE),			// Filesystem Directory Scratch area
-				},
-				new SequenceType(Type.NODE, Cardinality.ONE)
-			),
+			new QName(COMPUTEUNIQUEENTRIES, GOPHERModule.NAMESPACE_URI, GOPHERModule.PREFIX),
+			"It computes the unique PDB and PrePDB entries, compared to latest run. Parameters are:\n" +
+			"* URI of the dynamic core (in a jar) to be called\n" +
+			"* name of the static method to call in the dynamic core\n" +
+			"* Original filtered PrePDB in database\n" +
+			"* Original filtered PDB in database\n" +
+			"* New unfiltered PrePDB in database\n" +
+			"* New unfiltered PDB in database\n" +
+			"* Filesystem Directory Scratch area\n" +
+			"* Environment variables to use, as a set of elements like <env key='PATH' value='/usr/bin' />\n" +
+			"\n" +
+			"It returns xcesc:experiment elements (see xcesc.xsd for further details and descriptions).",
+			FUNC_SIGNATURE,
+			new SequenceType(Type.ELEMENT, Cardinality.ONE)
+		),
+		new FunctionSignature(
+			new QName(GENERATESEED, GOPHERModule.NAMESPACE_URI, GOPHERModule.PREFIX),
+			"It computes the unique PDB and PrePDB entries seed. Parameters are:\n" +
+			"* URI of the dynamic core (in a jar) to be called\n" +
+			"* name of the static method to call in the dynamic core\n" +
+			"* Original unfiltered PrePDB in filesystem\n" +
+			"* Original unfiltered PDB in filesystem\n" +
+			"* New filtered PrePDB in filesystem\n" +
+			"* New filtered PDB in filesystem\n" +
+			"* Filesystem Directory Scratch area\n" +
+			"* Environment variables to use, as a set of elements like <env key='PATH' value='/usr/bin' />\n" +
+			"\n" +
+			"It returns xcesc:experiment elements (see xcesc.xsd for further details and descriptions).",
+			FUNC_SIGNATURE,
+			new SequenceType(Type.ELEMENT, Cardinality.ONE)
+		),
 	};
 	
 	protected final static QName QNAME_TARGET;
@@ -92,26 +125,69 @@ public class CronGOPHERFunction
 		// Let's calculate everything!
 		String dynCoreJar=args[0].getStringValue();
 		String dynCoreMethod=args[1].getStringValue();
-		String gopherPrePDB=args[2].getStringValue();
-		String gopherPDB=args[3].getStringValue();
-		String PREPDB_PATH=args[4].getStringValue();
-		String PDB_PATH=args[5].getStringValue();
+		
+		String gopherPrePDB=null;
+		String gopherPDB=null;
+		String PREPDB_PATH=null;
+		String PDB_PATH=null;
+		boolean genSeed=isCalledAs(GENERATESEED);
+		if(genSeed) {
+			PREPDB_PATH=args[2].getStringValue();
+			PDB_PATH=args[3].getStringValue();
+			gopherPrePDB=args[4].getStringValue();
+			gopherPDB=args[5].getStringValue();
+		} else {
+			gopherPrePDB=args[2].getStringValue();
+			gopherPDB=args[3].getStringValue();
+			PREPDB_PATH=args[4].getStringValue();
+			PDB_PATH=args[5].getStringValue();
+		}
+		
 		String scratchDirPath=args[6].getStringValue();
 		
 		File scratchDir=new File(scratchDirPath);
 		scratchDir.mkdirs();
 		if(scratchDir.isDirectory()) {
-			File origPrePDBFile=new File(scratchDir,"prev-pdbpre.fas");
-			File origPDBFile=new File(scratchDir,"prev-pdb.fas");
-			fetchBinaryResource(gopherPrePDB,origPrePDBFile);
-			fetchBinaryResource(gopherPDB,origPDBFile);
+			File origPrePDBFile=null;
+			File origPDBFile=null;
+			File prePDBFile=null;
+			File PDBFile=null;
 			
-			File prePDBFile=new File(PREPDB_PATH);
-			File PDBFile=new File(PDB_PATH);
+			if(genSeed) {
+				origPrePDBFile=new File(PREPDB_PATH);
+				origPDBFile=new File(PDB_PATH);
+				
+				prePDBFile=new File(scratchDir,gopherPrePDB);
+				PDBFile=new File(scratchDir,gopherPDB);
+			} else {
+				origPrePDBFile=new File(scratchDir,"prev-pdbpre.fas");
+				origPDBFile=new File(scratchDir,"prev-pdb.fas");
+				fetchBinaryResource(gopherPrePDB,origPrePDBFile);
+				fetchBinaryResource(gopherPDB,origPDBFile);
+				
+				prePDBFile=new File(PREPDB_PATH);
+				PDBFile=new File(PDB_PATH);
+			}
+			
 			GOPHERClassLoader gcl = null;
 			try {
+				Map<String,String> envl=genEnvP(args[7]);
+				
 				gcl = new GOPHERClassLoader(new URL(dynCoreJar));
-				HashMap<String,PDBSeq> leaders = (HashMap<String,PDBSeq>)gcl.invokeClassMethod(dynCoreMethod, origPrePDBFile, prePDBFile, origPDBFile, PDBFile, scratchDir);
+				
+				HashMap<String,PDBSeq> leaders = new HashMap<String,PDBSeq>();
+				leaders = gcl.invokeClassMethod(
+						dynCoreMethod,
+						leaders.getClass(),
+						origPrePDBFile,
+						prePDBFile,
+						origPDBFile,
+						PDBFile,
+						scratchDir,
+						genSeed,
+						null,
+						envl
+					);
 				
 				//And now, let's create the in memory document!!!
 				context.pushDocumentContext();
@@ -176,6 +252,26 @@ public class CronGOPHERFunction
 		
 		// And now, we should return!
 		// return Sequence.EMPTY_SEQUENCE;
+	}
+	
+	protected Map<String,String> genEnvP(Sequence addedEnv) {
+		// First, let's gather the variables, classifying them
+		// onto new or already
+		HashMap<String,String> newVars=new HashMap<String,String>();
+		
+		for(int envi=0;envi<addedEnv.getItemCount();envi++) {
+			Node node = ((NodeValue)addedEnv.itemAt(envi)).getNode();
+			if(node.getNodeType()==Node.ELEMENT_NODE && "env".equals(node.getLocalName())) {
+				Element elem=(Element)node;
+				String key=elem.getAttribute("key");
+				String value=elem.getAttribute("value");
+				if(key!=null && value!=null && !"".equals(key)) {
+					newVars.put(key, value);
+				}
+			}
+		}
+		
+		return newVars;
 	}
 	
 	protected void fetchBinaryResource(String thedocpath,File localFile)

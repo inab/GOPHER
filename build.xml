@@ -717,7 +717,7 @@
 	</target>
 	
 	<target name="compile.GOPHERPrepare" depends="init" description="compiles GOPHERPrepare">
-		<ant inheritAll="false" inheritRefs="false" dir="${weeklyGOPHER-eXist-module.dir}" />
+		<ant inheritAll="false" inheritRefs="false" dir="${GOPHERPrepare.dir}" />
 	</target>
 	
 	<target name="compile.weeklyGOPHER-eXist-module" depends="init" description="compiles weeklyGOPHER-eXist-module">

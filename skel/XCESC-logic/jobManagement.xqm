@@ -58,6 +58,46 @@ declare function job:getLastRoundDocument()
 	This function calls the underlying implementation to calculate the queries,
 	and then it stores them and the queries document
 :)
+declare function job:plantSeed()
+	as xs:dateTime
+{
+	(# exist:batch-transaction #) {
+		(: First, get the last round document :)
+		let $currentDateTime:=current-dateTime()
+		let $currentDate:=xs:date($currentDateTime)
+		let $lastDoc:=job:getLastRoundDocument()
+		(: Third, snapshot of last round's date :)
+		let $lastDateTime:=$lastDoc/@timeStamp
+		let $lastDate:=xs:date($lastDateTime)
+		let $lastCol:=string-join(($job:resultsCol,$lastDate),'/')
+		let $physicalScratch:=string-join(($job:physicalScratch,$currentDate),'/')
+		let $roundCol:=xmldb:create-collection($job:resultsCol,$currentDate)
+		let $newCol:=string-join(($job:resultsCol,$currentDate),'/')
+		
+		let $queriesComputation := collection($mgmt:configCol)//job:jobManagement[1]/job:queriesComputation
+		let $dynLoad := util:import-module($queriesComputation/@namespace,'dyn',$queriesComputation/@module),
+			util:function(QName($queriesComputation/@namespace,$queriesComputation/@seedEntryPoint),1)
+		(: Sixth, let's compute the unique entries :)
+		let $queriesDoc := util:call($dynLoad,$physicalScratch)
+		
+		(: Seventh, time to store and update! :)
+		let $stored:=xmldb:store-files-from-pattern($newCol,$physicalScratch,$queriesComputation/@storagePattern)
+		(:
+		let $storedExperiment:=xmldb:store($newCol,$job:queriesDoc,$queriesDoc,'application/xml')/element()
+		:)
+		return
+			update value $lastDoc/@timeStamp with $currentDateTime,
+			(:
+			update insert (attribute stamp { $currentDateTime }, attribute baseStamp { $lastDateTime }) into $storedExperiment,
+			:)
+			$currentDateTime
+	}
+};
+
+(:
+	This function calls the underlying implementation to calculate the queries,
+	and then it stores them and the queries document
+:)
 declare function job:doQueriesComputation($currentDateTime as xs:dateTime)
 	as element(xcesc:experiment)
 {
@@ -75,7 +115,7 @@ declare function job:doQueriesComputation($currentDateTime as xs:dateTime)
 		
 		let $queriesComputation := collection($mgmt:configCol)//job:jobManagement[1]/job:queriesComputation
 		let $dynLoad := util:import-module($queriesComputation/@namespace,'dyn',$queriesComputation/@module),
-			util:function(QName($queriesComputation/@namespace,$queriesComputation/@entryPoint),3)
+			util:function(QName($queriesComputation/@namespace,$queriesComputation/@queryEntryPoint),3)
 		(: Sixth, let's compute the unique entries :)
 		let $queriesDoc := util:call($dynLoad,$lastCol,$newCol,$physicalScratch)
 		
