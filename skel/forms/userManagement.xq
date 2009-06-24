@@ -5,8 +5,33 @@ import module namespace mgmt="http://www.cnio.es/scombio/xcesc/1.0/xquery/system
 
 
 let $dummy:=session:set-current-user($mgmt:adminUser,$mgmt:adminPass)
-return if(request:get-method() != 'POST') then (
-	let $dum2:=util:declare-option('exist:serialize',"method=xhtml media-type=application/xhtml+xml")
+let $dumpost:=if(request:get-method() eq 'POST') then (
+	util:catch('*',
+		let $data:=request:get-data()
+		let $deleteUsers:=mgmt:deleteDeletedUsers($data//xcesc:deletedUser)
+		for $user in $data//xcesc:user
+		return
+			if(exists($user/@id) and $user/@id ne '') then (
+				mgmt:updateUser($user/@id,$user)
+			,
+				if(not(empty($user/@nickpass) or ($user/@nickpass eq ''))) then (
+					mgmt:changeUserPass($user/@id,$user/@nickname,'',$user/@nickpass,true)
+				) else (
+				)
+			) else (
+				let $uid:=mgmt:createUser($user)
+				return ()
+			)
+		,
+		let $errmsg:=concat("Exception while loading expected result: ", $util:exception-message)
+		let $err1:=util:log-system-err($errmsg)
+		let $err2:=response:set-status-code(500)
+		let $err3:=response:set-header('X-XCESC-error-message',$errmsg)
+		return $errmsg
+	)
+) else ()
+return if(empty($dumpost)) then (
+	let $dum2 := util:declare-option('exist:serialize',"method=xhtml media-type=application/xhtml+xml")
 	let $content := <html xmlns="http://www.w3.org/1999/xhtml"
 		xmlns:sample="http://www.agencexml.com/sample"
 		xmlns:xcesc="http://www.cnio.es/scombio/xcesc/1.0"
@@ -34,9 +59,14 @@ return if(request:get-method() != 'POST') then (
 			<xforms:instance id="users">
 				<xcesc:users>
 					{mgmt:getUsers()}
+					<xcesc:user nickname="" nickpass="" firstName="" lastName="" organization="">
+						<xcesc:eMail></xcesc:eMail>
+					</xcesc:user>
+					<!--
 					<xcesc:user nickname="Nick" nickpass="dr" firstName="Hola" lastName="doctor Nick" organization="Mi casa">
 						<xcesc:eMail>Reeves@reeves.org</xcesc:eMail>
 					</xcesc:user>
+					-->
 				</xcesc:users>
 			</xforms:instance>
 			<!--
@@ -70,12 +100,13 @@ return if(request:get-method() != 'POST') then (
 			
 			<xforms:bind nodeset="instance('users')">
 				<xforms:bind nodeset="xcesc:user">
-					<xforms:bind nodeset="xcesc:eMail" type="xsd:string" />
-					<xforms:bind nodeset="@nickname" type="xsd:string" />
+					<xforms:bind nodeset="@nickname" type="xsd:string" required="true()"/>
 					<xforms:bind nodeset="@nickpass" type="xsd:string" />
-					<xforms:bind nodeset="@firstName" type="xsd:string" />
-					<xforms:bind nodeset="@lastName" type="xsd:string" />
-					<xforms:bind nodeset="@organization" type="xsd:string" />
+					<xforms:bind nodeset="@id" type="xsd:string" readonly="true()"/>
+					<xforms:bind nodeset="@firstName" type="xsd:string" required="true()"/>
+					<xforms:bind nodeset="@lastName" type="xsd:string" required="true()"/>
+					<xforms:bind nodeset="@organization" type="xsd:string" required="true()"/>
+					<xforms:bind nodeset="xcesc:eMail" type="xsd:string" required="true()"/>
 				</xforms:bind>
 			</xforms:bind>
 
@@ -92,6 +123,10 @@ return if(request:get-method() != 'POST') then (
 			</span>
 		</div>
 		<xforms:repeat nodeset="xcesc:user" id="transactions" appearance="compact">
+                    <xforms:output ref="@id">
+                        <xforms:label>The XCESC user Id</xforms:label>
+                        <xforms:hint>this is a repeated input control</xforms:hint>
+                    </xforms:output>
                     <xforms:input ref="@nickname">
                         <xforms:label>The user name</xforms:label>
                         <xforms:hint>this is a repeated input control</xforms:hint>
@@ -194,12 +229,12 @@ return if(request:get-method() != 'POST') then (
 			<xforms:label>New user</xforms:label>
 			<xforms:action ev:event="DOMActivate">
 				<xforms:insert nodeset="xcesc:user" position="after" at="last()"/>
-				<xforms:setvalue ref="xcesc:user[last()]/@nickname" value=""/>
-				<xforms:setvalue ref="xcesc:user[last()]/@nickpass" value=""/>
-				<xforms:setvalue ref="xcesc:user[last()]/@firstName" value=""/>
-				<xforms:setvalue ref="xcesc:user[last()]/@lastName" value=""/>
-				<xforms:setvalue ref="xcesc:user[last()]/@organization" value=""/>
-				<xforms:setvalue ref="xcesc:user[last()]/xcesc:eMail"/>
+				<xforms:setvalue ref="xcesc:user[last()]/@nickname" value="''"/>
+				<xforms:setvalue ref="xcesc:user[last()]/@nickpass" value="''"/>
+				<xforms:setvalue ref="xcesc:user[last()]/@firstName" value="''"/>
+				<xforms:setvalue ref="xcesc:user[last()]/@lastName" value="''"/>
+				<xforms:setvalue ref="xcesc:user[last()]/@organization" value="''"/>
+				<xforms:setvalue ref="xcesc:user[last()]/xcesc:eMail" value="''"/>
 				<!--
 				<xforms:setvalue ref="sample:transaction[last()]/sample:date" value="substring-before(now(), 'T')"/>
 				<xforms:setvalue ref="sample:transaction[last()]/sample:amount" value="'0.00'"/>
@@ -219,39 +254,16 @@ return if(request:get-method() != 'POST') then (
 			</div>
 	</body>
 </html>
-
-
 (:
 return	transform:stream-transform($content,xs:anyURI('xmldb:exist///db/forms/xsltforms/xsltforms.xsl'),())
 return	transform:transform($content,xs:anyURI('xmldb:exist:///db/forms/xsltforms/xsltforms.xsl'),())
 :)
-return	document {
-	(processing-instruction {'xml-stylesheet'} {'href="xsltforms/xsltforms.xsl" type="text/xsl"'}
-	,
-	$content)
-}
+	return	document {
+		(processing-instruction {'xml-stylesheet'} {'href="xsltforms/xsltforms.xsl" type="text/xsl"'}
+		,
+		$content)
+	}
 ) else (
-	(:
-	let $dum2:=util:declare-option('exist:serialize',"method=text")
-	let $dum3:=util:declare-option('exist:serialize',"media-type=text/plain")
-	:)
-	let $data := request:get-data()
-	(:
-	let $del := (
-		for $user in $data/xcesc:deletedUser[@id != '' and @nickname != '']
-		return
-			mgmt:deleteUser($user/@id,$user/@nickname)
-	)
-	:)
-	for $user in $data/xcesc:user
-	return
-		if($user/@id) then (
-			mgmt:updateUser($user/@id,$user),
-			if(not(empty($user/@nickpass) or ($user/@nickpass eq ''))) then (
-				mgmt:changeUserPass($user/@id,$user/@nickname,'',$user/@nickpass,true)
-			) else ()
-		) else (
-			let $alert := util:log-system-err("TUVE KACHI"),
-			mgmt:createUser($user)
-		)
+	let $dum2:=util:declare-option('exist:serialize',"method=text media-type=text/plain")
+	return $dumpost
 )

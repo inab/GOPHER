@@ -61,7 +61,7 @@ declare function job:getLastRoundDocument()
 declare function job:plantSeed()
 	as xs:dateTime
 {
-	(# exist:batch-transaction #) {
+	(: (# exist:batch-transaction #) { :)
 		(: First, get the last round document :)
 		let $currentDateTime:=current-dateTime()
 		let $currentDate:=xs:date($currentDateTime)
@@ -91,7 +91,7 @@ declare function job:plantSeed()
 			update insert (attribute stamp { $currentDateTime }, attribute baseStamp { $lastDateTime }) into $storedExperiment,
 			:)
 			$currentDateTime
-	}
+	(: } :)
 };
 
 (:
@@ -101,7 +101,7 @@ declare function job:plantSeed()
 declare function job:doQueriesComputation($currentDateTime as xs:dateTime)
 	as element(xcesc:experiment)
 {
-	(# exist:batch-transaction #) {
+	(: (# exist:batch-transaction #) { :)
 		(: First, get the last round document :)
 		let $currentDate:=xs:date($currentDateTime)
 		let $lastDoc:=job:getLastRoundDocument()
@@ -126,7 +126,7 @@ declare function job:doQueriesComputation($currentDateTime as xs:dateTime)
 			update value $lastDoc/@timeStamp with $currentDateTime,
 			update insert (attribute stamp { $currentDateTime }, attribute baseStamp { $lastDateTime }) into $storedExperiment,
 			$storedExperiment
-	}
+	(: } :)
 };
 
 declare function job:doRound($currentDate as xs:date,$storedExperiment as element(xcesc:experiment),$onlineServers as element(xcesc:server)*)
@@ -148,7 +148,7 @@ declare function job:doRound($currentDate as xs:date,$storedExperiment as elemen
 		let $sendDateTime:=current-dateTime()
 		let $ret:=httpclient:post($onlineServer/@uri,$queries,false,())
 	return
-		(# exist:batch-transaction #) {
+		(: (# exist:batch-transaction #) { :)
 			update insert <xcesc:participant ticket="{$ticketId}" startStamp="{$sendDateTime}">
 			{$onlineServer}
 			{
@@ -158,7 +158,7 @@ declare function job:doRound($currentDate as xs:date,$storedExperiment as elemen
 					<xcesc:errorMessage statusCode="$ret/@statusCode">{$ret/httpclient:body/*}</xcesc:errorMessage>
 			}
 			</xcesc:participant>  into $storedExperiment
-		}
+		(: } :)
 };
 
 declare function job:doNextRound()
@@ -198,14 +198,14 @@ declare function job:doTestRound($baseRound as xs:string,$servers as element(xce
 	let $newCol:=string-join(($job:resultsCol,$newRound),'/')
 	let $empty:=xmldb:copy($baseCol,$newCol)
 	let $newRoundsDoc := doc(string-join(($newCol,$job:queriesDoc),'/'))/element()
-	let $empty2 := (# exist:batch-transaction #) {
+	let $empty2 := (: (# exist:batch-transaction #) { :)
 		update value $newRoundsDoc/@baseStamp with $newRoundsDoc/@stamp,
 		update value $newRoundsDoc/@stamp with current-dateTime(),
 		if(empty($newRoundsDoc/@test)) then
 			update insert attribute test { true } into $newRoundsDoc
 		else
 			()
-	}
+	(: } :)
 	let $empty3 := job:doRound($newRound,$newRoundsDoc,$servers) 
 		return $newRound
 };
@@ -213,7 +213,7 @@ declare function job:doTestRound($baseRound as xs:string,$servers as element(xce
 declare function job:joinResults($round as xs:string,$ticket as xs:string,$answers as xcesc:answers)
 	as xs:positiveInteger
 {
-	(# exist:batch-transaction #) {
+	(: (# exist:batch-transaction #) { :)
 		let $partElem:=doc(string-join(($job:resultsCol,$round,$job:queriesDoc),'/'))//xcesc:participant[@ticket=$ticket]
 		return
 			if(exists($partElem)) then
@@ -237,5 +237,5 @@ declare function job:joinResults($round as xs:string,$ticket as xs:string,$answe
 				),200
 			else
 				404
-	}
+	(: } :)
 };

@@ -9,9 +9,14 @@
 	<dirname property="project.home" file="${ant.file}"/>
 	<property name="ant.file.properties" location="${project.home}/build.properties"/>
 	<property file="${ant.file.properties}"/>
-	<xmlproperty file="${project.home}/skel/XCESC-config/systemManagement.xml"/>
-	<xmlproperty file="${project.home}/skel/XCESC-config/jobManagement.xml"/>
-	<xmlproperty file="${project.home}/skel/XCESC-config/guiManagement.xml"/>
+	<property name="xcesc.config.col" value="XCESC-config"/>
+	<xmlproperty file="${project.home}/skel/${xcesc.config.col}/systemManagement.xml"/>
+	<xmlproperty file="${project.home}/skel/${xcesc.config.col}/metaManagement.xml"/>
+	<xmlproperty file="${project.home}/skel/${xcesc.config.col}/jobManagement.xml"/>
+	<xmlproperty file="${project.home}/skel/${xcesc.config.col}/guiManagement.xml"/>
+
+	<property name="deploy.eXist.admin.user" value="metaManagement(user)"/>
+	<property name="deploy.eXist.admin.pass" value="metaManagement(password)"/>
 	<property name="deploy.eXist.gopher.user" value="${systemManagement.admin(user)}"></property>
 	<property name="deploy.eXist.gopher.pass" value="${systemManagement.admin(password)}"></property>
 	<property name="deploy.eXist.xcesc.group" value="${systemManagement(group)}"></property>
@@ -24,7 +29,6 @@
 	<property name="downloads.dir" value="downloads" />
 	<property name="AtomicWiki.dir" location="AtomicWiki" />
 	<property name="eXist.conf.dir" location="eXist-conf" />
-	<property name="eXist.chiba.conf.dir" location="chiba-config" />
 	<property name="GOPHER.patches.dir" location="patches" />
 	<property name="GOPHER.startup" value="starteXist${deploy.eXist.basebranch}.sh"/>
 	
@@ -41,23 +45,15 @@
 	<property name="eXist.jar.rel" value="exist.jar"/>
 	<property name="eXist.jar" location="${eXist.ant.dir}/${eXist.jar.rel}"/>
 	
-	<!-- Chiba bundle handling -->
-	<property name="chiba.bundle.src" value="${chiba.web.name}-${chiba.web.version}.war"/>
-	<property name="chiba.bundle.src.local" value="${downloads.dir}/${chiba.bundle.src}"/>
-	<property name="chiba.bundle.dir" value="${downloads.dir}/${chiba.web.name}-${chiba.web.version}"/>
-	<property name="chiba.jar" value="${libs}/${chiba.web.name}-${chiba.web.version}.jar"/>
 	<property name="atomic-xquery.jar" value="${libs}/atomic-xquery.jar"/>
 
-	<available file="${chiba.bundle.src.local}" property="chiba.bundle.src.present" description="Check for existence of Chiba Web bundle"/>
-	<available file="${chiba.bundle.dir}" property="chiba.bundle.present" description="Check for existence of uncompressed Chiba Web bundle"/>
-	
 	<!-- Saxon bundle handling -->
 	<property name="saxon.bundle.src" value="saxonb${saxon.version}j.zip"/>
 	<property name="saxon.bundle.src.local" value="${downloads.dir}/${saxon.bundle.src}"/>
 	<property name="saxon.bundle.dir" value="${downloads.dir}/${saxon.name}-${saxon.version}"/>
 
-	<available file="${saxon.bundle.src.local}" property="saxon.bundle.src.present" description="Check for existence of Chiba Web bundle"/>
-	<available file="${saxon.bundle.dir}" property="saxon.bundle.present" description="Check for existence of uncompressed Chiba Web bundle"/>
+	<available file="${saxon.bundle.src.local}" property="saxon.bundle.src.present" description="Check for existence of Saxon bundle"/>
+	<available file="${saxon.bundle.dir}" property="saxon.bundle.present" description="Check for existence of uncompressed Saxon bundle"/>
 
 	<path id="exist-ant.classpath.core">
 		<fileset dir="${eXist.ant.dir}">
@@ -287,31 +283,6 @@
 		/>
 	</target>
 	
-	<!-- downloads the chiba-web bundle code -->
-	<target name="download-chiba-bundle" unless="chiba.bundle.src.present">
-		<echo message=""/>
-		<echo message="---------- Downloading chiba-bundle ----------"/>
-		<echo message=""/>
-		<get src="${chiba.download.mirror}/${chiba.bundle.src}" dest="${chiba.bundle.src.local}" verbose="true"/>
-		<echo message=""/>
-	</target>
-	
-	<!-- uncompresses the chiba-web bundle code -->
-	<target name="uncompress-chiba-bundle" depends="download-chiba-bundle" unless="chiba.bundle.present">
-		<echo message=""/>
-		<echo message="---------- Uncompressing chiba-bundle ----------"/>
-		<echo message=""/>
-		<unwar src="${chiba.bundle.src.local}" dest="${chiba.bundle.dir}"/>
-		<echo message=""/>
-	</target>
-	
-	<!-- uncompresses the chiba-web bundle code -->
-	<target name="build-chiba-jar" depends="init,uncompress-chiba-bundle">
-		<!-- Build Chiba-web jar -->
-		<jar
-			destfile="${chiba.jar}"
-			basedir="${chiba.bundle.dir}/WEB-INF/classes" />
-	</target>
 	
 	<target name="patch-context-path">
 		<replaceregexp match="request:get-context-path\(\)" replace="gui:get-gui-path()" flags="g" byline="true">
@@ -397,7 +368,7 @@
 	</target>
 	
 	<target name="deploy.skel.meta"
-		depends="init.eXist.extension,conditional.patch.conf.xml,conditional.patch.server.xml.norewrite,conditional.patch.startup,uncompress-saxon-bundle,build-chiba-jar,build-atomic-xquery-jar,compile.AtomicWiki"
+		depends="init.eXist.extension,conditional.patch.conf.xml,conditional.patch.server.xml.norewrite,conditional.patch.startup,uncompress-saxon-bundle,build-atomic-xquery-jar,compile.AtomicWiki"
 		description="Remote eXist Meta-skeleton for GOPHER"
 	>
 		<!-- First, stop the patient (it may fail) -->
@@ -438,15 +409,6 @@
 			command="cd '${deploy.eXist.dir}' &amp;&amp; ant -Dinclude.module.jfreechart=true"
 		/>
 		
-		<sshexec
-			host="${deploy.host}"
-			username="${deploy.ssh.user}"
-			keyfile="${deploy.ssh.keyfile}"
-			trust="yes"
-			passphrase="${deploy.ssh.passphrase}"
-			command="cd '${deploy.eXist.dir}' &amp;&amp; mkdir -p chiba resources WEB-INF"
-		/>
-		
 		<!-- Copying Startup script -->
 		<scp
 			todir="${deploy.ssh.user}@${deploy.host}:${deploy.home.dir}"
@@ -484,34 +446,7 @@
 			</fileset>
 		</scp>
 		
-		<!-- Copying additional Chiba configuration files -->
-		<scp
-			todir="${deploy.ssh.user}@${deploy.host}:${deploy.eXist.dir}/chiba"
-			keyfile="${deploy.ssh.keyfile}"
-			trust="yes"
-			passphrase="${deploy.ssh.passphrase}"
-		>
-			<fileset dir="${eXist.chiba.conf.dir}">
-				<include name="chiba.xml"/>
-				<include name="log4j.xml"/>
-			</fileset>
-		</scp>
-		
-		<scp
-			todir="${deploy.ssh.user}@${deploy.host}:${deploy.eXist.dir}/WEB-INF"
-			keyfile="${deploy.ssh.keyfile}"
-			trust="yes"
-			passphrase="${deploy.ssh.passphrase}"
-		>
-			<fileset dir="${chiba.bundle.dir}/WEB-INF">
-				<include name="chiba-version.info"/>
-				<include name="chiba.profile.js"/>
-				<include name="dwr.xml"/>
-			</fileset>
-		</scp>
-		
 		<!-- Copying additional Atomic configuration files -->
-		<!-- Copying additional Chiba resource files -->
 		<scp
 			todir="${deploy.ssh.user}@${deploy.host}:${deploy.eXist.dir}"
 			keyfile="${deploy.ssh.keyfile}"
@@ -520,12 +455,6 @@
 		>
 			<fileset dir="${AtomicWiki.dir}">
 				<include name="etc/**"/>
-			</fileset>
-			<fileset dir="${chiba.bundle.dir}">
-				<include name="resources/**"/>
-				
-				<exclude name="**/.svn"/>
-				<exclude name="**/.svn/**"/>
 			</fileset>
 		</scp>
 		
@@ -550,15 +479,9 @@
 				<include name="atiki-modules*.jar"/>
 				<include name="WikiModel*.jar"/>
 			</fileset>
-			<!-- The synthetic ones from Chiba and AtomicWiki -->
+			<!-- The synthetic ones from AtomicWiki -->
 			<fileset dir="${libs}">
 				<include name="*.jar"/>
-			</fileset>
-			<!-- And the ones from Chiba -->
-			<fileset dir="${chiba.bundle.dir}/WEB-INF/lib">
-				<include name="dwr*.jar"/>
-				<include name="javax-activation*.jar"/>
-				<include name="javax-mail*.jar"/>
 			</fileset>
 		</scp>
 		
@@ -675,6 +598,31 @@
 				<exclude name="system/**/*.xml" />
 			</fileset>
 		</xdb:store>
+		
+		<xdb:chmod
+			uri="${xmldb.uri}/db/${xcesc.config.col}"
+			user="${deploy.eXist.gopher.user}"
+			password="${deploy.eXist.gopher.pass}"
+			failonerror="true"
+			resource="metaManagement.xml" mode="group=-read,-write,-update,other=-read,-write,-update"
+		/>
+		
+		<xdb:chmod
+			uri="${xmldb.uri}/db/${xcesc.config.col}"
+			user="${deploy.eXist.gopher.user}"
+			password="${deploy.eXist.gopher.pass}"
+			failonerror="true"
+			resource="jobManagement.xml" mode="group=-read,-write,-update,other=-read,-write,-update"
+		/>
+		
+		<xdb:chmod
+			uri="${xmldb.uri}/db/${xcesc.config.col}"
+			user="${deploy.eXist.gopher.user}"
+			password="${deploy.eXist.gopher.pass}"
+			failonerror="true"
+			resource="guiManagement.xml" mode="group=-read,-write,-update,other=-read,-write,-update"
+		/>
+		
 		<!-- Then, GOPHER non XML content -->
 		<xdb:store
 			uri="${xmldb.uri}/db"
@@ -744,7 +692,7 @@
 		</scp>
 	</target>
 	
-	<target name="deploy" depends="deploy.skel.meta.admin,deploy.AtomicWiki,deploy.chiba,deploy.skel" description="Installation procedure, with the eXist instance working">
+	<target name="deploy" depends="deploy.skel.meta.admin,deploy.AtomicWiki,deploy.skel" description="Installation procedure, with the eXist instance working">
 		<!-- At this point the database instance must be running! -->
 	</target>
 	
@@ -980,37 +928,6 @@
 				<exclude name="atom-services.xml" />
 			</fileset>
 		</xdb:store>
-	</target>
-	
-	<target
-		name="deploy.chiba"
-		depends="uncompress-chiba-bundle,init.eXist.extension"
-		description="deploys Chiba files into the database"
-	>
-		<!--
-		<xdb:create uri="${xmldb.uri}/db"
-			user="${deploy.eXist.admin.user}"
-			password="${deploy.eXist.admin.pass}"
-			failonerror="true"
-			collection="chiba"
-		/>
-		-->
-		<xdb:store uri="${xmldb.uri}/db" user="${deploy.eXist.admin.user}" password="${deploy.eXist.admin.pass}" failonerror="true" createsubcollections="true">
-			<fileset dir="${chiba.bundle.dir}">
-				<include name="resources/**" />
-				
-				<exclude name="**/*.html"/>
-				<exclude name="**/.svn" />
-				<exclude name="**/.svn/**" />
-			</fileset>
-		</xdb:store>
-		<xdb:store uri="${xmldb.uri}/db" user="${deploy.eXist.admin.user}" password="${deploy.eXist.admin.pass}" failonerror="true" createsubcollections="true" type="binary">
-			<fileset dir="${chiba.bundle.dir}" defaultexcludes="no">
-				<include name="resources/*.html" />
-				<include name="resources/**/*.html" />
-			</fileset>
-		</xdb:store>
-		<!-- TBD -->
 	</target>
 	
 </project>
