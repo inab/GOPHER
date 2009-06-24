@@ -2,8 +2,9 @@
 <systemManagement
 	xmlns="http://www.cnio.es/scombio/xcesc/1.0/xquery/systemManagement"
 	collection="/db/GOPHER-config"
+	group="gopher"
 	managementDoc="managementData.xml"
 	publicBaseURI="http://localhost:8088"
 >
-    <admin user="gopher" password="!Ese:PotR0Kloro" group="gopher"/>
+    <admin user="gopher" password="!Ese:PotR0Kloro" group="gopher" mail="gopher_support@cnio.es"/>
 </systemManagement>

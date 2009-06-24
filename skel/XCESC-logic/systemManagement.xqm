@@ -15,6 +15,8 @@ declare variable $mgmt:configCol as xs:string := "/db/XCESC-config";
 declare variable $mgmt:adminUser as xs:string := collection($mgmt:configCol)//mgmt:systemManagement[1]/mgmt:admin/@user/string();
 declare variable $mgmt:adminPass as xs:string := collection($mgmt:configCol)//mgmt:systemManagement[1]/mgmt:admin/@password/string();
 
+declare variable $mgmt:xcescGroup as xs:string := collection($mgmt:configCol)//mgmt:systemManagement[1]/@group/string();
+
 declare variable $mgmt:mgmtCol as xs:string := collection($mgmt:configCol)//mgmt:systemManagement[1]/@collection/string();
 declare variable $mgmt:mgmtDoc as xs:string := collection($mgmt:configCol)//mgmt:systemManagement[1]/@managementDoc/string();
 
@@ -33,7 +35,10 @@ declare function mgmt:getManagementDoc()
 		doc($mgmt:mgmtDocPath)/element()
 	) else (
 		let $newDoc := <xcesc:managementData><xcesc:users/><xcesc:servers/></xcesc:managementData>
-		return doc(xmldb:store($mgmt:mgmtCol,$mgmt:mgmtDoc,$newDoc,'application/xml'))/element()
+		let $retElem := doc(xmldb:store($mgmt:mgmtCol,$mgmt:mgmtDoc,$newDoc,'application/xml'))/element()
+		(: Only the owner can look at/change this file :)
+		let $empty := xmldb:set-resource-permissions($mgmt:mgmtCol,$mgmt:mgmtDoc,$mgmt:adminUser,$mgmt:xcescGroup,7*64)
+		return $retElem
 	)
 };
 
@@ -187,14 +192,16 @@ declare function mgmt:updateServer($managerId as xs:string,$serverConfig as elem
 (:::::::::)
 
 (: User creation :)
-declare function mgmt:createUser($nickname as xs:string,$firstName as xs:string,$lastName as xs:string,$organization as xs:string,$eMails as element(xcesc:eMail)+,$references as element(xcesc:reference)*)
+declare function mgmt:createUser($nickname as xs:string,$nickpass as xs:string,$firstName as xs:string,$lastName as xs:string,$organization as xs:string,$eMails as element(xcesc:eMail)+,$references as element(xcesc:reference)*)
 	as xs:string?
 {
 	(# exist:batch-transaction #) {
 		let $mgmtDoc:=mgmt:getManagementDoc()
 		return
-			if(empty($mgmtDoc//xcesc:user[@nickname=$nickname])) then
+			if(empty($mgmtDoc//xcesc:user[@nickname=$nickname]) and not(xmldb:exists-user($nickname))) then
 				let $id:=util:uuid()
+				(: Perhaps in the future we will add bloggers group... :)
+				let $emp:=xmldb:create-user($nickname,$nickpass,($mgmt:xcescGroup),())
 				let $newUser:=<xcesc:user id="{$id}" nickname="{$nickname}" firstName="{$firstName}" lastName="{$lastName}" organization="{$organization}" status="enabled">
 					{$eMails}
 					{$references}
@@ -213,12 +220,13 @@ declare function mgmt:deleteUser($id as xs:string,$nickname as xs:string)
 	as empty() 
 {
 	(# exist:batch-transaction #) {
-	let $mgmtDoc := mgmt:getManagementDoc()
+		let $mgmtDoc := mgmt:getManagementDoc()
 		let $userDoc := $mgmtDoc//xcesc:user[@id=$id and @nickname=$nickname]
 		return
 			if(empty($userDoc)) then
 				 error((),string-join(("On user deletion,",$id,"is not allowed to erase",$nickname,"or some of them are unknown"),' '))
 			else
+				xmldb:delete-user($nickname),
 				update delete $userDoc
 	}
 };
@@ -272,6 +280,26 @@ declare function mgmt:updateUser($id as xs:string,$userConfig as element(xcesc:u
 					()
 			) else
 				error((),string-join(("On user update",$userConfig/@nickname,"changes from",$id,"are not allowed"),' '))
+	}
+};
+
+
+declare function mgmt:changeUserPass($id as xs:string, $nickname as xs:string,$oldpass as xs:string,$newpass as xs:string)
+	as empty() 
+{
+	(mgmt:changeUserPass($id,$nickname,$oldpass,$newpass,false))
+};
+
+declare function mgmt:changeUserPass($id as xs:string, $nickname as xs:string,$oldpass as xs:string,$newpass as xs:string,$reset as xs:boolean)
+	as empty() 
+{
+	(# exist:batch-transaction #) {
+		let $userDoc:=mgmt:getUserFromNickname($nickname)[@id = $id]
+		return
+			if($userDoc and ($reset or xmldb:authenticate('/db',$nickname,$oldpass))) then (
+				xmldb:change-user($nickname,$newpass,(),())
+			) else
+				error((),string-join(("On user password update",$nickname,"password changes from",$id,"are not allowed"),' '))
 	}
 };
 

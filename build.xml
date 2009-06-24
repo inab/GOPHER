@@ -14,7 +14,7 @@
 	<xmlproperty file="${project.home}/skel/XCESC-config/guiManagement.xml"/>
 	<property name="deploy.eXist.gopher.user" value="${systemManagement.admin(user)}"></property>
 	<property name="deploy.eXist.gopher.pass" value="${systemManagement.admin(password)}"></property>
-	<property name="deploy.eXist.xcesc.group" value="${systemManagement.admin(group)}"></property>
+	<property name="deploy.eXist.xcesc.group" value="${systemManagement(group)}"></property>
 	
 	<property name="xmldb.uri" value="xmldb:exist://${deploy.host}:${deploy.eXist.port}/xmlrpc"/>
 	
@@ -251,7 +251,7 @@
 			</condition>
 		</fail>
 		<filter token="port" value="${deploy.eXist.port}"/>
-		<filter token="tmpdir" value="${jobManagement(physicalScratch)}"/>
+		<filter token="tmpdir" value="${job:jobManagement(physicalScratch)}"/>
 		<filter token="AtomicLogic" value="${guiManagement(AtomicWiki-logic)}"/>
 		<filter token="AtomicVirtual" value="${guiManagement(AtomicWiki-VirtualRoot)}"/>
 		<filter token="XForms.dir" value="${guiManagement(XForms-root)}"/>
@@ -672,7 +672,14 @@
 			</fileset>
 		</xdb:store>
 		<!-- Then, GOPHER non XML content -->
-		<xdb:store uri="${xmldb.uri}/db" user="${deploy.eXist.gopher.user}" password="${deploy.eXist.gopher.pass}" failonerror="true" createsubcollections="true">
+		<xdb:store
+			uri="${xmldb.uri}/db"
+			user="${deploy.eXist.gopher.user}"
+			password="${deploy.eXist.gopher.pass}"
+			failonerror="true"
+			createsubcollections="true"
+			type="binary"
+		>
 			<fileset dir="skel" defaultexcludes="no">
 				<exclude name="**/*.xsd" />
 				<exclude name="**/*.xsl" />
@@ -688,13 +695,13 @@
 			user="${deploy.eXist.gopher.user}"
 			password="${deploy.eXist.gopher.pass}"
 			failonerror="true"
-			collection="${jobManagement(collection)}"
+			collection="${job:jobManagement(collection)}"
 		/>
-		<xdb:create uri="${xmldb.uri}/db/${jobManagement(collection)}"
+		<xdb:create uri="${xmldb.uri}/db/${job:jobManagement(collection)}"
 			user="${deploy.eXist.gopher.user}"
 			password="${deploy.eXist.gopher.pass}"
 			failonerror="true"
-			collection="${jobManagement(roundsSubCollection)}"
+			collection="${job:jobManagement(roundsSubCollection)}"
 		/>
 		
 	</target>

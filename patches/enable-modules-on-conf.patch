@@ -78,7 +78,7 @@
          <!-- 
              Specify the location of one or more catalog files. Catalogs are 
              used to resolve external entities in XML documents.
-@@ -769,11 +786,26 @@
+@@ -769,11 +786,28 @@
                      uri="http://exist-db.org/xquery/xmldiff" />
              <module class="org.exist.xquery.modules.cache.CacheModule"
                  uri="http://exist-db.org/xquery/cache" />
@@ -99,10 +99,12 @@
 +				src="resource:org/exist/atomic/XHTML2CommonWiki.xql"/>
                 
 -            -->
-+            <module class="org.exist.xquery.modules.math.MathModule"
-+                    uri="http://exist-db.org/xquery/math" />
-+            <module class="org.exist.xquery.modules.httpclient.HTTPClientModule"
-+                    uri="http://exist-db.org/xquery/httpclient" />
++			<module class="org.exist.xquery.modules.math.MathModule"
++				uri="http://exist-db.org/xquery/math" />
++			<module class="org.exist.xquery.modules.httpclient.HTTPClientModule"
++				uri="http://exist-db.org/xquery/httpclient" />
++			<module class="org.exist.xquery.modules.mail.MailModule"
++				uri="http://exist-db.org/xquery/mail" />
          </builtin-modules>
      </xquery>
  

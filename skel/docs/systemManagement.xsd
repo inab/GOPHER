@@ -27,9 +27,9 @@
                                 <xs:documentation><![CDATA[The eXist XCESC instance superpass]]></xs:documentation>
                             </xs:annotation>
                         </xs:attribute>
-                        <xs:attribute name="group" use="required" type="xs:string">
+                        <xs:attribute name="mail" use="required" type="xs:string">
                             <xs:annotation>
-                                <xs:documentation><![CDATA[The eXist XCESC instance group]]></xs:documentation>
+                                <xs:documentation><![CDATA[The manager e-mail]]></xs:documentation>
                             </xs:annotation>
                         </xs:attribute>
                     </xs:complexType>
@@ -39,6 +39,12 @@
             <xs:attribute name="collection" use="required" type="xs:string">
                 <xs:annotation>
                     <xs:documentation><![CDATA[The collection where the management data (users, groups, registered servers) is going to be stored]]></xs:documentation>
+                </xs:annotation>
+            </xs:attribute>
+            
+            <xs:attribute name="group" use="required" type="xs:string">
+                <xs:annotation>
+                    <xs:documentation><![CDATA[The eXist XCESC instance group]]></xs:documentation>
                 </xs:annotation>
             </xs:attribute>
             

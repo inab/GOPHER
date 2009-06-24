@@ -94,11 +94,23 @@ sub launchJob($$) {
 			my($ua)=LWP::UserAgent->new(" GOPHER Answer 0.1");
 			
 			# Again, beware encodings!!!!!!!
-			$ua->post(
-				$callback,
-				Content_Type=>'application/xml',
-				Content=>$answerDoc->serialize(0)
-			);
+			for(;;) {
+				my($response)=$ua->post(
+					$callback,
+					Content_Type=>'application/xml',
+					Content=>$answerDoc->serialize(0)
+				);
+				
+				# Success or ill formed request
+				# If it is the second, you should write to
+				# gopher_support@cnio.es
+				if($response->is_success() || $response->code() eq '400') {
+					last;
+				} else {
+					# Let's wait a minute, and try again, because there could be some transient error...
+					sleep(60);
+				}
+			}
 			
 			# Cleanups (if needed)
 			# And then finish!
