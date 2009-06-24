@@ -344,6 +344,9 @@
 			<fileset dir="${the.dir}">
 				<include name="**/*.xq*" />
 				<contains text="gui:get-gui-path()" />
+				<not>
+					<contains text="import module namespace gui="/>
+				</not>
 			</fileset>
 		</replaceregexp>
 	</target>
@@ -815,6 +818,12 @@
 				<exclude name="**/.svn/**" />
 			</fileset>
 		</copy>
+		<!-- Then let's patch -->
+		<patch
+			patchfile="${GOPHER.patches.dir}/AtomicWiki-util-xql.patch"
+			dir="${eXist.conf.dir}/AtomicWiki-site"
+			strip="1"/>
+		<!-- And translate -->
 		<xslt
 			basedir="${AtomicWiki.dir}/site"
 			destdir="${eXist.conf.dir}/AtomicWiki-site"

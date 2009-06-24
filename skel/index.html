@@ -1,13 +1,15 @@
 <html>
 <head>
-<title>GOPHER</title>
-<link rel="stylesheet" type="text/css" href="style/default-style.css">
-<script type="text/javascript" src="js/main.js">
-</script>
+	<title>GOPHER</title>
+	<link rel="stylesheet" type="text/css" href="style/default-style.css">
+	<script type="text/javascript" src="js/ORFandDB-widgetCommon/browserdetect/BrowserDetect.js"></script>
+	<script type="text/javascript" src="js/ORFandDB-widgetCommon/widgetCommon.js"></script>
+	
+	<script type="text/javascript" src="js/main.js"></script>
 <script type="text/javascript" src="XCESC-GUI-logic/feed.xql">
 </script>
 </head>
-<body>
+<body onload="InitXCESC()" onunload="DisposeXCESC()">
 	<img src="style/GOPHER.png">
         <div id="news">
 		<div class="block">

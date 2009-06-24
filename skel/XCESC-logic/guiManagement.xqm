@@ -34,3 +34,13 @@ declare function gui:get-gui-path() as xs:string {
 	concat(request:get-context-path(),$gui:AtomicVirtualRoot)
 };
 
+(: Getting the relative base path of the Atomic Wiki installation :)
+declare function gui:get-rel-gui-path() as xs:string {
+	(:
+	let $retval := concat(request:get-context-path(),$gui:AtomicVirtualRoot)
+	let $alert := util:log-system-err(("GUI PATH IS ",$retval))
+	return $retval
+	:)
+	substring(gui:get-gui-path(),1)
+};
+
