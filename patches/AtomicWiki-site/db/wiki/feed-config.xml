@@ -1,0 +1,1 @@
+<?xml version="1.0" encoding="UTF-8"?><feed-config xmlns="http://atomic.exist-db.org/config"><view type="read" render="view.xql"/><view type="edit" render="view.xql"/></feed-config>

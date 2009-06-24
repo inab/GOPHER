@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?><collection xmlns="http://exist.sourceforge.net/NS/exist" name="/db/wiki" owner="wikixcesc" group="bloggers" mode="774" created="2009-04-18T17:53:39+02:00" version="1">
+    <resource type="XMLResource" name=".feed.atom" owner="wikixcesc" group="bloggers" mode="774" created="2009-02-21T22:18:08+01:00" modified="2009-02-21T22:18:09+01:00" filename=".feed.atom" mimetype="application/atom+xml"/>
+    <resource type="XMLResource" name="feed-config.xml" owner="wikixcesc" group="bloggers" mode="774" created="2009-04-14T11:44:13+02:00" modified="2009-04-14T11:46:50+02:00" filename="feed-config.xml" mimetype="text/xml"/>
+    <resource type="BinaryResource" name="view.xql" owner="wikixcesc" group="bloggers" mode="774" created="2009-04-18T17:56:31+02:00" modified="2009-04-18T17:56:31+02:00" filename="view.xql" mimetype="application/xquery"/>
+    <subcollection name="util" filename="util"/>
+    <subcollection name="atomic" filename="atomic"/>
+    <subcollection name="help" filename="help"/>
+    <subcollection name="blogs" filename="blogs"/>
+    <subcollection name=".feed.entry" filename=".feed.entry"/>
+</collection>

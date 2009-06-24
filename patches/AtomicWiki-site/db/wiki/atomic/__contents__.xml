@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="UTF-8"?><collection xmlns="http://exist.sourceforge.net/NS/exist" name="/db/wiki/atomic" owner="wikixcesc" group="bloggers" mode="774" created="2009-02-21T22:18:08+01:00" version="1">
+    <resource type="XMLResource" name=".feed.atom" owner="wikixcesc" group="bloggers" mode="774" created="2009-02-21T22:18:08+01:00" modified="2009-02-21T22:18:09+01:00" filename=".feed.atom" mimetype="application/atom+xml"/>
+    <subcollection name=".feed.entry" filename=".feed.entry"/>
+    <subcollection name="setup" filename="setup"/>
+</collection>

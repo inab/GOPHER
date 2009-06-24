@@ -1,0 +1,16 @@
+.content .twitter li { position: relative; list-style: none; padding: 0 0 5px; }
+.content ul.twitter {
+    margin: 0;
+}
+.tw-thumb { height: 50px; display: block; 
+    position: absolute; left: 0; overflow: hidden;
+}
+.tw-content { display: block; min-height: 50px; margin-left: 65px;
+    line-height: 1.25em;
+}
+.tw-body { display: block; }
+.tw-date { display: block; font-size: small; color: #C0C0C0; padding-top: 2px;
+    font-family: "Georgia", serif;
+}
+.username { font-weight: bold; }
+a { text-decoration: none; }

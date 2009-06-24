@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?><entry xmlns="http://www.w3.org/2005/Atom"><id>urn:uuid:6c7b5b8a-f764-4207-8dae-f56a43427692</id><updated>2007-11-10T14:29:56+01:00</updated><published>2008-03-11T21:24:39+01:00</published><link href="?id=urn:uuid:6c7b5b8a-f764-4207-8dae-f56a43427692" rel="edit" type="application/atom+xml"/><title type="text">AtomicWiki Features</title><wiki:id xmlns:wiki="http://exist-db.org/xquery/wiki">AtomicWikiFeatures</wiki:id><content type="xhtml"><div xmlns="http://www.w3.org/1999/xhtml"><h2>Everything is a Feed</h2><p>AtomicWiki is entirely based on <span class="strong">Atom</span> and stores all data as Atom feeds or rather: as a <span class="strong">hierarchy</span> of feeds. A feed consists of zero or more entries. The page you are currently reading is an Atom feed. Every comment thread is a feed below the current feed. All wiki pages are stored and edited as feeds as well.</p><h2>XQuery+XSLT+AJAX</h2><p>The entire system is implemented in XQuery and XSLT with the help of some Javascript for the AJAX goodies (like in-page comment editing). Only 1 additional XQuery function has been implemented in Java: the one for parsing a string of wiki markup into XML.</p><h2>Direct Access to Database Features</h2><p>Since all wiki contents are stored as Atom feeds in the database, you can directly edit the XML feeds if you need to, e.g. with a <span class="strong">WebDAV-enabled</span> XML editor. The whole database can be backed up as XML, using eXist's backup/restore facilities.</p><p>To put it simple, AtomicWiki is just another web frontend to the XML database. Thanks to the XQuery scripting features, you can easily query all your data from within a wiki page!</p><h2>Powerful Wiki Markup</h2><p>While WYSIWYG HTML editors are nice to get started, the simplicity and power of wiki markup is something we don't want to miss. AtomicWiki uses WikiModel as a wiki syntax parser. This parser is highly customizable and supports multiple syntaxes, from which we chose the most generic syntax, called "common wiki".</p><h2>Extensibility: XQuery Scripting</h2><p>Since the wiki markup is parsed by an XQuery script, why not use XQuery for <span class="strong">macros</span> or <span class="strong">inline</span> code? For example, the call to the <code>code</code> macro:</p><wiki:macro xmlns:wiki="http://exist-db.org/xquery/wiki" name="code"><wiki:params><wiki:param name="lang" value="XML"/></wiki:params>
+{code lang="Java"}...{/code}
+</wiki:macro><p>is forwarded to an XQuery function:</p><wiki:macro xmlns:wiki="http://exist-db.org/xquery/wiki" name="code"><wiki:params><wiki:param name="lang" value="XQuery"/></wiki:params>
+declare function wikiext:code($context as element()) 
+as element() {
+    let $lang := $context/wiki:param[@name = 'lang']/@value
+    return
+    &lt;div xmlns="http://www.w3.org/1999/xhtml" 
+        class="example"&gt;
+        &lt;textarea name="code" class="{$lang}" rows="1" cols="60"&gt;
+        { $context/wiki:content/text() }
+        &lt;/textarea&gt;
+    &lt;/div&gt;
+};
+</wiki:macro><p>Extensions like <code>image()</code> are implemented in the same way. The XQuery function even has access to the HTTP request and thus to the HTTP parameters passed from the client.</p><p>The mapping between macro name and XQuery function is defined in the global configuration file:</p><wiki:macro xmlns:wiki="http://exist-db.org/xquery/wiki" name="code"><wiki:params><wiki:param name="lang" value="XML"/></wiki:params>
+&lt;extensions default-prefix="wikiext"&gt;
+    &lt;module path="wiki.xqm" namespace="http://exist-db.org/NS/wiki" 
+        prefix="wikiext"/&gt;
+&lt;/extensions&gt;
+</wiki:macro><p>This registers the XQuery module <code>wiki.xqm</code> as the default module for looking up macros and extensions. More modules can be added any time.</p><p>It is also possible to directly embed XQuery code into a wiki or blog entry using the script macro. Alternatively, you can keep the XQuery code in an extra document and put a reference to it into the content element of the Atom entry:</p><wiki:macro xmlns:wiki="http://exist-db.org/xquery/wiki" name="code"><wiki:params><wiki:param name="lang" value="XML"/></wiki:params>
+&lt;atom:content type="application/xquery" src="latestFeeds.xql"/
+</wiki:macro><p>The "Latest Posts" box at the left is created in this way.</p></div></content><author><name>editor</name></author></entry>

@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?><entry xmlns="http://www.w3.org/2005/Atom"><id>urn:uuid:80b07802-7530-4e99-bb56-6cdda6068668</id><updated>2008-10-16T22:23:14+02:00</updated><published>2007-11-10T16:29:00+01:00</published><link href="?id=urn:uuid:80b07802-7530-4e99-bb56-6cdda6068668" rel="edit" type="application/atom+xml"/><atom:title xmlns:atom="http://www.w3.org/2005/Atom" type="text">Scripting</atom:title><wiki:id xmlns:wiki="http://exist-db.org/xquery/wiki">Scripting</wiki:id><atom:content xmlns:atom="http://www.w3.org/2005/Atom" type="xhtml"><div xmlns="http://www.w3.org/1999/xhtml"><h2>Using the Script Macro</h2><p>You can directly embed XQuery code into a wiki entry using the script macro. For example:</p><wiki:macro xmlns:wiki="http://exist-db.org/xquery/wiki" name="code">
+5 + 4  = {script}5 + 4{/script}
+</wiki:macro><p>renders into:</p><p>5 + 4 = <wiki:macro xmlns:wiki="http://exist-db.org/xquery/wiki" name="script">5 + 4</wiki:macro></p><p>A script can access the current HTTP request, response or session and thus evaluate parameters passed in by the user:</p><wiki:macro xmlns:wiki="http://exist-db.org/xquery/wiki" name="code"><wiki:params><wiki:param name="lang" value="xquery"/></wiki:params>
+{html}
+&lt;form method="POST"&gt;
+  &lt;input type="text" name="name" /&gt;&lt;input type="submit" value="Send"/&gt;
+&lt;/form&gt;
+{/html}
+{script}
+let $name := request:get-parameter("name", ())
+return
+&lt;p&gt;
+{
+  if ($name) then concat("Hello ", $name, "!")
+  else "Please enter your name!"
+}
+&lt;/p&gt;
+{/script}
+</wiki:macro><p>Here's a working example using the code above:</p><wiki:macro xmlns:wiki="http://exist-db.org/xquery/wiki" name="html">
+&lt;form method="POST"&gt;
+  &lt;input type="text" name="name" /&gt;&lt;input type="submit" value="Send"/&gt;
+&lt;/form&gt;
+</wiki:macro><wiki:macro xmlns:wiki="http://exist-db.org/xquery/wiki" name="script">
+let $name := request:get-parameter("name", ())
+return
+&lt;p&gt;
+{
+  if ($name) then concat("Hello ", $name, "!")
+  else "Please enter your name!"
+}
+&lt;/p&gt;
+</wiki:macro><p>The XQuery script can also be executed on a database instance running outside the current web application. The XQuery will be posted to the URI specified in the parameter, which should point to eXist's REST interface (usually <code>/rest</code> or <code>/servlet</code>). The trailing part of the URL defines the collection on which the query is executed. For the example above, we simply add an <code>uri</code> attribute, pointing to the local REST interface:</p><wiki:macro xmlns:wiki="http://exist-db.org/xquery/wiki" name="code">
+{script uri="http://localhost:8000/rest/db" forward="yes"}
+let $name := request:get-parameter("name", ())
+return
+&lt;p&gt;
+{
+  if ($name) then concat("Hello ", $name, "!")
+  else "Please enter your name!"
+}
+&lt;/p&gt;
+{/script}
+</wiki:macro><p>If parameter <code>forward</code> is set to "yes" (the default), the current request parameters will be appened to the server URI and are thus available to the target XQuery. However, the HTTP session or other request properties are not forwarded.</p><h2>Including External Contents</h2><p>External contents can be included into an entry by using the include macro:</p><wiki:macro xmlns:wiki="http://exist-db.org/xquery/wiki" name="code">
+$include(uri="http://localhost:8000/rest/db/wiki/util/test.xml")
+</wiki:macro><h2>Loading Entry Contents from an URL</h2><p>The content of an entry in a feed can also be loaded from an external URL. This is currently not possible through the web interface, though editing an entry manually is easy and can be done with any WebDAV-enabled editor (the WebDAV URL is <a href="http://localhost:8000/webdav/db/).">http://localhost:8000/webdav/db/).</a></p><p>If the <code>content</code> element in the entry has a <span class="strong">src</span> attribute, the contents of the entry will be loaded from the URL specified in the attribute. For example:</p><wiki:macro xmlns:wiki="http://exist-db.org/xquery/wiki" name="code"><wiki:params><wiki:param name="lang" value="xml"/></wiki:params>
+&lt;feed xmlns="http://www.w3.org/2005/Atom"&gt;
+    &lt;id&gt;urn:uuid:de020fd6-412e-48eb-8fb9-618d8b007724&lt;/id&gt;
+    &lt;updated&gt;2008-03-10T15:22:51+01:00&lt;/updated&gt;
+    &lt;title&gt;Test Page&lt;/title&gt;
+    &lt;entry&gt;
+        &lt;id&gt;urn:uuid:3c4bd8eb-5d64-4ab5-9cd8-3501e47c5b2d&lt;/id&gt;
+        &lt;content type="text/xml" src="http://localhost:8000/rest/db/wiki/util/test.xql"/&gt;
+    &lt;/entry&gt;
+&lt;/feed&gt;
+</wiki:macro><p>To generate this, create a dummy entry through the web interface, then open the feed via WebDAV, delete the dummy content and add the <span class="strong">src</span> attribute.</p></div></atom:content><atom:author xmlns:atom="http://www.w3.org/2005/Atom"><atom:name>wolf</atom:name></atom:author><wiki:position xmlns:wiki="http://exist-db.org/xquery/wiki">2</wiki:position></entry>

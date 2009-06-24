@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="UTF-8"?><collection xmlns="http://exist.sourceforge.net/NS/exist" name="/db/wiki/atomic/setup/.feed.entry" owner="editor" group="bloggers" mode="755" created="2009-04-21T00:17:37+02:00" version="1">
+    <resource type="XMLResource" name="0b698a45-79c8-4763-a7d0-0620235827f5.entry.atom" owner="editor" group="bloggers" mode="755" created="2009-04-21T00:17:59+02:00" modified="2009-04-21T00:17:59+02:00" filename="0b698a45-79c8-4763-a7d0-0620235827f5.entry.atom" mimetype="text/xml"/>
+    <resource type="XMLResource" name="8c79a0d4-902d-4205-bd68-52f550597bd6.entry.atom" owner="editor" group="bloggers" mode="755" created="2009-04-21T00:17:46+02:00" modified="2009-04-21T00:17:46+02:00" filename="8c79a0d4-902d-4205-bd68-52f550597bd6.entry.atom" mimetype="text/xml"/>
+    <resource type="XMLResource" name="9bde51f3-40fa-4abf-a5bc-59a098d0bea0.entry.atom" owner="editor" group="bloggers" mode="755" created="2009-04-21T00:17:37+02:00" modified="2009-04-21T00:17:37+02:00" filename="9bde51f3-40fa-4abf-a5bc-59a098d0bea0.entry.atom" mimetype="text/xml"/>
+</collection>

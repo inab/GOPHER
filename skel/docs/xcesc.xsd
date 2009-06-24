@@ -214,6 +214,11 @@
 											<xsd:documentation><![CDATA[The unique nickname of the user in the system]]></xsd:documentation>
 										</xsd:annotation>
 									</xsd:attribute>
+									<xsd:attribute name="nickpass" type="xsd:string" use="optional">
+										<xsd:annotation>
+											<xsd:documentation><![CDATA[The pasword associated to the user in the system. This attribute is only used in XForms]]></xsd:documentation>
+										</xsd:annotation>
+									</xsd:attribute>
 									<xsd:attribute name="status" use="required">
 										<xsd:annotation>
 											<xsd:documentation><![CDATA[The user status: enabled or disabled. When an user is disabled, all the servers owned by him/her are disabled]]></xsd:documentation>

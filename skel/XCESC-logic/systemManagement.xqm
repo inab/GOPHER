@@ -35,6 +35,7 @@ declare function mgmt:getManagementDoc()
 		doc($mgmt:mgmtDocPath)/element()
 	) else (
 		let $newDoc := <xcesc:managementData><xcesc:users/><xcesc:servers/></xcesc:managementData>
+		let $dummy := xmldb:create-collection("/",$mgmt:mgmtCol)
 		let $retElem := doc(xmldb:store($mgmt:mgmtCol,$mgmt:mgmtDoc,$newDoc,'application/xml'))/element()
 		(: Only the owner can look at/change this file :)
 		let $empty := xmldb:set-resource-permissions($mgmt:mgmtCol,$mgmt:mgmtDoc,$mgmt:adminUser,$mgmt:xcescGroup,7*64)
@@ -67,6 +68,13 @@ declare function mgmt:changeServerOwnership($oldOwnerId as xs:string,$serverId a
 };
 
 (: It creates a server :)
+declare function mgmt:createServer($serverConfig as element(xcesc:server))
+	as xs:string?
+{
+	(mgmt:createServer($serverConfig/@name,$serverConfig/@managerId,$serverConfig/@uri,$serverConfig/@type eq 'participant',$serverConfig/xcesc:description/text(),$serverConfig/xcesc:kind/text(),$serverConfig/xcesc:otherParams/xcesc:param,$serverConfig/xcesc:reference))
+};
+
+(: And programmatically :)
 declare function mgmt:createServer($name as xs:string,$managerId as xs:string,$uri as xs:anyURI,$isParticipant as xs:boolean,$description as xs:string?,$domains as xs:string+,$params as element(xcesc:param)+,$references as element(xcesc:reference)*)
 	as xs:string? 
 {
@@ -192,6 +200,16 @@ declare function mgmt:updateServer($managerId as xs:string,$serverConfig as elem
 (:::::::::)
 
 (: User creation :)
+(: From XForms :)
+declare function mgmt:createUser($userConfig as element(xcesc:user))
+	as xs:string?
+{
+	let $alert := util:log-system-err("TUVE KI")
+	return
+		(mgmt:createUser($userConfig/@nickcname,$userConfig/@nickpass,$userConfig/@firstName,$userConfig/@lastName,$userConfig/@organization,$userConfig/xcesc:eMail,$userConfig/xcesc:reference))
+};
+
+(: And the programatic way :)
 declare function mgmt:createUser($nickname as xs:string,$nickpass as xs:string,$firstName as xs:string,$lastName as xs:string,$organization as xs:string,$eMails as element(xcesc:eMail)+,$references as element(xcesc:reference)*)
 	as xs:string?
 {
@@ -211,6 +229,7 @@ declare function mgmt:createUser($nickname as xs:string,$nickpass as xs:string,$
 					$id
 				)
 			else
+				util:log-system-err(string-join(("On server creation, user",$nickname,"already existed"),' '))
 				error((),string-join(("On server creation, user",$nickname,"already existed"),' '))
 	}
 };
@@ -243,6 +262,13 @@ declare function mgmt:getUserFromNickname($nickname as xs:string)
 	as element(xcesc:user)?
 {
 	mgmt:getManagementDoc()//xcesc:user[@nickname=$nickname]
+};
+
+(: It obtains the whole user configuration, by nickname :)
+declare function mgmt:getUsers()
+	as element(xcesc:user)*
+{
+	mgmt:getManagementDoc()//xcesc:user
 };
 
 (: It updates most pieces of the user declaration :)

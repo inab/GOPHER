@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?><entry xmlns="http://www.w3.org/2005/Atom"><id>urn:uuid:227879c2-e5d6-4ab5-8cc7-6b47bcbe8078</id><updated>2008-03-12T18:23:04+01:00</updated><published>2007-11-11T13:43:00+01:00</published><link href="?id=urn:uuid:227879c2-e5d6-4ab5-8cc7-6b47bcbe8078" rel="edit" type="application/atom+xml"/><title type="text">Welcome to AtomicWiki</title><wiki:id xmlns:wiki="http://exist-db.org/xquery/wiki">WelcometoAtomicWiki</wiki:id><content type="xhtml"><div xmlns="http://www.w3.org/1999/xhtml"><p>This is the root of the feed hierarchy. There are the following sub-feeds:</p><wiki:macro xmlns:wiki="http://exist-db.org/xquery/wiki" name="script">
+import module namespace xdb="http://exist-db.org/xquery/xmldb";
+
+let $collName := $context/@collection
+return
+  &lt;ul xmlns="http://www.w3.org/1999/xhtml"&gt;
+  {
+    for $child in xdb:get-child-collections($collName)
+    where $child != '.feed.entry'
+    return
+      &lt;li&gt;
+      &lt;a href="{$child}/"&gt;{$child}&lt;/a&gt;
+      &lt;/li&gt;
+  }
+  &lt;/ul&gt;
+</wiki:macro><p>To change anything, you need to log in with your username and password. After installation the default user is <code>"editor"</code>, password <code>"atom"</code></p></div></content><author><name>editor</name></author></entry>
