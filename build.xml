@@ -620,7 +620,7 @@
 			user="${deploy.eXist.gopher.user}"
 			password="${deploy.eXist.gopher.pass}"
 			failonerror="true"
-			resource="guiManagement.xml" mode="group=-read,-write,-update,other=-read,-write,-update"
+			resource="guiManagement.xml" mode="group=+read,-write,-update,other=+read,-write,-update"
 		/>
 		
 		<!-- Then, GOPHER non XML content -->

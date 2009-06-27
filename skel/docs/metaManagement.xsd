@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema
+    xmlns:xs="http://www.w3.org/2001/XMLSchema"
+    xmlns:mgmt="http://www.cnio.es/scombio/xcesc/1.0/xquery/metaManagement"
+    elementFormDefault="qualified"
+    targetNamespace="http://www.cnio.es/scombio/xcesc/1.0/xquery/metaManagement"
+>
+    <xs:annotation>
+        <xs:documentation><![CDATA[XCESC meta management configuration schema]]></xs:documentation>
+    </xs:annotation>
+    
+    <xs:element name="metaManagement">
+        <xs:annotation>
+            <xs:documentation><![CDATA[The root element for this piece of configuration]]></xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+                <xs:attribute name="user" use="required" type="xs:string">
+                    <xs:annotation>
+                        <xs:documentation><![CDATA[The eXist superuser]]></xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
+                <xs:attribute name="password" use="required" type="xs:string">
+                    <xs:annotation>
+                        <xs:documentation><![CDATA[The eXist superpass]]></xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
+        </xs:complexType>
+    </xs:element>
+</xs:schema>
