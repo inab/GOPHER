@@ -122,7 +122,7 @@ return if(empty($dumpost)) then (
 				<input type="checkbox" onclick="$('console').style.display = this.checked? 'block' : 'none';" checked="checked"/> Debug
 			</span>
 		</div>
-		<xforms:repeat nodeset="xcesc:user" id="transactions" appearance="compact">
+		<xforms:repeat nodeset="xcesc:user" id="usuarios" appearance="full">
                     <xforms:output ref="@id">
                         <xforms:label>The XCESC user Id</xforms:label>
                         <xforms:hint>this is a repeated input control</xforms:hint>
@@ -180,10 +180,12 @@ return if(empty($dumpost)) then (
 			-->
 			<xforms:trigger class="delete">
 				<xforms:label>X</xforms:label>
-				<xforms:insert nodeset="xcesc:deletedUser" position="after" at="last()"/>
-				<xforms:setvalue ref="xcesc:deletedUser[last()]/@nickname" value="@nickname"/>
-				<xforms:setvalue ref="xcesc:deletedUser[last()]/@id" value="@id"/>
-				<xforms:delete nodeset="." at="1" ev:event="DOMActivate" if="count(//xcesc:user) > 1"/>
+				<xforms:action ev:event="DOMActivate">
+					<xforms:insert nodeset="xcesc:deletedUser" position="after" at="last()"/>
+					<xforms:setvalue ref="xcesc:deletedUser[last()]/@nickname" value="@nickname"/>
+					<xforms:setvalue ref="xcesc:deletedUser[last()]/@id" value="@id"/>
+					<xforms:delete nodeset="." at="1" if="count(//xcesc:user) > 1"/>
+				</xforms:action>
 			</xforms:trigger>
 		</xforms:repeat>
 		<!--

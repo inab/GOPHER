@@ -9,8 +9,8 @@ declare option exist:serialize "method=text media-type=application/json";
 (:
 declare variable $atom:uri := concat($mgmt:publicBaseURI, "/atom/summary/wiki/blogs/eXist/");
 :)
-declare variable $atom:host := 'http://atomic.exist-db.org';
-declare variable $atom:uri := concat($atom:host, "/atom/summary/wiki/blogs/eXist/");
+declare variable $atom:host := 'http://gopher.bioinfo.cnio.es';
+declare variable $atom:uri := concat($atom:host, "/atom/summary/wiki/blogs/Atomic/");
 
 declare function atom:format-entry($feed as element()) {
     <ul>

@@ -5,6 +5,7 @@
 	xmlns:mgmt="http://www.cnio.es/scombio/xcesc/1.0/xquery/systemManagement"
 	xmlns:job="http://www.cnio.es/scombio/xcesc/1.0/xquery/jobManagement"
 	xmlns:gui="http://www.cnio.es/scombio/xcesc/1.0/xquery/guiManagement"
+	xmlns:meta="http://www.cnio.es/scombio/xcesc/1.0/xquery/metaManagement"
 	targetNamespace="http://www.cnio.es/scombio/xcesc/1.0"
 	elementFormDefault="qualified">
 
@@ -25,6 +26,12 @@
 	</xsd:import>
 	
 	<xsd:import namespace="http://www.cnio.es/scombio/xcesc/1.0/xquery/guiManagement" schemaLocation="guiManagement.xsd">
+		<xsd:annotation>
+			<xsd:documentation><![CDATA[GUI management configuration schema]]></xsd:documentation>
+		</xsd:annotation>
+	</xsd:import>
+	
+	<xsd:import namespace="http://www.cnio.es/scombio/xcesc/1.0/xquery/metaManagement" schemaLocation="metaManagement.xsd">
 		<xsd:annotation>
 			<xsd:documentation><![CDATA[GUI management configuration schema]]></xsd:documentation>
 		</xsd:annotation>
@@ -742,6 +749,8 @@ ab initio, then the origin of the match must be identified]]></xsd:documentation
 			<xsd:sequence>
 				<xsd:element ref="mgmt:systemManagement"/>
 				<xsd:element ref="job:jobManagement"/>
+				<xsd:element ref="gui:guiManagement"/>
+				<xsd:element ref="meta:metaManagement"/>
 			</xsd:sequence>
 		</xsd:complexType>
 	</xsd:element>

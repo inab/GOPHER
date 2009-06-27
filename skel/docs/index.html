@@ -1,0 +1,74 @@
+<html>
+<head>
+	<title>XCESC technical documentation</title>
+
+	<link rel="stylesheet" type="text/css" href="../style/default-style.css">
+
+	<style  type="text/css"><!--
+img {
+	border: none;
+	padding: 1px;
+}
+
+a > img:hover {
+	padding: 0px;
+	border: 1px solid blue;
+}
+//--></style>
+
+	<script type="text/javascript" src="../js/ORFandDB-widgetCommon/browserdetect/BrowserDetect.js"></script>
+
+	<script type="text/javascript" language="JavaScript" src="../js/adobesvgcheck/svgcheck.js"></script>
+	<script type="text/vbscript" language="VBScript" src="../js/adobesvgcheck/svgcheck.vbs"></script>
+	<script type="text/javascript" language="JavaScript"><!--
+if(BrowserDetect.browser=='Explorer') {
+	checkAndGetSVGViewer();
+}
+// -->
+	</script>
+</head>
+<body>
+<div style="float:left;margin-right:24px;">
+	<a href="http://gopher.bioinfo.cnio.es/" target="_blank"><img src="../style/GOPHER.png"
+	style="float:left;clear:both;"></a>
+	<a href="http://atomic.exist-db.org/" target="_blank"><img src="../style/AtomicWiki.png"
+	style="float:left;clear:left;"></a>
+	<div style="float:left;clear:right;">
+	<a href="http://www.exist-db.org/" target="_blank"><img src="../style/powered.gif"></a><br>
+	<a href="http://www.agencexml.com/xsltforms" target="_blank"><img src="../style/XSLTForms.png"></a>
+	</div>
+</div>
+<div>
+	<div align="center"><h2 style="color:#bb0909;">XCESC (XML Continuous Evaluation System Core) technical documentation</h2></div>
+	<p>As any CES <i>(continuous evaluation system)</i>, XCESC always follows the same conceptual
+steps:</p>
+<ul>
+<li>Periodically gather representative queries for the methods and servers
+to assess which are novel (not previously used in previous submissions to
+the participant methods and servers).</li>
+<li>Management of participants and evaluators in the assessment: registration,
+updates, programmed shutdowns, results gathering, etc...</li>
+<li>Filtering and tidying up of the representative query sets used to assess
+the participants, based on some criteria. And then, the queries are sent to the
+active participants.</li>
+<li>Sending of an augmented version of the representative query sets to the
+evaluators (assessment methods and servers), so the complexity level of the
+assessment is measured.</li>
+<li>Statistics generation.</li>
+<li>Give end user access to the gathered information which is public.</li>
+</ul>
+	<p>Perhaps the most important thing is: how can a CES been built in a generic way? The
+	answer is using well-documented or standardized protocols and messages. In the case of XCESC
+	you can find next documentation useful:</p>
+<div align="center"><a href="gopher-message-flow.svg" target="_blank"><img
+src="gopher-message-flow.png"></a></div>
+<p>Message flow of the system in the assessment phase is above (click it in order to get its SVG
+scalable version). A more formal definition of the protocol will be provided soon.</p>
+<p>The XML messages, and in general, the XML content of the database maintained by an XCESC
+instance is based on the same XML Schema definition. <a href="xcesc.xsd" target="_blank">xcesc.xsd</a> is available
+<a href="xcesc.xsd" target="_blank">here</a>, and the documentation of <a href="xcesc.xsd.html" target="_blank">xcesc.xsd</a> is
+available <a href="xcesc.xsd.html" target="_blank">here</a>
+</p>
+</div>
+</body>
+</html>

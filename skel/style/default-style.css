@@ -148,6 +148,14 @@ a, a:visited {
     overflow: hidden;
 }
 
+#newsgopher {
+    float: right;
+    clear: right;
+    width: 180px;
+    display: block;
+    overflow: hidden;
+}
+
 /* a block in the sidebar or the news */
 .block {
     margin: 0 0 12px 0;

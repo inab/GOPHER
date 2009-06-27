@@ -229,7 +229,7 @@ declare function mgmt:createUser($nickname as xs:string,$nickpass as xs:string,$
 				)
 			) else (
 				util:log-system-err(string-join(("On server creation, user",$nickname,"already existed"),' ')),
-				error((),string-join(("On server creation, user",$nickname,"already existed"),' '))
+				error((),string-join(("On user creation, user",$nickname,"already existed"),' '))
 			)
 	(: } :)
 };
