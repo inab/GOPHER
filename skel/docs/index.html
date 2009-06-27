@@ -57,18 +57,27 @@ assessment is measured.</li>
 <li>Statistics generation.</li>
 <li>Give end user access to the gathered information which is public.</li>
 </ul>
-	<p>Perhaps the most important thing is: how can a CES been built in a generic way? The
-	answer is using well-documented or standardized protocols and messages. In the case of XCESC
+	<p>Perhaps the most important questions are: how can a CES been built in a generic way? How
+	can I become a participant? The answer is using well-documented or standardized protocols
+	and messages, and providing an example client. In the case of XCESC
 	you can find next documentation useful:</p>
 <div align="center"><a href="gopher-message-flow.svg" target="_blank"><img
 src="gopher-message-flow.png"></a></div>
-<p>Message flow of the system in the assessment phase is above (click it in order to get its SVG
-scalable version). A more formal definition of the protocol will be provided soon.</p>
+<p>Asynchronous message flow of the system in the assessment phase is above (click it in order to
+get its SVG scalable version). A more formal definition of the protocol will be provided soon.</p>
 <p>The XML messages, and in general, the XML content of the database maintained by an XCESC
 instance is based on the same XML Schema definition. <a href="xcesc.xsd" target="_blank">xcesc.xsd</a> is available
 <a href="xcesc.xsd" target="_blank">here</a>, and the documentation of <a href="xcesc.xsd.html" target="_blank">xcesc.xsd</a> is
 available <a href="xcesc.xsd.html" target="_blank">here</a>
 </p>
+<p>An example of an assessment participant service is also available (click <a
+href="sampleGOPHERservice.pl">sampleGOPHERService.pl</a> to download it). Although it is a simple
+CGI written in Perl it is easy to translate it to other popular server languages, like a Java
+Servlet, a PHP page, Ruby On Rails, Python, etc... Also, it is only a template, because any service which
+worths being assessed usually takes too much resources and time to be run online. Many developers
+will surely write custom versions of it which will integrate with their internal services
+infrastructure, like running the jobs in separate machines, putting the jobs in a software and jobs
+queue system, putting the jobs in a grid environment, ...</p>
 </div>
 </body>
 </html>
