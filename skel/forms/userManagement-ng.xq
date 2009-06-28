@@ -42,6 +42,12 @@ return if(empty($dumpost)) then (
 		<title>GOPHER User Management</title>
 		<meta name="description" content="GOPHER User Management"/>
 		<meta name="keywords" content="AJAX, Javascript, Web, XForms, XSLTForms, Exemples, Samples"/>
+		
+        	<link rel="shortcut icon" href="../style/GOPHER-favicon.ico"
+		type="image/vnd.microsoft.icon"/>
+        	<link rel="icon" href="../style/GOPHER-favicon.ico" type="image/vnd.microsoft.icon"/>
+		<link rel="stylesheet" type="text/css" href="../style/default-style.css"/>
+		
 		<style type="text/css"><![CDATA[
 			.amount input {
 			width : 60px;
@@ -58,7 +64,15 @@ return if(empty($dumpost)) then (
 		<xforms:model id="default-model">
 			<xforms:instance id="users">
 				<xcesc:users>
-					{mgmt:getUsers()}
+					{
+						let $users := mgmt:getUsers()
+						return if(empty($users)) then
+							<xcesc:user nickname="" nickpass="" firstName="" lastName="" organization="">
+								<xcesc:eMail></xcesc:eMail>
+							</xcesc:user>
+						else
+							$users
+					}
 				</xcesc:users>
 			</xforms:instance>
 			<!--
