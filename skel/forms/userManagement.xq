@@ -124,16 +124,16 @@ return if(empty($dumpost)) then (
 		</div>
 		<xforms:repeat nodeset="xcesc:user" id="usuarios" appearance="full">
                     <xforms:output ref="@id">
-                        <xforms:label>The XCESC user Id</xforms:label>
+                        <xforms:label>XCESC user Id</xforms:label>
                         <xforms:hint>this is a repeated input control</xforms:hint>
                     </xforms:output>
                     <xforms:input ref="@nickname">
-                        <xforms:label>The user name</xforms:label>
+                        <xforms:label>User name</xforms:label>
                         <xforms:hint>this is a repeated input control</xforms:hint>
                     </xforms:input>
 
                     <xforms:secret ref="@nickpass">
-                        <xforms:label>The user password</xforms:label>
+                        <xforms:label>User password</xforms:label>
                         <xforms:hint>this is a repeated input control</xforms:hint>
                     </xforms:secret>
 
