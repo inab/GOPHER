@@ -5,13 +5,14 @@ xquery version "1.0";
 
 module namespace casp="http://www.cnio.es/scombio/gopher/1.0/xquery/jobManagement/GOPHERCASP";
 
-import module namespace mgmt="http://www.cnio.es/scombio/xcesc/1.0/xquery/systemManagement" at "xmldb:exist:///db/XCESC-logic/systemManagement.xqm";
-import module namespace gmod="http://www.cnio.es/scombio/gopher/1.0/xquery/javaModule" at "java:org.cnio.scombio.jmfernandez.GOPHER.GOPHERModule";
-
 declare namespace xcesc="http://www.cnio.es/scombio/xcesc/1.0";
-declare namespace httpclient="http://exist-db.org/xquery/httpclient";
-declare namespace util="http://exist-db.org/xquery/util";
-declare namespace xmldb="http://exist-db.org/xquery/xmldb";
+
+import module namespace gmod="http://www.cnio.es/scombio/gopher/1.0/xquery/javaModule" at "java:org.cnio.scombio.jmfernandez.GOPHER.GOPHERModule";
+import module namespace httpclient="http://exist-db.org/xquery/httpclient";
+import module namespace mgmt="http://www.cnio.es/scombio/xcesc/1.0/xquery/systemManagement" at "xmldb:exist:///db/XCESC-logic/systemManagement.xqm";
+import module namespace util="http://exist-db.org/xquery/util";
+import module namespace xmldb="http://exist-db.org/xquery/xmldb";
+
 
 (: Binary FASTA files :)
 declare variable $casp:pdbfile as xs:string := 'filtered-pdb.fas';

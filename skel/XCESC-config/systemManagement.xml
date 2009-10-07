@@ -4,7 +4,9 @@
 	collection="/db/GOPHER-config"
 	group="gopher"
 	managementDoc="managementData.xml"
-	publicBaseURI="http://gopher.bioinfo.cnio.es"
+	publicServerName="gopher.bioinfo.cnio.es"
+	publicServerPort="80"
+	publicBasePath=""
 >
     <admin user="gopher" password="!Ese:PotR0Kloro" group="gopher" mail="gopher_support@cnio.es"/>
 </systemManagement>

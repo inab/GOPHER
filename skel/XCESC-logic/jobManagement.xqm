@@ -6,6 +6,7 @@ xquery version "1.0";
 module namespace job="http://www.cnio.es/scombio/xcesc/1.0/xquery/jobManagement";
 
 declare namespace xcesc="http://www.cnio.es/scombio/xcesc/1.0";
+declare namespace xs="http://www.w3.org/2001/XMLSchema";
 
 import module namespace httpclient="http://exist-db.org/xquery/httpclient";
 import module namespace util="http://exist-db.org/xquery/util";
@@ -26,6 +27,8 @@ declare variable $job:physicalScratch as xs:string := collection($mgmt:configCol
 
 (: Queries document :)
 declare variable $job:queriesDoc as xs:string := 'roundData.xml';
+declare variable $job:assessPrefix as xs:string := 'assess-';
+declare variable $job:assessPostfix as xs:string := '.xml';
 
 (: BaseURL :)
 declare variable $job:logicCol as xs:string := 'XCESC-logic';
@@ -33,9 +36,6 @@ declare variable $job:pobox as xs:string := 'pobox.xq';
 declare variable $job:poboxURI as xs:string := string-join(($mgmt:publicBaseURI,$job:logicCol,$job:pobox),'/');
 declare variable $job:evapobox as xs:string := 'evapobox.xql';
 declare variable $job:evaURI as xs:string := string-join(($mgmt:publicBaseURI,$job:logicCol,$job:evapobox),'/');
-
-(: Misc :)
-declare variable $job:partServer as xs:string := "participant";
 
 (:::::::::::::::::::::::)
 (: Last Round Document :)
@@ -135,16 +135,18 @@ declare function job:doRound($currentDate as xs:date,$storedExperiment as elemen
 	(: Fourth, get online servers based on currentDateTime :)
 	let $querySet:=$storedExperiment//xcesc:query
 	let $targetSet:=$storedExperiment//xcesc:target
-	let $jobs:=for $job in $querySet
+	let $jobs:=	for $job in $querySet
 		return <xcesc:job targetId="{$job/@queryId}" status="submitted"/>
 	(: Fifth, submit jobs!!!! :)
 	for $onlineServer in $onlineServers
 		let $ticketId:=util:uuid()
 		let $poboxURI := string-join(($job:poboxURI,$currentDate,$ticketId),'/')
-		let $queries:=if($onlineServer/@type=$job:partServer) then
-			return <xcesc:queries callback="{$poboxURI}">{$querySet}</xcesc:queries>
-		else
-			return <xcesc:toEvaluate callback="{$poboxURI}">{$targetSet}</xcesc:toEvaluate>
+		let $queries:=(
+			if($onlineServer/@type eq $mgmt:partServer) then
+				<xcesc:queries callback="{$poboxURI}">{$querySet}</xcesc:queries>
+			else
+				<xcesc:toEvaluate callback="{$poboxURI}">{$targetSet}</xcesc:toEvaluate>
+		)
 		let $sendDateTime:=current-dateTime()
 		let $ret:=httpclient:post($onlineServer/@uri,$queries,false,())
 	return
@@ -152,7 +154,7 @@ declare function job:doRound($currentDate as xs:date,$storedExperiment as elemen
 			update insert <xcesc:participant ticket="{$ticketId}" startStamp="{$sendDateTime}">
 			{$onlineServer}
 			{
-				if($ret/@statusCode='200' or $ret/@statusCode='202') then
+				if($ret/@statusCode eq '200' or $ret/@statusCode eq '202') then
 					$jobs
 				else
 					<xcesc:errorMessage statusCode="$ret/@statusCode">{$ret/httpclient:body/*}</xcesc:errorMessage>
@@ -207,35 +209,85 @@ declare function job:doTestRound($baseRound as xs:string,$servers as element(xce
 			()
 	(: } :)
 	let $empty3 := job:doRound($newRound,$newRoundsDoc,$servers) 
-		return $newRound
+	return $newRound
 };
 
-declare function job:joinResults($round as xs:string,$ticket as xs:string,$answers as xcesc:answers)
+declare function job:joinResults($round as xs:string,$ticket as xs:string,$timestamp as xs:dateTime,$answers as element(xcesc:answers))
 	as xs:positiveInteger
 {
 	(: (# exist:batch-transaction #) { :)
 		let $partElem:=doc(string-join(($job:resultsCol,$round,$job:queriesDoc),'/'))//xcesc:participant[@ticket=$ticket]
 		return
-			if(exists($partElem)) then
+			if(exists($partElem)) then (
 				(
-				for $answer in $answers//xcesc:answer,$job in $partElem//xcesc:job[@targetId=$answer/@targetId]
-				let $matches:=$answer//xcesc:match
+				for $answer in $answers//xcesc:answer
+					let $matches:= (
+						(: Match fixing and isolation :)
+						for $match in $answer//xcesc:match
+						return <xcesc:match domain="{$match/@domain}" timeStamp="{$timestamp}">{$match/node()}</xcesc:match>
+					)
 				return
-					(
-						update insert attribute stopStamp { current-dateTime() } into $job,
-						update value $job/@status with 'finished',
-						if(exists($answer/@message)) then
-							update insert attribute lastMessage { $answer/@message } into $job
-						else
-							()
-						,
-						if(exists($matches)) then
-							update insert $matches into $job
-						else
-							()
-					) 
+					for $job in $partElem//xcesc:job[@targetId=$answer/@targetId]
+					return
+						(
+							if(exists($job/@stopStamp)) then
+								update value $job/@stopStamp with $timestamp
+							else
+								update insert attribute stopStamp { $timestamp } into $job
+							,
+							update value $job/@status with 'finished',
+							if(exists($answer/@message)) then
+								update insert attribute lastMessage { $answer/@message } into $job
+							else
+								()
+							,
+							if(exists($matches)) then
+								update insert $matches into $job
+							else
+								()
+						)
 				),200
-			else
+			) else
+				404
+	(: } :)
+};
+
+declare function job:joinAssessments($round as xs:string,$assessmentTicket as xs:string,$evaluatorTicket as xs:string,$timestamp as xs:dateTime,$answers as element(xcesc:answers))
+	as xs:positiveInteger
+{
+	(: (# exist:batch-transaction #) { :)
+		let $evalElem:=doc(string-join(($job:resultsCol,$round,concat($job:assessPrefix,$assessmentTicket,$job:assessPostfix)),'/'))//xcesc:evaluator[@ticket=$evaluatorTicket]
+		return
+			if(exists($evalElem)) then (
+				(
+				for $answer in $answers//xcesc:answer
+					let $matches:= (
+						(: Match fixing and isolation :)
+						for $match in $answer//xcesc:jobEvaluation
+						return <xcesc:jobEvaluation targetId="{$match/@targetId}" timeStamp="{$timestamp}">{$match/node()}</xcesc:jobEvaluation>
+					)
+				return
+					for $job in $evalElem//xcesc:job[@participantTicket=$answer/@targetId]
+					return
+						(
+							if(exists($job/@stopStamp)) then
+								update value $job/@stopStamp with $timestamp
+							else
+								update insert attribute stopStamp { $timestamp } into $job
+							,
+							update value $job/@status with 'finished',
+							if(exists($answer/@message)) then
+								update insert attribute lastMessage { $answer/@message } into $job
+							else
+								()
+							,
+							if(exists($matches)) then
+								update insert $matches into $job
+							else
+								()
+						)
+				),200
+			) else
 				404
 	(: } :)
 };

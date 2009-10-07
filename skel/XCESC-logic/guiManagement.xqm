@@ -44,3 +44,8 @@ declare function gui:get-rel-gui-path() as xs:string {
 	substring(gui:get-gui-path(),1)
 };
 
+
+(: Getting the relative base path of the Atomic Wiki installation :)
+declare function gui:get-public-base-URI() as xs:string {
+	$mgmt:publicBaseURI
+};

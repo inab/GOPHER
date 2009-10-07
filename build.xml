@@ -22,6 +22,7 @@
 	<property name="deploy.eXist.xcesc.group" value="${systemManagement(group)}"></property>
 	
 	<property name="xmldb.uri" value="xmldb:exist://${deploy.host}:${deploy.eXist.port}/xmlrpc"/>
+	<property name="publicBaseURI" value="http://${systemManagement(publicServerName)}:${systemManagement(publicServerPort)}${systemManagement(publicBasePath)}"/>
 	
 	<property name="src" location="src" />
 	<property name="build" location="build" />
@@ -175,6 +176,18 @@
 		</uptodate>
 	</target>
 	
+	<target name="is.patched.log4j.xml" depends="init">
+		<uptodate
+			property="already.patched.log4j.xml"
+			targetfile="${eXist.conf.dir}/log4j.xml"
+		>
+			<srcfiles file="${GOPHER.patches.dir}/log4j-eXist-logdir.patch"/>
+			<srcfiles file="${eXist.dir}/log4j.xml"/>
+			<srcfiles file="${ant.file}"/>
+			<srcfiles file="${ant.file.properties}"/>
+		</uptodate>
+	</target>
+	
 	<target name="is.patched.server.xml.norewrite" depends="init">
 		<uptodate
 			property="already.patched.server.xml.norewrite"
@@ -259,6 +272,26 @@
 		/>
 	</target>
 	
+	<target name="conditional.patch.log4j.xml" depends="is.patched.log4j.xml" unless="already.patched.log4j.xml">
+		<delete file="${eXist.conf.dir}/log4j.xml" failonerror="false"/>
+		<delete file="${eXist.conf.dir}/log4j.xml.rej" failonerror="false"/>
+		<patch
+			patchfile="${GOPHER.patches.dir}/log4j-eXist-logdir.patch"
+			originalfile="${eXist.dir}/log4j.xml"
+			destfile="${eXist.conf.dir}/log4j.xml"
+		/>
+		<fail message="Error while patching...">
+			<condition>
+				<or>
+					<not>
+						<available file="${eXist.conf.dir}/log4j.xml"/>
+					</not>
+					<available file="${eXist.conf.dir}/log4j.xml.rej"/>
+				</or>
+			</condition>
+		</fail>
+	</target>
+	
 	<target name="conditional.patch.server.xml.norewrite" depends="conditional.patch.server.xml,is.patched.server.xml.norewrite" unless="already.patched.server.xml.norewrite">
 		<xslt
 			in="${eXist.conf.dir}/server.xml"
@@ -275,6 +308,7 @@
 		<filter token="branch" value="${deploy.eXist.basebranch}"/>
 		<filter token="datadir" value="${deploy.eXist.startup.datadir}"/>
 		<filter token="confdir" value="${deploy.eXist.startup.confdir}"/>
+		<filter token="logsdir" value="${deploy.eXist.startup.logsdir}"/>
 		<copy
 			file="${GOPHER.patches.dir}/starteXist-GOPHER.sh"
 			tofile="${eXist.conf.dir}/${GOPHER.startup}"
@@ -289,6 +323,25 @@
 			<fileset dir="${the.dir}">
 				<include name="**/*.xq*" />
 				<exclude name="**/org/exist/atomic/configuration.xql"/>
+			</fileset>
+		</replaceregexp>
+		<replaceregexp match='"http://.+request:get-server-port\(\)' replace="gui:get-public-base-URI()" flags="g" byline="true">
+			<fileset dir="${the.dir}">
+				<include name="**/org/exist/atomic/configuration.xql"/>
+			</fileset>
+		</replaceregexp>
+		<replaceregexp match='concat\("/",' replace='concat(gui:get-gui-path(),' flags="g" byline="true">
+			<fileset dir="${the.dir}">
+			<!--
+				<include name="list-entries.xql"/>
+				<include name="list-feeds.xql"/>
+			-->
+				<include name="*.xq*"/>
+			</fileset>
+		</replaceregexp>
+		<replaceregexp match='cfg:get-html-uri\(\)' replace='gui:get-gui-path()' flags="g" byline="true">
+			<fileset dir="${the.dir}">
+				<include name="*.xq"/>
 			</fileset>
 		</replaceregexp>
 		<replaceregexp match='xdb:login\("xmldb:exist:///db",\s*"admin",\s*""\)' replace='xdb:login("xmldb:exist:///db", "${deploy.eXist.admin.user}", "${deploy.eXist.admin.pass}")' flags="g" byline="true">
@@ -315,6 +368,15 @@
 			<fileset dir="${the.dir}">
 				<include name="**/*.xq*" />
 				<contains text="gui:get-gui-path()" />
+				<not>
+					<contains text="import module namespace gui="/>
+				</not>
+			</fileset>
+		</replaceregexp>
+		<replaceregexp match="^declare" replace="import module namespace gui='http://www.cnio.es/scombio/xcesc/1.0/xquery/guiManagement' at 'xmldb:exist:///db/XCESC-logic/guiManagement.xqm';&#x0A;declare" flags="m">
+			<fileset dir="${the.dir}">
+				<include name="**/*.xq*" />
+				<contains text="gui:get-public-base-URI()" />
 				<not>
 					<contains text="import module namespace gui="/>
 				</not>
@@ -368,7 +430,7 @@
 	</target>
 	
 	<target name="deploy.skel.meta"
-		depends="init.eXist.extension,conditional.patch.conf.xml,conditional.patch.server.xml.norewrite,conditional.patch.startup,uncompress-saxon-bundle,build-atomic-xquery-jar,compile.AtomicWiki"
+		depends="init.eXist.extension,conditional.patch.conf.xml,conditional.patch.server.xml.norewrite,conditional.patch.log4j.xml,conditional.patch.startup,uncompress-saxon-bundle,build-atomic-xquery-jar,compile.AtomicWiki"
 		description="Remote eXist Meta-skeleton for GOPHER"
 	>
 		<!-- First, stop the patient (it may fail) -->
@@ -442,6 +504,7 @@
 				<include name="conf.xml"/>
 				<include name="server.xml"/>
 				<include name="server.xml.norewrite"/>
+				<include name="log4j.xml"/>
 				<include name="atom-services.xml"/>
 			</fileset>
 		</scp>
@@ -725,7 +788,7 @@
 			<property name="admin.password" value="${deploy.eXist.admin.pass}"/>
 			<property name="wiki.admin.user" value="${deploy.eXist.wiki.admin.user}"/>
 			<property name="wiki.admin.password" value="${deploy.eXist.wiki.admin.pass}"/>
-			<property name="wiki.base-uri" value="${systemManagement(publicBaseURI)}"/>
+			<property name="wiki.base-uri" value="${publicBaseURI}"/>
 			<property name="data.dir" value="${GOPHER.patches.dir}/AtomicWiki-site"/>
 			
 			<reference refid="AtomicWiki.classpath.core" torefid="classpath.core"/>
@@ -740,7 +803,7 @@
 			<property name="admin.password" value="${deploy.eXist.admin.pass}"/>
 			<property name="wiki.admin.user" value="${deploy.eXist.wiki.admin.user}"/>
 			<property name="wiki.admin.password" value="${deploy.eXist.wiki.admin.pass}"/>
-			<property name="wiki.base-uri" value="${systemManagement(publicBaseURI)}"/>
+			<property name="wiki.base-uri" value="${publicBaseURI}"/>
 			<property name="data.dir" value="${GOPHER.patches.dir}/AtomicWiki-site"/>
 			
 			<reference refid="AtomicWiki.classpath.core" torefid="classpath.core"/>
@@ -755,7 +818,7 @@
 			<property name="admin.password" value="${deploy.eXist.admin.pass}"/>
 			<property name="wiki.admin.user" value="${deploy.eXist.wiki.admin.user}"/>
 			<property name="wiki.admin.password" value="${deploy.eXist.wiki.admin.pass}"/>
-			<property name="wiki.base-uri" value="${systemManagement(publicBaseURI)}"/>
+			<property name="wiki.base-uri" value="${publicBaseURI}"/>
 			<property name="data.dir" value="${GOPHER.patches.dir}/AtomicWiki-site"/>
 			
 			<reference refid="AtomicWiki.classpath.core" torefid="classpath.core"/>
@@ -768,7 +831,7 @@
 			<arg value="-Dadmin.password=${deploy.eXist.admin.pass}"/>
 			<arg value="-Dwiki.admin.user=${deploy.eXist.wiki.admin.user}"/>
 			<arg value="-Dwiki.admin.password=${deploy.eXist.wiki.admin.pass}"/>
-			<arg value="-Dwiki.base-uri=${systemManagement(publicBaseURI)}"/>
+			<arg value="-Dwiki.base-uri=${publicBaseURI}"/>
 			<arg value="-Ddata.dir=${GOPHER.patches.dir}/AtomicWiki-site"/>
 			<arg value="${the.target}"/>
 		</exec>
@@ -834,7 +897,7 @@
 				<property name="admin.password" value="${deploy.eXist.admin.pass}"/>
 				<property name="wiki.admin.user" value="${deploy.eXist.wiki.admin.user}"/>
 				<property name="wiki.admin.password" value="${deploy.eXist.wiki.admin.pass}"/>
-				<property name="wiki.base-uri" value="${systemManagement(publicBaseURI)}"/>
+				<property name="wiki.base-uri" value="${publicBaseURI}"/>
 				<property name="data.dir" value="${GOPHER.patches.dir}/AtomicWiki-site"/>
 				
 				<reference refid="AtomicWiki.classpath.core" torefid="classpath.core"/>
@@ -854,7 +917,7 @@
 			<arg value="-Dadmin.password=${deploy.eXist.admin.pass}"/>
 			<arg value="-Dwiki.admin.user=${deploy.eXist.wiki.admin.user}"/>
 			<arg value="-Dwiki.admin.password=${deploy.eXist.wiki.admin.pass}"/>
-			<arg value="-Dwiki.base-uri=${systemManagement(publicBaseURI)}"/>
+			<arg value="-Dwiki.base-uri=${publicBaseURI}"/>
 			<arg value="-Ddata.dir=${GOPHER.patches.dir}/AtomicWiki-site"/>
 			<arg value="-d"/>
 			<arg value="configuration"/>

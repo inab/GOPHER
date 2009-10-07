@@ -5,13 +5,17 @@ xquery version "1.0";
 
 module namespace mgmt="http://www.cnio.es/scombio/xcesc/1.0/xquery/systemManagement";
 
-declare namespace xcesc="http://www.cnio.es/scombio/xcesc/1.0";
 declare namespace meta="http://www.cnio.es/scombio/xcesc/1.0/xquery/metaManagement";
+declare namespace xcesc="http://www.cnio.es/scombio/xcesc/1.0";
+declare namespace xs="http://www.w3.org/2001/XMLSchema";
 
 import module namespace util="http://exist-db.org/xquery/util";
 import module namespace xmldb="http://exist-db.org/xquery/xmldb";
 
 declare variable $mgmt:configCol as xs:string := "/db/XCESC-config";
+
+declare variable $mgmt:partServer as xs:string := 'participant';
+declare variable $mgmt:evalServer as xs:string := 'evaluator';
 
 declare variable $mgmt:adminUser as xs:string := collection($mgmt:configCol)//mgmt:systemManagement[1]/mgmt:admin/@user/string();
 declare variable $mgmt:adminPass as xs:string := collection($mgmt:configCol)//mgmt:systemManagement[1]/mgmt:admin/@password/string();
@@ -21,7 +25,14 @@ declare variable $mgmt:xcescGroup as xs:string := collection($mgmt:configCol)//m
 declare variable $mgmt:mgmtCol as xs:string := collection($mgmt:configCol)//mgmt:systemManagement[1]/@collection/string();
 declare variable $mgmt:mgmtDoc as xs:string := collection($mgmt:configCol)//mgmt:systemManagement[1]/@managementDoc/string();
 
-declare variable $mgmt:publicBaseURI as xs:string := collection($mgmt:configCol)//mgmt:systemManagement[1]/@publicBaseURI/string();
+declare variable $mgmt:publicServerPort as xs:string := collection($mgmt:configCol)//mgmt:systemManagement[1]/@publicServerPort/string();
+declare variable $mgmt:publicBaseURI as xs:string := concat(
+	if($mgmt:publicServerPort eq '443') then 'https' else 'http',
+	'://',
+	collection($mgmt:configCol)//mgmt:systemManagement[1]/@publicServerName/string(),
+	if($mgmt:publicServerPort ne '80' and $mgmt:publicServerPort ne '443') then concat(':',$mgmt:publicServerPort) else '',
+	collection($mgmt:configCol)//mgmt:systemManagement[1]/@publicBasePath/string()
+	);
 
 declare variable $mgmt:mgmtDocPath as xs:string := string-join(($mgmt:mgmtCol,$mgmt:mgmtDoc),'/');
 
@@ -62,7 +73,7 @@ declare function mgmt:changeServerOwnership($oldOwnerId as xs:string,$serverId a
 			let $serverDoc := $mgmtDoc//xcesc:server[@id eq $serverId and @managerId eq $oldOwnerId]
 			return
 				if(empty($serverDoc)) then
-					 error((),string-join(("On server ownership change, server",$serverId,"is not owned by",$oldOwnerId),' '))
+					error((),string-join(("On server ownership change, server",$serverId,"is not owned by",$oldOwnerId),' '))
 				else
 					update value $serverDoc/@managerId with $newOwnerId
 		)
@@ -73,7 +84,7 @@ declare function mgmt:changeServerOwnership($oldOwnerId as xs:string,$serverId a
 declare function mgmt:createServer($serverConfig as element(xcesc:server))
 	as xs:string?
 {
-	(mgmt:createServer($serverConfig/@name,$serverConfig/@managerId,$serverConfig/@uri,$serverConfig/@type eq 'participant',$serverConfig/xcesc:description/text(),$serverConfig/xcesc:kind/text(),$serverConfig/xcesc:otherParams/xcesc:param,$serverConfig/xcesc:reference))
+	(mgmt:createServer($serverConfig/@name,$serverConfig/@managerId,$serverConfig/@uri,$serverConfig/@type eq $mgmt:partServer,$serverConfig/xcesc:description/text(),$serverConfig/xcesc:kind/text(),$serverConfig/xcesc:otherParams/xcesc:param,$serverConfig/xcesc:reference))
 };
 
 (: And programmatically :)
@@ -85,7 +96,7 @@ declare function mgmt:createServer($name as xs:string,$managerId as xs:string,$u
 		return
 			if($mgmtDoc//xcesc:user[@id eq $managerId]) then
 				let $id:=util:uuid()
-				let $newServer:=<xcesc:server id="{$id}" name="{$name}" managerId="{$managerId}" uri="{$uri}" type="{if($isParticipant) then 'participant' else 'evaluator'}">
+				let $newServer:=<xcesc:server id="{$id}" name="{$name}" managerId="{$managerId}" uri="{$uri}" type="{if($isParticipant) then $mgmt:partServer else $mgmt:evalServer}">
 					<xcesc:description><![CDATA[{$description}]]></xcesc:description>
 					{
 						for $domain in $domains
@@ -118,18 +129,37 @@ declare function mgmt:deleteServer($managerId as xs:string,$id as xs:string)
 	(: } :)
 };
 
-(: It returns the set of available online servers :)
+(: It returns the set of available participant online servers :)
 declare function mgmt:getOnlineServers()
 	as element(xcesc:server)*
 {
 	(: (# exist:batch-transaction #) { :)
 		let $currentDateTime:=current-dateTime()
-		return mgmt:getOnlineServers($currentDateTime)
+		return mgmt:getOnlineServers($currentDateTime,$mgmt:partServer)
+	(: } :)
+};
+
+(: It returns the set of available online servers from a kind :)
+declare function mgmt:getOnlineServers($serverType as xs:string)
+	as element(xcesc:server)*
+{
+	(: (# exist:batch-transaction #) { :)
+		let $currentDateTime:=current-dateTime()
+		return mgmt:getOnlineServers($currentDateTime,$serverType)
+	(: } :)
+};
+
+(: It returns the set of available participant online servers at a specified date :)
+declare function mgmt:getOnlineServers($currentDateTime as xs:dateTime)
+	as element(xcesc:server)*
+{
+	(: (# exist:batch-transaction #) { :)
+	mgmt:getOnlineServers($currentDateType,$mgmt:partServer)
 	(: } :)
 };
 
 (: It returns the set of available online servers :)
-declare function mgmt:getOnlineServers($currentDateTime as xs:dateTime)
+declare function mgmt:getOnlineServers($currentDateTime as xs:dateTime,$serverType as xs:string)
 	as element(xcesc:server)*
 {
 	(: (# exist:batch-transaction #) { :)

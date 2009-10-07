@@ -536,11 +536,23 @@ function viewDocumentation(compDesc, compName, docTextArray) {
                   <span class="occurs">[1]</span> 
                   <p class="documentation">'The name of the document where management data (users, groups, registered servers) is being stored'</p>"</span>
                <br/>
-               <span style="margin-left: 0.5em"> publicBaseURI="<span class="type">
+               <span style="margin-left: 0.5em"> publicServerName="<span class="type">
+                     <a href="systemManagement.xsd.html#ns_xs"
+                        title="Find out namespace of 'xs' prefix">xs</a>:string</span> 
+                  <span class="occurs">[1]</span> 
+                  <p class="documentation">'The public server name for this XCESC installation.'</p>"</span>
+               <br/>
+               <span style="margin-left: 0.5em"> publicServerPort="<span class="type">
                      <a href="systemManagement.xsd.html#ns_xs"
                         title="Find out namespace of 'xs' prefix">xs</a>:anyURI</span> 
                   <span class="occurs">[1]</span> 
-                  <p class="documentation">'The public base URI for this XCESC installation.'</p>"</span>&gt; <br/>
+                  <p class="documentation">'The public server port for this XCESC installation.'</p>"</span>
+               <br/>
+               <span style="margin-left: 0.5em"> publicBasePath="<span class="type">
+                     <a href="systemManagement.xsd.html#ns_xs"
+                        title="Find out namespace of 'xs' prefix">xs</a>:anyURI</span> 
+                  <span class="occurs">[1]</span> 
+                  <p class="documentation">'The public base query path for this XCESC installation.'</p>"</span>&gt; <br/>
                <div style="margin-left: 1.5em">&lt;<a href="systemManagement.xsd.html#ns_mgmt"
                      title="Find out namespace of 'mgmt' prefix">mgmt</a>:admin<br/>
                   <span style="margin-left: 0.5em"> user="<span class="type">
@@ -635,7 +647,19 @@ function viewDocumentation(compDesc, compName, docTextArray) {
                               title="Find out namespace of 'xs' prefix">xs</a>:string</span>
                      </span>" <span class="scTag">use</span>="<span class="scContent">required</span>"/&gt;</div>
                   <div style="margin-left: 1.5em">&lt;<span class="scTag">xs:attribute</span> 
-                     <span class="scTag">name</span>="<span class="scContent">publicBaseURI</span>" <span class="scTag">type</span>="<span class="scContent">
+                     <span class="scTag">name</span>="<span class="scContent">publicServerName</span>" <span class="scTag">type</span>="<span class="scContent">
+                        <span class="type">
+                           <a href="systemManagement.xsd.html#ns_xs"
+                              title="Find out namespace of 'xs' prefix">xs</a>:string</span>
+                     </span>" <span class="scTag">use</span>="<span class="scContent">required</span>"/&gt;</div>
+                  <div style="margin-left: 1.5em">&lt;<span class="scTag">xs:attribute</span> 
+                     <span class="scTag">name</span>="<span class="scContent">publicServerPort</span>" <span class="scTag">type</span>="<span class="scContent">
+                        <span class="type">
+                           <a href="systemManagement.xsd.html#ns_xs"
+                              title="Find out namespace of 'xs' prefix">xs</a>:anyURI</span>
+                     </span>" <span class="scTag">use</span>="<span class="scContent">required</span>"/&gt;</div>
+                  <div style="margin-left: 1.5em">&lt;<span class="scTag">xs:attribute</span> 
+                     <span class="scTag">name</span>="<span class="scContent">publicBasePath</span>" <span class="scTag">type</span>="<span class="scContent">
                         <span class="type">
                            <a href="systemManagement.xsd.html#ns_xs"
                               title="Find out namespace of 'xs' prefix">xs</a>:anyURI</span>

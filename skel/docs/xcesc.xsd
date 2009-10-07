@@ -406,6 +406,68 @@ For instance, if a server is hybrid, in the sense it is able to generate predict
 ab initio, then the origin of the match must be identified]]></xsd:documentation>
 				</xsd:annotation>
 			</xsd:attribute>
+			<xsd:attribute  name="timeStamp" use='optional' type="xsd:dateTime">
+				<xsd:annotation>
+					<xsd:documentation><![CDATA[The timestamp assigned to this match once it arrives to the server]]></xsd:documentation>
+				</xsd:annotation>
+			</xsd:attribute>
+		</xsd:complexType>
+	</xsd:element>
+	
+	<xsd:element name="jobEvaluation">
+		<xsd:annotation>
+			<xsd:documentation><![CDATA[The evaluation of each one of the jobs done by the partipant being assessed]]></xsd:documentation>
+		</xsd:annotation>
+		<xsd:complexType>
+			<xsd:sequence minOccurs="1" maxOccurs="1">
+				<xsd:element name="matchEvaluation">
+					<xsd:complexType>
+						<xsd:sequence minOccurs="1" maxOccurs="1">
+							<xsd:element name="report">
+								
+							</xsd:element>
+							<xsd:element ref="xcesc:match" minOccurs="0" maxOccurs="unbounded"/>
+						</xsd:sequence>
+						<xsd:attribute name="place" use="required">
+							<xsd:simpleType>
+								<xsd:restriction base="xsd:string">
+									<xsd:enumeration value="right"></xsd:enumeration>
+									<xsd:enumeration value="partial"></xsd:enumeration>
+									<xsd:enumeration value="under"></xsd:enumeration>
+									<xsd:enumeration value="over"></xsd:enumeration>
+									<xsd:enumeration value="wrong"></xsd:enumeration>
+									<xsd:enumeration value="missing">
+										<xsd:annotation>
+											<xsd:documentation><![CDATA[This is a missing annotation]]></xsd:documentation>
+										</xsd:annotation>
+									</xsd:enumeration>
+								</xsd:restriction>
+							</xsd:simpleType>
+						</xsd:attribute>
+						<xsd:attribute name="annotation" use="required">
+							<xsd:simpleType>
+								<xsd:restriction base="xsd:string">
+									<xsd:enumeration value="right"/>
+									<xsd:enumeration value="under"/>
+									<xsd:enumeration value="over"/>
+									<xsd:enumeration value="wrong"/>
+									<xsd:enumeration value="missing"/>
+								</xsd:restriction>
+							</xsd:simpleType>
+						</xsd:attribute>
+					</xsd:complexType>
+				</xsd:element>
+			</xsd:sequence>
+			<xsd:attribute name="targetId" use="required" type="xsd:positiveInteger">
+				<xsd:annotation>
+					<xsd:documentation><![CDATA[The id of a job's answer from the participants point of view]]></xsd:documentation>
+				</xsd:annotation>
+			</xsd:attribute>
+			<xsd:attribute  name="timeStamp" use='optional' type="xsd:dateTime">
+				<xsd:annotation>
+					<xsd:documentation><![CDATA[The timestamp assigned to this match once it arrives to the server]]></xsd:documentation>
+				</xsd:annotation>
+			</xsd:attribute>
 		</xsd:complexType>
 	</xsd:element>
 	
@@ -420,10 +482,11 @@ ab initio, then the origin of the match must be identified]]></xsd:documentation
 						<xsd:documentation><![CDATA[An answer about a target]]></xsd:documentation>
 					</xsd:annotation>
 					<xsd:complexType>
-						<xsd:sequence>
+						<xsd:choice minOccurs="1" maxOccurs="1">
 							<xsd:element ref="xcesc:match" minOccurs="0" maxOccurs="unbounded"/>
-						</xsd:sequence>
-						<xsd:attribute name="targetId" use="required">
+							<xsd:element ref="xcesc:jobEvaluation" minOccurs="0" maxOccurs="unbounded"/>
+						</xsd:choice>
+						<xsd:attribute name="targetId" use="required" type="xsd:string">
 							<xsd:annotation>
 								<xsd:documentation><![CDATA[The id of the answer]]></xsd:documentation>
 							</xsd:annotation>
@@ -447,7 +510,7 @@ ab initio, then the origin of the match must be identified]]></xsd:documentation
 			<xsd:sequence>
 				<xsd:any minOccurs="0" maxOccurs="unbounded" namespace="##any" processContents="lax"/>
 			</xsd:sequence>
-			<xsd:attribute name="queryId" type="xsd:positiveInteger" use="required">
+			<xsd:attribute name="queryId" type="xsd:string" use="required">
 				<xsd:annotation>
 					<xsd:documentation><![CDATA[The id of the query (typically, a number)]]></xsd:documentation>
 				</xsd:annotation>
@@ -515,7 +578,7 @@ ab initio, then the origin of the match must be identified]]></xsd:documentation
 			</xsd:attribute>
 			<xsd:attribute name="origin" use="required">
 				<xsd:annotation>
-					<xsd:documentation><![CDATA[The origin of the query, for instqance PDB or PDBPre]]></xsd:documentation>
+					<xsd:documentation><![CDATA[The origin of the query, for instance PDB or PDBPre]]></xsd:documentation>
 				</xsd:annotation>
 				<xsd:simpleType>
 					<xsd:restriction base="xsd:string">
@@ -538,7 +601,7 @@ ab initio, then the origin of the match must be identified]]></xsd:documentation
 		</xsd:complexType>
 	</xsd:element>
 	
-	<xsd:element name="toEvaluate">
+<!--	<xsd:element name="toEvaluate">
 		<xsd:annotation>
 			<xsd:documentation><![CDATA[One or more queries sent to an evaluator]]></xsd:documentation>
 		</xsd:annotation>
@@ -549,7 +612,7 @@ ab initio, then the origin of the match must be identified]]></xsd:documentation
 			<xsd:attributeGroup ref="xcesc:callbackAttributeGroup"/>
 		</xsd:complexType>
 	</xsd:element>
-	
+-->	
 	<xsd:element name="experiment">
 		<xsd:complexType>
 			<xsd:sequence minOccurs="1" maxOccurs="1">
@@ -739,6 +802,170 @@ ab initio, then the origin of the match must be identified]]></xsd:documentation
 				</xsd:annotation>
 			</xsd:attribute>
 		</xsd:complexType>
+	</xsd:element>
+	
+	<!-- TODO: Experiment and assessment need some schema sharing reorganization -->
+	<xsd:element name="assessment">
+		<xsd:annotation>
+			<xsd:documentation><![CDATA[An assessment is the evaluation of the accuracy, recall, etc... for all the experiment participants]]></xsd:documentation>
+		</xsd:annotation>
+		<xsd:complexType>
+			<xsd:sequence minOccurs="1" maxOccurs="1">
+				<xsd:element name="evaluator" minOccurs="0" maxOccurs="unbounded">
+					<xsd:complexType>
+						<xsd:sequence minOccurs="1" maxOccurs="1">
+							<xsd:element ref="xcesc:server" minOccurs="1" maxOccurs="1">
+								<xsd:annotation>
+									<xsd:documentation><![CDATA[Server information is preserved here, so changes do not affect the calling values]]></xsd:documentation>
+								</xsd:annotation>
+							</xsd:element>
+							<xsd:choice>
+								<xsd:element name="job" minOccurs="0" maxOccurs="unbounded">
+									<xsd:annotation>
+										<xsd:documentation><![CDATA[A job is a evaluation target sent to the server]]></xsd:documentation>
+									</xsd:annotation>
+									<xsd:complexType>
+										<xsd:sequence>
+											<xsd:element ref="xcesc:jobEvaluation" minOccurs="0" maxOccurs="unbounded">
+												<xsd:annotation>
+													<xsd:documentation><![CDATA[The evaluation of each one of the jobs done by the partipant being assessed]]></xsd:documentation>
+												</xsd:annotation>
+											</xsd:element>
+										</xsd:sequence>
+										<xsd:attribute name="participantTicket" type="xsd:string" use="required">
+											<xsd:annotation>
+												<xsd:documentation><![CDATA[The ticket of the participant being assessed in this job]]></xsd:documentation>
+											</xsd:annotation>
+										</xsd:attribute>
+										<xsd:attribute name="stopStamp" type="xsd:dateTime" use="optional">
+											<xsd:annotation>
+												<xsd:documentation><![CDATA[The timestamp when a job from this XCESC instance has finished (either properly or with failure)]]></xsd:documentation>
+											</xsd:annotation>
+										</xsd:attribute>
+										<xsd:attribute name="status" use="required">
+											<xsd:annotation>
+												<xsd:documentation><![CDATA[The status of the job at lastQueryStamp]]></xsd:documentation>
+											</xsd:annotation>
+											<xsd:simpleType>
+												<xsd:restriction base="xsd:string">
+													<xsd:enumeration value="queued">
+														<xsd:annotation>
+															<xsd:documentation><![CDATA[The job has not been sent yet]]></xsd:documentation>
+														</xsd:annotation>
+													</xsd:enumeration>
+													<xsd:enumeration value="submitted">
+														<xsd:annotation>
+															<xsd:documentation><![CDATA[The job has been properly submitted, but no polling has been done yet]]></xsd:documentation>
+														</xsd:annotation>
+													</xsd:enumeration>
+													<xsd:enumeration value="running">
+														<xsd:annotation>
+															<xsd:documentation><![CDATA[The job is still running]]></xsd:documentation>
+														</xsd:annotation>
+													</xsd:enumeration>
+													<!--
+														<xsd:enumeration value="killed">
+														<xsd:annotation>
+														<xsd:documentation><![CDATA[The job has been killed from the XCESC instance side]]></xsd:documentation>
+														</xsd:annotation>
+														</xsd:enumeration>
+													-->
+													<xsd:enumeration value="transienterror">
+														<xsd:annotation>
+															<xsd:documentation><![CDATA[A transient error happened (network is down, for instance)]]></xsd:documentation>
+														</xsd:annotation>
+													</xsd:enumeration>
+													<xsd:enumeration value="error">
+														<xsd:annotation>
+															<xsd:documentation><![CDATA[There was an error on the server's side]]></xsd:documentation>
+														</xsd:annotation>
+													</xsd:enumeration>
+													<xsd:enumeration value="finished">
+														<xsd:annotation>
+															<xsd:documentation><![CDATA[The job finished and the results could be fetched]]></xsd:documentation>
+														</xsd:annotation>
+													</xsd:enumeration>
+												</xsd:restriction>
+											</xsd:simpleType>
+										</xsd:attribute>
+										<xsd:attribute name="lastMessage" type="xsd:string" use="optional">
+											<xsd:annotation>
+												<xsd:documentation><![CDATA[Last human-readable message fetched from server or generated by this XCESC instance, usually an error]]></xsd:documentation>
+											</xsd:annotation>
+										</xsd:attribute>
+									</xsd:complexType>
+								</xsd:element>
+								<xsd:element name="errorMessage">
+									<xsd:annotation>
+										<xsd:documentation><![CDATA[Last human-readable message fetched from server on submission, i.e., an error]]></xsd:documentation>
+									</xsd:annotation>
+									<xsd:complexType mixed="true">
+										<xsd:sequence>
+											<xsd:any minOccurs="0" maxOccurs="unbounded" namespace="##any" processContents="lax"/>
+										</xsd:sequence>
+										<xsd:attribute name="statusCode" type="xsd:positiveInteger" use="required">
+											<xsd:annotation>
+												<xsd:documentation><![CDATA[The HTTP status error code]]></xsd:documentation>
+											</xsd:annotation>
+										</xsd:attribute>
+									</xsd:complexType>
+								</xsd:element>
+							</xsd:choice>
+						</xsd:sequence>
+						<xsd:attribute name="ticket" type="xsd:string" use="required">
+							<xsd:annotation>
+								<xsd:documentation><![CDATA[The unique evaluator ticket]]></xsd:documentation>
+							</xsd:annotation>
+						</xsd:attribute>
+						<xsd:attribute name="startStamp" type="xsd:dateTime" use="required">
+							<xsd:annotation>
+								<xsd:documentation><![CDATA[The timestamp of the evaluation submission]]></xsd:documentation>
+							</xsd:annotation>
+						</xsd:attribute>
+						<xsd:attribute name="lastMessage" type="xsd:string" use="optional">
+							<xsd:annotation>
+								<xsd:documentation><![CDATA[Last human-readable message fetched from server on submission, i.e., an error]]></xsd:documentation>
+							</xsd:annotation>
+						</xsd:attribute>
+					</xsd:complexType>
+				</xsd:element>
+			</xsd:sequence>
+			<xsd:attribute name="stamp" type="xsd:dateTime" use="required">
+				<xsd:annotation>
+					<xsd:documentation><![CDATA[The assessment's timestamp (when it started)]]></xsd:documentation>
+				</xsd:annotation>
+			</xsd:attribute>
+			<xsd:attribute name="baseStamp" type="xsd:date" use="required">
+				<xsd:annotation>
+					<xsd:documentation><![CDATA[The previous assessment's timestamp (used to track changes)]]></xsd:documentation>
+				</xsd:annotation>
+			</xsd:attribute>
+			<xsd:attribute name="test" type="xsd:boolean" use="optional" default="false">
+				<xsd:annotation>
+					<xsd:documentation><![CDATA[Is it a test assessment?]]></xsd:documentation>
+				</xsd:annotation>
+			</xsd:attribute>
+			<xsd:attribute name="assessmentTicket" type="xsd:string" use="required">
+				<xsd:annotation>
+					<xsd:documentation><![CDATA[The experiment job ticket, so we can link to it]]></xsd:documentation>
+				</xsd:annotation>
+			</xsd:attribute>
+		</xsd:complexType>
+		<xsd:key name="assessment_target_key">
+			<xsd:annotation>
+				<xsd:documentation><![CDATA[There cannot be two targets with the same id in the same assessment]]></xsd:documentation>
+			</xsd:annotation>
+			<xsd:selector xpath="xcesc:target"/>
+			<xsd:field xpath="@id"/>
+		</xsd:key>
+		<xsd:keyref refer="xcesc:assessment_target_key" name="job_targetid_referes_assessment_target">
+			<xsd:selector xpath="xcesc:participant/xcesc:job"></xsd:selector>
+			<xsd:field xpath="@targetId"></xsd:field>
+		</xsd:keyref>
+		<xsd:unique name="assessor_server_unique">
+			<xsd:selector xpath="xcesc:assessor/xcesc:server"></xsd:selector>
+			<xsd:field xpath="@id"></xsd:field>
+		</xsd:unique>
 	</xsd:element>
 	
 	<xsd:element name="configuration">

@@ -22,23 +22,12 @@
  			consistency-check="yes"/>
  
          <!-- 
-@@ -401,9 +401,7 @@
-             collection-specific configuration for a collection.
-         -->
-         <index>
--            <fulltext attributes="true" default="all">
--                <exclude path="/auth"/>
--            </fulltext>
-+            <fulltext attributes="false" default="none"/>
-         </index>
-     </indexer>
- 
-@@ -496,7 +494,23 @@
+@@ -496,7 +496,23 @@
              <parameter name="backup" value="no"/>
          </job>
          -->
 +
-+	<job type="user" name="weeklyGOPHER" cron-trigger="0 23 * * 4 ?"
++	<job type="user" name="weeklyGOPHER" cron-trigger="0 0 23 ? * 4 *"
 +		xquery="/db/XCESC-logic/cronjob.xql"
 +	/>
          
@@ -57,35 +46,23 @@
          <!-- 
              Automatically creates a copy of the database .dbx files every 2 minutes
              
-@@ -624,7 +638,10 @@
-         and "string".  Anything else will be treated as type "string".
+@@ -627,7 +643,10 @@
          
      -->
--    <transformer class="org.apache.xalan.processor.TransformerFactoryImpl"/>
-+    <transformer class="net.sf.saxon.TransformerFactoryImpl">
+     <transformer
+-        class="org.apache.xalan.processor.TransformerFactoryImpl" caching="yes"/>
++        class="net.sf.saxon.TransformerFactoryImpl" caching="yes">
 +    	<attribute name="http://saxon.sf.net/feature/version-warning"
 +		 value="false" type="boolean"/>
 +    </transformer>
  
      <!--
          Settings for XML validation
-@@ -638,7 +655,7 @@
-             to the parser.   
-             
-      -->
--    <validation mode="auto">
-+    <validation mode="no">
-         <!-- 
-             Specify the location of one or more catalog files. Catalogs are 
-             used to resolve external entities in XML documents.
-@@ -769,11 +786,28 @@
+@@ -787,6 +804,28 @@
                      uri="http://exist-db.org/xquery/xmldiff" />
              <module class="org.exist.xquery.modules.cache.CacheModule"
                  uri="http://exist-db.org/xquery/cache" />
 +            -->
- 
-             <module class="org.exist.xquery.modules.jfreechart.JFreeChartModule"
-                     uri="http://exist-db.org/xquery/jfreechart"/> 
 +
 +			<module uri="http://www.w3.org/2005/Atom"
 +				src="resource:org/exist/atomic/atom.xql"/>
@@ -97,14 +74,17 @@
 +				src="resource:org/exist/atomic/render.xql"/>
 +			<module uri="http://atomic.exist-db.org/x2cw"
 +				src="resource:org/exist/atomic/XHTML2CommonWiki.xql"/>
-                
--            -->
++
 +			<module class="org.exist.xquery.modules.math.MathModule"
 +				uri="http://exist-db.org/xquery/math" />
 +			<module class="org.exist.xquery.modules.httpclient.HTTPClientModule"
 +				uri="http://exist-db.org/xquery/httpclient" />
 +			<module class="org.exist.xquery.modules.mail.MailModule"
 +				uri="http://exist-db.org/xquery/mail" />
-         </builtin-modules>
-     </xquery>
++			<module class="org.exist.xquery.modules.jfreechart.JFreeChartModule"
++				uri="http://exist-db.org/xquery/jfreechart"/> 
++			<!--
+ 
+             <module class="org.exist.xquery.modules.jfreechart.JFreeChartModule"
+                     uri="http://exist-db.org/xquery/jfreechart"/> 
  

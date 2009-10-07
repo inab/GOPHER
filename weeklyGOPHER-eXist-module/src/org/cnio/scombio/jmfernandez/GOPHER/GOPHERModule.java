@@ -54,4 +54,9 @@ public class GOPHERModule
 		return "GOPHER module which allows selecting unique PDB and PrePDB sequences for evaluation";
 	}
 
+	@Override
+	public String getReleaseVersion() {
+		return "1.4";
+	}
+
 }

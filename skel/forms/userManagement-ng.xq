@@ -31,7 +31,7 @@ let $dumpost:=if(request:get-method() eq 'POST') then (
 	)
 ) else ()
 return if(empty($dumpost)) then (
-	let $dum2 := util:declare-option('exist:serialize',"method=xhtml media-type=application/xhtml+xml")
+	let $dum2 := util:declare-option('exist:serialize',"method=xhtml media-type=text/xml process-xsl-pi=no")
 	let $content := <html xmlns="http://www.w3.org/1999/xhtml"
 		xmlns:sample="http://www.agencexml.com/sample"
 		xmlns:xcesc="http://www.cnio.es/scombio/xcesc/1.0"
@@ -46,6 +46,7 @@ return if(empty($dumpost)) then (
         	<link rel="shortcut icon" href="../style/GOPHER-favicon.ico"
 		type="image/vnd.microsoft.icon"/>
         	<link rel="icon" href="../style/GOPHER-favicon.ico" type="image/vnd.microsoft.icon"/>
+		<link rel="stylesheet" type="text/css" href="../../style/default-style.css"/>
 		<link rel="stylesheet" type="text/css" href="../style/default-style.css"/>
 		
 		<style type="text/css"><![CDATA[
@@ -122,55 +123,55 @@ return if(empty($dumpost)) then (
 		</xforms:model>
 	</head>
 	<body>
-		<h3>GOPHER User Management</h3>
+		<div align="center"><h3>GOPHER User Management</h3></div>
 		<div id="xformControl">
 			<span>
 				<input type="checkbox" onclick="$('console').style.display = this.checked? 'block' : 'none';" checked="checked"/> Debug
 			</span>
 		</div>
-		<xforms:repeat nodeset="xcesc:user" id="usuarios" appearance="full">
+		<xforms:repeat nodeset="xcesc:user" id="usuarios" appearance="compact">
                     <xforms:output ref="@id">
-                        <xforms:label>The XCESC user Id</xforms:label>
-                        <xforms:hint>this is a repeated input control</xforms:hint>
+                        <xforms:label>XCESC user Id</xforms:label>
+                        <xforms:hint>XCESC Id assigned to the user</xforms:hint>
                     </xforms:output>
                     <xforms:input ref="@nickname">
-                        <xforms:label>The user name</xforms:label>
-                        <xforms:hint>this is a repeated input control</xforms:hint>
+                        <xforms:label>User name</xforms:label>
+                        <xforms:hint>The user name you are using in GOPHER</xforms:hint>
                     </xforms:input>
 
                     <xforms:secret ref="@nickpass">
-                        <xforms:label>The user password</xforms:label>
-                        <xforms:hint>this is a repeated input control</xforms:hint>
+                        <xforms:label>User password</xforms:label>
+                        <xforms:hint>The password you want to set at the beginning</xforms:hint>
                     </xforms:secret>
 
                     <xforms:input ref="@firstName">
-                        <xforms:label>First Name</xforms:label>
-                        <xforms:hint>this is a repeated input control</xforms:hint>
+                        <xforms:label>First Name(s)</xforms:label>
+                        <xforms:hint>Your first name(s)</xforms:hint>
                     </xforms:input>
                     <xforms:input ref="@lastName">
-                        <xforms:label>Last Name</xforms:label>                        
-                        <xforms:hint>this is a repeated input control</xforms:hint>
+                        <xforms:label>Last Name(s)</xforms:label>                        
+                        <xforms:hint>Your last name(s)</xforms:hint>
                     </xforms:input>
                     <xforms:input ref="@organization">
-                        <xforms:label>Last Name</xforms:label>                        
-                        <xforms:hint>this is a repeated input control</xforms:hint>
+                        <xforms:label>Organization</xforms:label>                        
+                        <xforms:hint>The main organization unit you are representing with this user and assessment</xforms:hint>
                     </xforms:input>
 		    <xforms:repeat id="correos" nodeset="xcesc:eMail" appearance="compact">
-			    <xforms:input ref=".">
-				<xforms:label>e-mail</xforms:label>                        
-				<xforms:hint>this is a repeated input control</xforms:hint>
-			    </xforms:input>
-			    <xforms:trigger class="delete">
+		    	<xforms:label>e-mail</xforms:label>                        
+			<xforms:input ref=".">
+				<xforms:hint>The e-mail you want GOPHER to use when it needs to contact you</xforms:hint>
+			</xforms:input>
+			<xforms:trigger class="delete">
 			    	<xforms:label>X</xforms:label>
 				<xforms:action ev:event="DOMActivate">
 					<xforms:delete nodeset="." at="1"
 						if="count(nodeindex('usuarios')//xcesc:eMail) > 1"/>
 				</xforms:action>
-			    </xforms:trigger>
+			</xforms:trigger>
 			<xforms:trigger>
 				<xforms:label>+</xforms:label>
 				<xforms:action ev:event="DOMActivate">
-					<xforms:insert nodeset="nodeindex('usuarios')/xcesc:eMail" at="index('correos')" position="after"/>
+					<xforms:insert nodeset="nodeindex('usuarios')/xcesc:eMail" at="index('correos')" position="after" value="''"/>
 				</xforms:action>
 			</xforms:trigger>
 		    </xforms:repeat>

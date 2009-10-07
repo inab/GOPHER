@@ -2,15 +2,21 @@ xquery version "1.0";
 
 declare namespace atom="http://www.w3.org/2005/Atom";
 
-import module namespace mgmt="http://www.cnio.es/scombio/xcesc/1.0/xquery/systemManagement" at "xmldb:exist:///db/XCESC-logic/systemManagement.xqm";
+declare namespace exist="http://exist.sourceforge.net/NS/exist";
 
-declare option exist:serialize "method=text media-type=application/json";
+import module namespace mgmt="http://www.cnio.es/scombio/xcesc/1.0/xquery/systemManagement" at "xmldb:exist:///db/XCESC-logic/systemManagement.xqm";
 
 (:
 declare variable $atom:uri := concat($mgmt:publicBaseURI, "/atom/summary/wiki/blogs/eXist/");
 :)
-declare variable $atom:host := 'http://gopher.bioinfo.cnio.es';
+(:
+declare variable $atom:host := 'http://localhost:8088';
+:)
+declare variable $atom:host := $mgmt:publicBaseURI;
+
 declare variable $atom:uri := concat($atom:host, "/atom/summary/wiki/blogs/Atomic/");
+
+declare option exist:serialize "method=text media-type=application/json";
 
 declare function atom:format-entry($feed as element()) {
     <ul>

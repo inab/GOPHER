@@ -10,6 +10,7 @@ EXIST_HOME="${BASEBRANCHES}/eXist${BRANCH}"
 EXISTDATACONF_HOME="${BASEBRANCHES}/dataconf${BRANCH}"
 EXIST_DATADIR="@datadir@"
 EXIST_CONFDIR="@confdir@"
+EXIST_LOGSDIR="@logsdir@"
 SERVERXML="${EXIST_CONFDIR}/server.xml"
 SERVERXMLNOREWRITE="${EXIST_CONFDIR}/server.xml.norewrite"
 export EXIST_HOME EXISTCONF_HOME
@@ -21,6 +22,7 @@ else
 fi
 
 JAVA_OPTIONS="-Xmx768m -Xms384m -Dfile.encoding=UTF-8 -Djavax.xml.transform.TransformerFactory=net.sf.saxon.TransformerFactoryImpl"
+
 # Deciding the configuration file to use
 case "$status" in
 	startnw)
@@ -30,6 +32,8 @@ case "$status" in
 		JAVA_OPTIONS="$JAVA_OPTIONS -Dserver.xml=${SERVERXML}"
 		;;
 esac
+# Setting the logs dir through a property
+JAVA_OPTIONS="$JAVA_OPTIONS -Dexist.logsdir=${EXIST_LOGSDIR}"
 export JAVA_OPTIONS
 
 # And the JVM to use
@@ -63,9 +67,14 @@ case "$status" in
 		else
 			# If data dir is outside eXist, perhaps we have to create the directory just before first startup.
 			mkdir -p "$EXIST_DATADIR"
+			# and the same happens with logs
+			mkdir -p "$EXIST_LOGSDIR"
 
 			if [ "${EXIST_CONFDIR}" != "${EXIST_HOME}" ] ; then
 				cp -pf "${EXIST_CONFDIR}/conf.xml" "${EXIST_CONFDIR}/atom-services.xml" "${EXIST_HOME}"
+				if [ -f "${EXIST_CONFDIR}/log4j.xml" ] ; then
+					cp -pf "${EXIST_CONFDIR}/log4j.xml" "${EXIST_HOME}"
+				fi
 			fi
 			exec bash "${EXIST_HOME}/bin/server.sh"
 		fi

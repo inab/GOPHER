@@ -14,9 +14,9 @@ import module namespace job="http://www.cnio.es/scombio/xcesc/1.0/xquery/jobMana
 let $pathInfo := request:get-path-info()
 let $jobTokens := tokenize(substring($pathInfo,1),'/')
 return
-if (count($jobTokens) >= 2 and session:set-current-user($mgmt:adminUser,$mgmt:adminPass)) then
+if (count($jobTokens) >= 3 and session:set-current-user($mgmt:adminUser,$mgmt:adminPass)) then
 	(
-	   response:set-status-code(job:joinResults($jobTokens[0],$jobTokens[1],current-dateTime(),request:get-data())),
+	   response:set-status-code(job:joinAssessments($jobTokens[0],$jobTokens[1],$jobTokens[2],current-dateTime(),request:get-data())),
 	   session:invalidate-session()
     )
 else

@@ -3,8 +3,8 @@
 :)
 xquery version "1.0";
 
-declare namespace request="http://exist-db.org/xquery/request";
-declare namespace system="http://exist-db.org/xquery/system";
+import module namespace request="http://exist-db.org/xquery/request";
+import module namespace system="http://exist-db.org/xquery/system";
 
 import module namespace mgmt="http://www.cnio.es/scombio/xcesc/1.0/xquery/systemManagement" at "xmldb:exist:///db/XCESC-logic/systemManagement.xqm";
 import module namespace job="http://www.cnio.es/scombio/xcesc/1.0/xquery/jobManagement" at "xmldb:exist:///db/XCESC-logic/jobManagement.xqm";
@@ -15,5 +15,4 @@ if(request:exists()) then
 else (
 	(: Write code here! :)
 	system:as-user($mgmt:adminUser,$mgmt:adminPass,util:function(xs:QName('job:doNextRound'),0))
-	job:doNextRound()
 )

@@ -53,9 +53,19 @@
                     <xs:documentation><![CDATA[The name of the document where management data (users, groups, registered servers) is being stored]]></xs:documentation>
                 </xs:annotation>
             </xs:attribute>
-        	<xs:attribute name="publicBaseURI" use="required" type="xs:anyURI">
+            <xs:attribute name="publicServerName" use="required" type="xs:string">
+                <xs:annotation>
+                    <xs:documentation><![CDATA[The public server name for this XCESC installation.]]></xs:documentation>
+                </xs:annotation>
+            </xs:attribute>
+            <xs:attribute name="publicServerPort" use="required" type="xs:anyURI">
+                <xs:annotation>
+                    <xs:documentation><![CDATA[The public server port for this XCESC installation.]]></xs:documentation>
+                </xs:annotation>
+            </xs:attribute>
+            <xs:attribute name="publicBasePath" use="required" type="xs:anyURI">
         		<xs:annotation>
-        			<xs:documentation><![CDATA[The public base URI for this XCESC installation.]]></xs:documentation>
+        			<xs:documentation><![CDATA[The public base query path for this XCESC installation.]]></xs:documentation>
         		</xs:annotation>
         	</xs:attribute>
         </xs:complexType>

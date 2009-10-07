@@ -31,7 +31,7 @@ let $dumpost:=if(request:get-method() eq 'POST') then (
 	)
 ) else ()
 return if(empty($dumpost)) then (
-	let $dum2 := util:declare-option('exist:serialize',"method=xhtml media-type=application/xhtml+xml")
+	let $dum2 := util:declare-option('exist:serialize',"method=xhtml media-type=text/xml process-xsl-pi=no")
 	let $content := <html xmlns="http://www.w3.org/1999/xhtml"
 		xmlns:sample="http://www.agencexml.com/sample"
 		xmlns:xcesc="http://www.cnio.es/scombio/xcesc/1.0"
@@ -127,7 +127,7 @@ return if(empty($dumpost)) then (
 		</xforms:model>
 	</head>
 	<body>
-		<h3>GOPHER User Management</h3>
+		<div align="center"><h3>GOPHER User Management</h3></div>
 		<div id="xformControl">
 			<span>
 				<input type="checkbox" onclick="$('console').style.display = this.checked? 'block' : 'none';" checked="checked"/> Debug
@@ -136,33 +136,33 @@ return if(empty($dumpost)) then (
 		<xforms:repeat nodeset="xcesc:user" id="usuarios" appearance="full">
                     <xforms:output ref="@id">
                         <xforms:label>XCESC user Id</xforms:label>
-                        <xforms:hint>this is a repeated input control</xforms:hint>
+                        <xforms:hint>XCESC Id assigned to the user</xforms:hint>
                     </xforms:output>
                     <xforms:input ref="@nickname">
                         <xforms:label>User name</xforms:label>
-                        <xforms:hint>this is a repeated input control</xforms:hint>
+                        <xforms:hint>The user name you are using in GOPHER</xforms:hint>
                     </xforms:input>
 
                     <xforms:secret ref="@nickpass">
                         <xforms:label>User password</xforms:label>
-                        <xforms:hint>this is a repeated input control</xforms:hint>
+                        <xforms:hint>The password you want to set at the beginning</xforms:hint>
                     </xforms:secret>
 
                     <xforms:input ref="@firstName">
-                        <xforms:label>First Name</xforms:label>
-                        <xforms:hint>this is a repeated input control</xforms:hint>
+                        <xforms:label>First Name(s)</xforms:label>
+                        <xforms:hint>Your first name(s)</xforms:hint>
                     </xforms:input>
                     <xforms:input ref="@lastName">
-                        <xforms:label>Last Name</xforms:label>                        
-                        <xforms:hint>this is a repeated input control</xforms:hint>
+                        <xforms:label>Last Name(s)</xforms:label>                        
+                        <xforms:hint>Your last name(s)</xforms:hint>
                     </xforms:input>
                     <xforms:input ref="@organization">
-                        <xforms:label>Last Name</xforms:label>                        
-                        <xforms:hint>this is a repeated input control</xforms:hint>
+                        <xforms:label>Organization</xforms:label>                        
+                        <xforms:hint>The main organization unit you are representing with this user and assessment</xforms:hint>
                     </xforms:input>
                     <xforms:input ref="xcesc:eMail">
                         <xforms:label>e-mail</xforms:label>                        
-                        <xforms:hint>this is a repeated input control</xforms:hint>
+                        <xforms:hint>The e-mail you want GOPHER to use when it needs to contact you</xforms:hint>
                     </xforms:input>
 		    	<!--
 			<xforms:input ref="sample:date">
