@@ -11,7 +11,14 @@ weeklyGOPHER-eXist-module glue classes by jmfernandez Ant script</description>
 	<property name="build" location="build" />
 	<property name="libs" location="libs" />
 	<property name="dist" location="dist" />
-	
+
+	<property name="GOPHERPrepare.dir.rel" value="GOPHERPrepare" />
+	<property name="GOPHERPrepare.dir" location="${ant.file.dir.parent}/${GOPHERPrepare.dir.rel}" />
+	<property name="PDBSeq.jar.rel" value="dist/GOPHERPrepare.jar" />
+	<property name="PDBSeq.jar" location="${GOPHERPrepare.dir}/${PDBSeq.jar.rel}" />
+
+	<available file="${PDBSeq.jar}" property="PDBSeq.archive.present"/>
+
 	<property name="eXist.dir.rel" value="eXist"/>
 	<property name="eXist.dir" location="${ant.file.dir}/${eXist.dir.rel}"/>
 	
@@ -25,6 +32,9 @@ weeklyGOPHER-eXist-module glue classes by jmfernandez Ant script</description>
 			<include name="${eXist.jar.rel}"/>
 			<include name="lib/core/xmldb.jar"/>
 		</fileset>
+		<fileset dir="${GOPHERPrepare.dir}">
+			<include name="dist/GOPHERPrepare.jar"/>
+		</fileset>
 	</path>
 	
 	<target name="init">
@@ -36,10 +46,17 @@ weeklyGOPHER-eXist-module glue classes by jmfernandez Ant script</description>
 		<antcall target="bootstrap.eXist"/>
 	</target>
 	
+	<target name="conditional.bootstrap.PDBSeq" unless="PDBSeq.archive.present">
+		<antcall target="bootstrap.PDBSeq"/>
+	</target>
+	
 	<target name="bootstrap.eXist" depends="compile.eXist" description="It compiles eXist">
 	</target>
 
-	<target name="compile" depends="init,conditional.bootstrap.eXist" description="compiles the source">
+	<target name="bootstrap.PDBSeq" depends="compile.PDBSeq" description="It compiles PDBSeq">
+	</target>
+
+	<target name="compile" depends="init,conditional.bootstrap.PDBSeq,conditional.bootstrap.eXist" description="compiles the source">
 		<mkdir dir="${build}"/>
 		<javac debug="on" destdir="${build}" includes="**" srcdir="${src}" source="1.5" target="1.5">
 			<classpath refid="org.cnio.scombio.jmfernandez.weeklyGOPHER.javalibs" />
@@ -48,17 +65,23 @@ weeklyGOPHER-eXist-module glue classes by jmfernandez Ant script</description>
 	
 	<target name="build" depends="compile" description="generates the internal distribution">
 		<mkdir dir="${dist}"/>
+		<!--
 		<jar basedir="${build}" jarfile="${dist}/PDBSeq.jar">
 			<include name="**/PDBSeq.class"/>
 		</jar>
+		-->
 		<jar basedir="${build}" jarfile="${dist}/${ant.project.name}.jar">
 			<exclude name="**/PDBSeq.class"/>
 		</jar>
+		<copy file="${PDBSeq.jar}" todir="${dist}"/>
 	</target>
 	
-	<target name="clean" depends="clean.eXist" description="clean up ${ant.project.name}">
+	<target name="clean" description="clean up ${ant.project.name}">
 		<delete dir="${build}"/>
 		<delete dir="${dist}"/>
+	</target>
+	
+	<target name="realclean" depends="clean.PDBSeq,clean.eXist,clean" description="clean up ${ant.project.name} and its dependencies">
 	</target>
 	
 	<target name="compile.eXist" depends="init" description="It compiles eXist libs needed">
@@ -67,5 +90,13 @@ weeklyGOPHER-eXist-module glue classes by jmfernandez Ant script</description>
 	
 	<target name="clean.eXist" depends="init" description="It cleans up eXist libs">
 		<ant inheritAll="false" inheritRefs="false" dir="${eXist.dir}" target="clean" />
+	</target>
+	
+	<target name="compile.PDBSeq" depends="init" description="It compiles PDBSeq lib needed">
+		<ant inheritAll="false" inheritRefs="false" dir="${GOPHERPrepare.dir}" />
+	</target>
+	
+	<target name="clean.PDBSeq" depends="init" description="It cleans up PDBSeq lib">
+		<ant inheritAll="false" inheritRefs="false" dir="${GOPHERPrepare.dir}" target="clean" />
 	</target>
 </project>

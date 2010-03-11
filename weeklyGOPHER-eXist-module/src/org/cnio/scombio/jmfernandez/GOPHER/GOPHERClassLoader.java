@@ -69,7 +69,7 @@ public class GOPHERClassLoader extends URLClassLoader {
 			NoSuchMethodException,
 			InvocationTargetException
 	{
-		Class<?> c = loadClass(name);
+		Class<?> c = loadClass(name,true);
 		Method m = c.getMethod("main", new Class[] { args.getClass() });
 		m.setAccessible(true);
 		int mods = m.getModifiers();
@@ -111,7 +111,26 @@ public class GOPHERClassLoader extends URLClassLoader {
 	 * @throws NoSuchMethodException
 	 * @throws InvocationTargetException
 	 */
-	public <T> T invokeClassMethod(String methodName, Class<T> retvalClass, Object... params)
+	public <Q,T extends Q> Q invokeClassMethod(String methodName, Class<T> retvalClass, Object... params)
+		throws ClassNotFoundException,
+			IOException,
+			NoSuchMethodException,
+			InvocationTargetException
+
+	{
+		Class<?>[] paramClasses = new Class[params.length];
+		int parami=0;
+		for(Object param: params) {
+			if(param!=null)
+				paramClasses[parami]=param.getClass();
+			else
+				paramClasses[parami]=Object.class;
+			parami++;
+		}
+		return invokeClassMethod(methodName, retvalClass, paramClasses, params);
+	}
+	
+	public <Q,T extends Q> Q invokeClassMethod(String methodName, Class<T> retvalClass, Class<?>[] paramClasses, Object... params)
 		throws ClassNotFoundException,
 			IOException,
 			NoSuchMethodException,
@@ -128,16 +147,23 @@ public class GOPHERClassLoader extends URLClassLoader {
 				String name = attr.getValue(Attributes.Name.MAIN_CLASS);
 				try {
 					Class<?> c = loadClass(name);
-					Class<?>[] paramClasses = new Class[params.length];
-					int parami=0;
-					for(Object param: params) {
-						paramClasses[parami]=param.getClass();
-						parami++;
+					Method m = null;
+					EachMethod: for(Method lm: c.getMethods()) {
+						if(methodName.equals(lm.getName())) {
+							int lmods = lm.getModifiers();
+							Class<?>[] lmpars = lm.getParameterTypes();
+							if(lm.getReturnType() == retvalClass && Modifier.isStatic(lmods) && Modifier.isPublic(lmods) && lmpars.length==params.length) {
+								for(int li=0; li<paramClasses.length; li++) {
+									if(!lmpars[li].isAssignableFrom(paramClasses[li])) {
+										continue EachMethod;
+									}
+								}
+								m = lm;
+								break EachMethod;
+							}
+						}
 					}
-					Method m = c.getMethod(methodName, paramClasses);
-					m.setAccessible(true);
-					int mods = m.getModifiers();
-					if(m.getReturnType() != retvalClass || !Modifier.isStatic(mods) || !Modifier.isPublic(mods)) {
+					if(m==null) {
 						throw new NoSuchMethodException(methodName);
 					}
 					retval = retvalClass.cast(m.invoke(null, params));

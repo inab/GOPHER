@@ -5,7 +5,11 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.lang.reflect.InvocationTargetException;
+import java.net.MalformedURLException;
+import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.HashMap;
@@ -56,8 +60,19 @@ public class CronGOPHERFunction
 		new SequenceType(Type.STRING, Cardinality.ONE),			// name of the static method to call in the dynamic core
 		new SequenceType(Type.STRING, Cardinality.ONE),			// Original filtered PrePDB in database
 		new SequenceType(Type.STRING, Cardinality.ONE),			// Original filtered PDB in database
-		new SequenceType(Type.STRING, Cardinality.ONE),			// New unfiltered PrePDB in database
+		new SequenceType(Type.ANY_URI, Cardinality.ONE),			// New unfiltered PrePDB in database
 		new SequenceType(Type.STRING, Cardinality.ONE),			// New unfiltered PDB in database
+		new SequenceType(Type.STRING, Cardinality.ONE),			// Filesystem Directory Scratch area
+		new SequenceType(Type.ELEMENT, Cardinality.ZERO_OR_MORE),		// Environment variables to use
+	};
+	
+	private final static SequenceType[] FUNC_SIGNATURE_SEED=new SequenceType[] {
+		new SequenceType(Type.STRING, Cardinality.ONE),			// URI of the dynamic core (in a jar) to be called
+		new SequenceType(Type.STRING, Cardinality.ONE),			// name of the static method to call in the dynamic core
+		new SequenceType(Type.ANY_URI, Cardinality.ONE),			// Original unfiltered PrePDB in database
+		new SequenceType(Type.STRING, Cardinality.ONE),			// Original unfiltered PDB in database
+		new SequenceType(Type.STRING, Cardinality.ONE),			// New filtered PrePDB in database
+		new SequenceType(Type.STRING, Cardinality.ONE),			// New filtered PDB in database
 		new SequenceType(Type.STRING, Cardinality.ONE),			// Filesystem Directory Scratch area
 		new SequenceType(Type.ELEMENT, Cardinality.ZERO_OR_MORE),		// Environment variables to use
 	};
@@ -92,7 +107,7 @@ public class CronGOPHERFunction
 			"* Environment variables to use, as a set of elements like <env key='PATH' value='/usr/bin' />\n" +
 			"\n" +
 			"It returns xcesc:experiment elements (see xcesc.xsd for further details and descriptions).",
-			FUNC_SIGNATURE,
+			FUNC_SIGNATURE_SEED,
 			new SequenceType(Type.ELEMENT, Cardinality.ONE)
 		),
 	};
@@ -128,18 +143,26 @@ public class CronGOPHERFunction
 		
 		String gopherPrePDB=null;
 		String gopherPDB=null;
-		String PREPDB_PATH=null;
+		URL PREPDB_URI=null;
 		String PDB_PATH=null;
 		boolean genSeed=isCalledAs(GENERATESEED);
 		if(genSeed) {
-			PREPDB_PATH=args[2].getStringValue();
+			try {
+				PREPDB_URI=new URL(args[2].getStringValue());
+			} catch(MalformedURLException mue) {
+				throw new XPathException(this,"Malformed URL while generating GOPHER query candidates",mue);
+			}
 			PDB_PATH=args[3].getStringValue();
 			gopherPrePDB=args[4].getStringValue();
 			gopherPDB=args[5].getStringValue();
 		} else {
 			gopherPrePDB=args[2].getStringValue();
 			gopherPDB=args[3].getStringValue();
-			PREPDB_PATH=args[4].getStringValue();
+			try {
+				PREPDB_URI=new URL(args[4].getStringValue());
+			} catch(MalformedURLException mue) {
+				throw new XPathException(this,"Malformed URL while generating GOPHER query candidates",mue);
+			}
 			PDB_PATH=args[5].getStringValue();
 		}
 		
@@ -154,7 +177,7 @@ public class CronGOPHERFunction
 			File PDBFile=null;
 			
 			if(genSeed) {
-				origPrePDBFile=new File(PREPDB_PATH);
+				// origPrePDBFile=new File(PREPDB_PATH);
 				origPDBFile=new File(PDB_PATH);
 				
 				prePDBFile=new File(scratchDir,gopherPrePDB);
@@ -165,7 +188,7 @@ public class CronGOPHERFunction
 				fetchBinaryResource(gopherPrePDB,origPrePDBFile);
 				fetchBinaryResource(gopherPDB,origPDBFile);
 				
-				prePDBFile=new File(PREPDB_PATH);
+				// prePDBFile=new File(PREPDB_PATH);
 				PDBFile=new File(PDB_PATH);
 			}
 			
@@ -173,14 +196,24 @@ public class CronGOPHERFunction
 			try {
 				Map<String,String> envl=genEnvP(args[7]);
 				
-				gcl = new GOPHERClassLoader(new URL(dynCoreJar));
+				gcl = new GOPHERClassLoader(new URL[] {new URL(dynCoreJar)},PDBSeq.class.getClassLoader());
 				
 				HashMap<String,PDBSeq> leaders = new HashMap<String,PDBSeq>();
 				leaders = gcl.invokeClassMethod(
 						dynCoreMethod,
 						leaders.getClass(),
-						origPrePDBFile,
-						prePDBFile,
+						new Class<?>[] {
+							genSeed?URL.class:File.class,
+							genSeed?File.class:URL.class,
+							File.class,
+							File.class,
+							File.class,
+							boolean.class,
+							File.class,
+							envl.getClass()
+						},
+						genSeed?PREPDB_URI:origPrePDBFile,
+						genSeed?prePDBFile:PREPDB_URI,
 						origPDBFile,
 						PDBFile,
 						scratchDir,
@@ -232,7 +265,16 @@ public class CronGOPHERFunction
 					context.popDocumentContext();
 				}
 			} catch(InvocationTargetException ite) {
-				throw new XPathException(this,"Invocation error while generating GOPHER query candidates using "+dynCoreMethod+" from "+dynCoreJar,ite);
+				Throwable t=ite.getCause();
+				if(t==null)
+					t=ite;
+				// For error (to be commented)
+				t.printStackTrace();
+				// For the message (so it is no hidden)
+				StringWriter sw = new StringWriter();
+				PrintWriter pw=new PrintWriter(sw);
+				t.printStackTrace(pw);
+				throw new XPathException(this,"Invocation error while generating GOPHER query candidates using "+dynCoreMethod+" from "+dynCoreJar+"\nDetails:\n"+sw.getBuffer(),t);
 			} catch(IOException ioe) {
 				throw new XPathException(this,"I/O error while generating GOPHER query candidates",ioe);
 			} catch (ClassCastException cce) {
@@ -240,7 +282,7 @@ public class CronGOPHERFunction
 			} catch (ClassNotFoundException cnfe) {
 				throw new XPathException(this,"ClassNotFoundException while trying to generate GOPHER query candidates",cnfe);
 			} catch (NoSuchMethodException nsme) {
-				throw new XPathException(this,"NoSuchMethodException while trying to generate GOPHER query candidates",nsme);
+				throw new XPathException(this,"NoSuchMethodException while trying to generate GOPHER query candidates using "+dynCoreMethod,nsme);
 			} finally {
 				gcl = null;
 				System.runFinalization();
