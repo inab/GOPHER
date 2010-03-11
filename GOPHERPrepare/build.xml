@@ -12,9 +12,6 @@ GOPHERPrepare classes by jmfernandez Ant script</description>
 	<property name="libs" location="libs" />
 	<property name="dist" location="dist" />
 	
-	<property name="weeklyGOPHER.dir.rel" value="weeklyGOPHER-eXist-module"/>
-	<property name="weeklyGOPHER.dir" location="${ant.file.dir.parent}/${weeklyGOPHER.dir.rel}"/>
-	
 	<target name="init">
 		<!-- Creating the timestamp -->
 		<tstamp/>
@@ -29,7 +26,6 @@ GOPHERPrepare classes by jmfernandez Ant script</description>
 			srcdir="${src}"
 			source="1.5"
 			target="1.5"
-			sourcepath="${weeklyGOPHER.dir}/src"
 		/>
 	</target>
 	

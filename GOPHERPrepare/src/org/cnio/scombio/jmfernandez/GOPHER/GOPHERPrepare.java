@@ -1,5 +1,6 @@
 package org.cnio.scombio.jmfernandez.GOPHER;
 
+import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
 import java.io.File;
@@ -12,9 +13,12 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintStream;
 import java.io.PrintWriter;
+import java.net.URL;
 import java.nio.channels.FileChannel;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -86,6 +90,8 @@ public class GOPHERPrepare {
 	
 	protected final static String queryParticle="Query=";
 	
+	protected final static String CIFDICT_LABEL="cifdict";
+	
 	public class StreamRedirector
 		extends Thread
 	{
@@ -125,13 +131,20 @@ public class GOPHERPrepare {
 	File leadersdb;
 	File leadersReport;
 	Map<String,String> envp;
+	Map<String,String> conf;
 	
 	public GOPHERPrepare(PrintStream logStream,Map<String,String> envp)
+	{
+		this(logStream,envp,null);
+	}
+	
+	public GOPHERPrepare(PrintStream logStream,Map<String,String> envp,Map<String,String> conf)
 	{
 		PDBHEADERPAT=Pattern.compile("PDB:([^ :]+)[ :]");
 		blhitspat=Pattern.compile("\\([0-9]+ letters?\\)");
 		this.logStream=logStream;
 		this.envp=envp;
+		this.conf=conf;
 		leadersdb=null;
 		leadersReport=null;
 	}
@@ -212,93 +225,105 @@ public class GOPHERPrepare {
 	{
 		boolean succeed=true;
 		BufferedReader ORIG=new BufferedReader(new FileReader(origFile));
-		ArrayList<String> origheaders=null;
+		List<String> origheaders=null;
 		try {
 			origheaders=readFASTAHeaders(ORIG);
+			String[] orArr = origheaders.toArray(new String[] {});
+			Arrays.sort(orArr);
+			origheaders=Arrays.asList(orArr);
 			// We don't need it any more
 		} finally {
 			ORIG.close();
 		}
 		
-		BufferedReader NEW = new BufferedReader(new FileReader(newFile));
-		ArrayList<String> newheaders=null;
-		try {
-			newheaders=readFASTAHeaders(NEW);
-			// We don't need it any more
-		} finally {
-			NEW.close();
-		}
-		
-		// Now, let's find only new entries
-		int maxorigpos=origheaders.size();
-		int maxnewpos=newheaders.size();
-		int origpos=0;
-		int newpos=0;
-		HashMap<String,Object> candidate=new HashMap<String,Object>();
-		while(origpos<maxorigpos && newpos<maxnewpos) {
-			if(origheaders.get(origpos).equals(newheaders.get(newpos))) {
-				// Equal, next step!
-				origpos++;
-				newpos++;
-			} else if(origheaders.get(origpos).compareTo(newheaders.get(newpos))<0) {
-				// Not skipped yet, next step on original!
-				origpos++;
-			} else {
-				// Skipped, save and next step on new!
-				candidate.put(newheaders.get(newpos),null);
-				newpos++;
-			}
-		}
-		
-		// Now we know the candidate, let's save them
-		PrintWriter FILT = new PrintWriter(filtFile);
-		try {
-			PrintWriter ANAL = new PrintWriter(analFile);
+		if(newFile.isDirectory() && conf!=null && conf.containsKey(CIFDICT_LABEL)) {
+			PDBParser pdbParser = new PDBParser(new File(conf.get(CIFDICT_LABEL)));
+			List<PDBSeq> obtainedPDBSeq = pdbParser.filterByPDBHeaders(newFile, origheaders);
+		} else {
+			List<String> newheaders=null;
+			BufferedReader NEW = new BufferedReader(new FileReader(newFile));
 			try {
-				// Let's analyze the sequences, getting the headers
-				String line=null;
-				String description=null;
-				StringBuilder sequence=null;
-				boolean survivor=false;
-
-				// Reset file pointer for further usage
-				boolean doLast=true;
-				NEW = new BufferedReader(new FileReader(newFile));
-				while((line=NEW.readLine())!=null || doLast) {
-					if(line==null || line.charAt(0)=='>') {
-						// We have a candidate sequence!
-						if(description!=null && sequence.length()>=MINSEQLENGTH) {
-							String cutseq=pruneSequence(sequence.toString().toUpperCase());
-
-							// Has passed the filters?
-							if(cutseq.length()>=MINSEQLENGTH) {
-								// Let's save it!
-								FILT.println(description);
-								FILT.println(cutseq);
-								if(survivor) {
-									ANAL.println(description);
-									ANAL.println(cutseq);
+				newheaders=readFASTAHeaders(NEW);
+				// We don't need it any more
+			} finally {
+				NEW.close();
+			}
+			
+			String[] newArr = newheaders.toArray(new String[] {});
+			Arrays.sort(newArr);
+			newheaders=Arrays.asList(newArr);
+			
+			// Now, let's find only new entries
+			int maxorigpos=origheaders.size();
+			int maxnewpos=newheaders.size();
+			int origpos=0;
+			int newpos=0;
+			HashMap<String,Object> candidate=new HashMap<String,Object>();
+			while(origpos<maxorigpos && newpos<maxnewpos) {
+				if(origheaders.get(origpos).equals(newheaders.get(newpos))) {
+					// Equal, next step!
+					origpos++;
+					newpos++;
+				} else if(origheaders.get(origpos).compareTo(newheaders.get(newpos))<0) {
+					// Not skipped yet, next step on original!
+					origpos++;
+				} else {
+					// Skipped, save and next step on new!
+					candidate.put(newheaders.get(newpos),null);
+					newpos++;
+				}
+			}
+			
+			// Now we know the candidate, let's save them
+			PrintWriter FILT = new PrintWriter(filtFile);
+			try {
+				PrintWriter ANAL = new PrintWriter(analFile);
+				try {
+					// Let's analyze the sequences, getting the headers
+					String line=null;
+					String description=null;
+					StringBuilder sequence=null;
+					boolean survivor=false;
+	
+					// Reset file pointer for further usage
+					boolean doLast=true;
+					NEW = new BufferedReader(new FileReader(newFile));
+					while((line=NEW.readLine())!=null || doLast) {
+						if(line==null || (line.length()>0 && line.charAt(0)=='>')) {
+							// We have a candidate sequence!
+							if(description!=null && sequence.length()>=MINSEQLENGTH) {
+								String cutseq=pruneSequence(sequence.toString().toUpperCase());
+	
+								// Has passed the filters?
+								if(cutseq.length()>=MINSEQLENGTH) {
+									// Let's save it!
+									FILT.println(description);
+									FILT.println(cutseq);
+									if(survivor) {
+										ANAL.println(description);
+										ANAL.println(cutseq);
+									}
 								}
 							}
+							
+							if(line!=null) {
+								// New header is it in the "chosen one" list?
+								description=line;
+								sequence=new StringBuilder();
+								survivor=candidate.containsKey(line.substring(1));
+							} else {
+								doLast=false;
+							}
+						} else if(sequence!=null) {
+							sequence.append(line.replace("\t",""));
 						}
-						
-						if(line!=null) {
-							// New header is it in the "chosen one" list?
-							description=line;
-							sequence=new StringBuilder();
-							survivor=candidate.containsKey(line.substring(1));
-						} else {
-							doLast=false;
-						}
-					} else if(sequence!=null) {
-						sequence.append(line.replace("\t",""));
 					}
+				} finally {
+					ANAL.close();
 				}
 			} finally {
-				ANAL.close();
+				FILT.close();
 			}
-		} finally {
-			FILT.close();
 		}
 		
 		return succeed;
@@ -457,6 +482,7 @@ public class GOPHERPrepare {
 		
 		try {
 			int retval = p.waitFor();
+			// System.err.println("RETVALS "+retval+" vs "+p.exitValue());
 			if(retval!=0)
 				throw new IOException("ERROR: system @CDHIT2Dparams failed: "+retval);
 		} catch(InterruptedException ie) {
@@ -478,6 +504,7 @@ public class GOPHERPrepare {
 		sro.start();
 		try {
 			int retval = p.waitFor();
+			// System.err.println("RETVALS "+retval+" vs "+p.exitValue());
 			if(retval!=0)
 				throw new IOException("ERROR: system @CDHITparams failed: "+retval);
 		} catch(InterruptedException ie) {
@@ -513,6 +540,7 @@ public class GOPHERPrepare {
 			sre.start();
 			try {
 				int retval = p.waitFor();
+				// System.err.println("RETVALS "+retval+" vs "+p.exitValue());
 				if(retval!=0)
 					throw new IOException("ERROR: system @BLASTparams failed: "+retval);
 			} catch(InterruptedException ie) {
@@ -583,6 +611,39 @@ public class GOPHERPrepare {
 		}
 	}
 	
+	protected static void fetchURL(URL origURL,File newFile,boolean append)
+		throws FileNotFoundException, IOException
+	{
+		InputStream is = origURL.openStream();
+		try {
+			BufferedInputStream bis = new BufferedInputStream(is);
+			byte[] buffer=new byte[65536];
+			
+			FileOutputStream fos = null;
+			
+			try {
+				fos = new FileOutputStream(newFile,append);
+				
+				int readLength = -1;
+				while((readLength=bis.read(buffer)) != -1) {
+					fos.write(buffer,0,readLength);
+				}
+			} finally {
+				try {
+					fos.close();
+				} catch(IOException ioe) {
+					// IgnoreIT(R)
+				}
+			}
+		} finally {
+			try {
+				is.close();
+			} catch(IOException ioe) {
+				// IgnoreIT(R)
+			}
+		}
+	}
+
 	protected Process launchProgram(String[] args,Map<String,String> addedEnv,File workdir,boolean redirectError)
 		throws IOException
 	{
@@ -611,6 +672,8 @@ public class GOPHERPrepare {
 					sb.append(param);
 				}
 			}
+			
+			// sb.append(" ; exit $?");
 			
 			pbargs[2]=sb.toString();
 		} else {
@@ -777,20 +840,97 @@ public class GOPHERPrepare {
 				lps.close();
 		}
 	}
+	
+	/**
+	 * No seed
+	 * @param origprepdb
+	 * @param newprepdb
+	 * @param origpdb
+	 * @param newpdb
+	 * @param workdir
+	 * @param logfile
+	 * @param envp
+	 * @return
+	 * @throws IOException
+	 */
+	public static HashMap<String,PDBSeq> StaticDoGOPHERPrepare(File origprepdb,URL newprepdbURL,File origpdb,File newpdb,File workdir,File logfile,Map<String,String> envp)
+		throws IOException
+	{
+		PrintStream lps = (logfile!=null)?new PrintStream(logfile):System.err;
+		File newprepdb = null;
+		try {
+			newprepdb = File.createTempFile("prepdb", ".fas");
+			fetchURL(newprepdbURL, newprepdb, false);
+			GOPHERPrepare gp=new GOPHERPrepare(lps,envp);
+			return gp.doGOPHERPrepare(origprepdb,newprepdb,origpdb,newpdb,workdir,false);
+		} finally {
+			if(logfile!=null)
+				lps.close();
+			if(newprepdb!=null)
+				newprepdb.delete();
+		}
+	}
+	
+	/**
+	 * Seed generation
+	 * @param origprepdbURL
+	 * @param newprepdb
+	 * @param origpdb
+	 * @param newpdb
+	 * @param workdir
+	 * @param logfile
+	 * @param envp
+	 * @return
+	 * @throws IOException
+	 */
+	public static HashMap<String,PDBSeq> StaticDoGOPHERPrepareSeed(URL origprepdbURL,File newprepdb,File origpdb,File newpdb,File workdir,File logfile,Map<String,String> envp)
+		throws IOException
+	{
+		PrintStream lps = (logfile!=null)?new PrintStream(logfile):System.err;
+		File origprepdb = null;
+		try {
+			origprepdb = File.createTempFile("prepdb", ".fas");
+			origprepdb.deleteOnExit();
+			fetchURL(origprepdbURL, origprepdb, false);
+			GOPHERPrepare gp=new GOPHERPrepare(lps,envp);
+			return gp.doGOPHERPrepare(origprepdb,newprepdb,origpdb,newpdb,workdir,true);
+		} finally {
+			if(logfile!=null)
+				lps.close();
+			if(origprepdb!=null)
+				origprepdb.delete();
+		}
+	}
 
 	public final static void main(String[] args) {
-		if(args.length>=5) {
-			File origprepdb=new File(args[0]);
-			File newprepdb=new File(args[1]);
-
+		if(args.length==5 || (args.length>=6 && "-s".equals(args[0]))) {
+			boolean first=args.length>5;
+			// Shifting the array, so '-s' flag is not taken into account
+			if(first) {
+				System.arraycopy(args, 1, args, 0, args.length-1);
+			}
+			
 			File origpdb=new File(args[2]);
 			File newpdb=new File(args[3]);
 
 			File workdir=new File(args[4]);
-			boolean first=args.length>5;
 			
 			try {
 				GOPHERPrepare gp=new GOPHERPrepare();
+				
+				String prepath=args[first?0:1];
+				File tempfile=null;
+				if(prepath.startsWith("http://") || prepath.startsWith("ftp://")) {
+					tempfile = File.createTempFile("prepdb", ".fas");
+					tempfile.deleteOnExit();
+					fetchURL(new URL(prepath), tempfile, false);
+				} else {
+					tempfile=new File(prepath);
+				}
+				
+				File origprepdb=first?tempfile:new File(args[0]);
+				File newprepdb=first?new File(args[1]):tempfile;
+				
 				gp.doGOPHERPrepare(origprepdb,newprepdb,origpdb,newpdb,workdir,first);
 				DoExit(0);
 			} catch(IOException ioe) {
@@ -800,16 +940,16 @@ public class GOPHERPrepare {
 		} else {
 			System.err.println("FATAL ERROR: This program needs at least 5 params, in order:\n"
 +"*	The filtered, previous week, PDBPre database file in FASTA format.\n"
-+"*	The unfiltered, current week, PDBPre database file in FASTA format.\n"
++"*	The unfiltered, current week, PDBPre database file or URL in FASTA format.\n"
 +"*	The filtered, previous week, PDB database file in FASTA format.\n"
-+"*	The unfiltered, current week, PDB database file in FASTA format.\n"
++"*	The unfiltered, current week, wwPDB directory filled with (compressed) PDB files.\n"
 +"*	The working directory where to store all the results and intermediate files.\n"
 +"\n"
-+"	When a sixth optional param is used (the value does not matter), the meaning changes:\n"
++"	When the '-s' flag is used as first param, the meaning of the following ones change:\n"
 +"\n"
-+"*	The unfiltered, current week, PDBPre database file in FASTA format.\n"
++"*	The unfiltered, current week, PDBPre database file or URL in FASTA format.\n"
 +"*	The filtered, current week, PDBPre database file in FASTA format (to be generated).\n"
-+"*	The unfiltered, current week, PDB database file in FASTA format.\n"
++"*	The unfiltered, current week, wwPDB directory filled with (compressed) PDB files.\n"
 +"*	The filtered, current week, PDB database file in FASTA format (to be generated).\n"
 +"*	The working directory where to store all the intermediate files.");
 			DoExit(1);
