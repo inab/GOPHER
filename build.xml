@@ -210,7 +210,7 @@
 			property="already.patched.conf.xml"
 			targetfile="${eXist.conf.dir}/conf.xml"
 		>
-			<srcfiles file="${GOPHER.patches.dir}/enable-modules-on-conf.patch"/>
+			<srcfiles file="${GOPHER.patches.dir}/eXist-conf-xml.patch"/>
 			<srcfiles file="${eXist.dir}/conf.xml.tmpl"/>
 			<srcfiles file="${ant.file}"/>
 			<srcfiles file="${ant.file.properties}"/>
@@ -222,7 +222,7 @@
 			property="already.patched.server.xml"
 			targetfile="${eXist.conf.dir}/server.xml"
 		>
-			<srcfiles file="${GOPHER.patches.dir}/enable-filters-on-server.patch"/>
+			<srcfiles file="${GOPHER.patches.dir}/eXist-server-xml.patch"/>
 			<srcfiles file="${eXist.dir}/server.xml.tmpl"/>
 			<srcfiles file="${ant.file}"/>
 			<srcfiles file="${ant.file.properties}"/>
@@ -267,7 +267,7 @@
 		<delete file="${eXist.conf.dir}/conf.xml.tmpl" failonerror="false"/>
 		<delete file="${eXist.conf.dir}/conf.xml.tmpl.rej" failonerror="false"/>
 		<patch
-			patchfile="${GOPHER.patches.dir}/enable-modules-on-conf.patch"
+			patchfile="${GOPHER.patches.dir}/eXist-conf-xml.patch"
 			originalfile="${eXist.dir}/conf.xml.tmpl"
 			destfile="${eXist.conf.dir}/conf.xml.tmpl"
 		/>
@@ -298,7 +298,7 @@
 		<delete file="${eXist.conf.dir}/server.xml.tmpl" failonerror="false"/>
 		<delete file="${eXist.conf.dir}/server.xml.tmpl.rej" failonerror="false"/>
 		<patch
-			patchfile="${GOPHER.patches.dir}/enable-filters-on-server.patch"
+			patchfile="${GOPHER.patches.dir}/eXist-server-xml.patch"
 			originalfile="${eXist.dir}/server.xml.tmpl"
 			destfile="${eXist.conf.dir}/server.xml.tmpl"
 		/>

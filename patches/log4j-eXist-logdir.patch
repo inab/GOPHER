@@ -39,13 +39,22 @@
 @@ -58,7 +58,7 @@
      </appender>
      
+     <appender name="exist.urlrewrite" class="org.apache.log4j.RollingFileAppender">
+-        <param name="File" value="${exist.home}/webapp/WEB-INF/logs/urlrewrite.log"/>
++        <param name="File" value="${exist.logsdir}/urlrewrite.log"/>
+         <param name="MaxFileSize" value="500KB"/>
+         <layout class="org.apache.log4j.PatternLayout">
+             <param name="ConversionPattern" value="%d [%t] %-5p (%F [%M]:%L) - %m %n"/>
+@@ -66,7 +66,7 @@
+     </appender>
+ 
      <appender name="exist.profiling" class="org.apache.log4j.RollingFileAppender">
 -        <param name="File" value="${exist.home}/webapp/WEB-INF/logs/profile.log"/>
 +        <param name="File" value="${exist.logsdir}/profile.log"/>
          <param name="MaxFileSize" value="500KB"/>
          <layout class="org.apache.log4j.PatternLayout">
              <param name="ConversionPattern" value="%d [%t] %-5p (%F [%M]:%L) - %m %n"/>
-@@ -66,23 +66,34 @@
+@@ -74,23 +74,34 @@
      </appender>
      
      <!--appender name="exist.validation" class="org.apache.log4j.RollingFileAppender">
@@ -85,7 +94,7 @@
          <param name="MaxFileSize" value="500KB"/>
          <layout class="org.apache.log4j.PatternLayout">
              <param name="ConversionPattern" value="%d [%t] %-5p (%F [%M]:%L) - %m %n"/>
-@@ -146,10 +157,15 @@
+@@ -167,10 +178,15 @@
          <appender-ref ref="exist.validation"/>
      </category-->
      
