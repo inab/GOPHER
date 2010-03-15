@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- Sample answers file -->
+<answers
+	xmlns="http://www.cnio.es/scombio/xcesc/1.0"
+>
+	<answer targetId="1">
+		<!-- domain attribute is used to tell something about the method class -->
+		<match domain="HMMer" timeStamp="2009-10-21T19:12:59.453647576+02:00">
+			<scope from="1" to="116"/>
+			<term namespace="GO" publicId="GO:0004866" score="2000" p-value="0.01"/>
+		</match>
+		<match domain="HMMer" timeStamp="2009-10-21T19:13:20.833425242+02:00">
+			<scope from="131" to="212"/>
+			<term namespace="GO" publicId="GO:0005576" score="1000" p-value="0.02"/>
+			<term namespace="GO" publicId="GO:0004421" score="500" p-value="0.03"/>
+		</match>
+	</answer>
+	<!-- This one did not get matches, so it is empty -->
+	<answer targetId="2"></answer>
+	
+	<answer targetId="3">
+		<match domain="Pfam" timeStamp="2009-10-21T19:13:44.977189325+02:00">
+			<!-- This one maps more than one segment -->
+			<scope from="10" to="40"/>
+			<scope from="60" to="80"/>
+			<term namespace="GO" publicId="GO:0005615" score="2000" p-value="0.01"/>
+		</match>
+	</answer>
+	<answer targetId="4">
+		<match domain="Blast" timeStamp="2009-10-21T19:14:00.413601006+02:00">
+			<!-- This one is mapped to the whole sequence -->
+			<term namespace="GO" publicId="GO:0005737" score="2000" p-value="0.01"/>
+			<term namespace="GO" publicId="GO:0005634" score="2000" p-value="0.01"/>
+			<term namespace="GO" publicId="GO:0004422" score="2000" p-value="0.01"/>
+			<term namespace="GO" publicId="GO:0000287" score="2000" p-value="0.01"/>
+			<term namespace="GO" publicId="GO:0005515" score="2000" p-value="0.01"/>
+			<term namespace="GO" publicId="GO:0032263" score="2000" p-value="0.01"/>
+			<term namespace="GO" publicId="GO:0032264" score="2000" p-value="0.01"/>
+		</match>
+	</answer>
+</answers>

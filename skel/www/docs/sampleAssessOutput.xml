@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- Sample answers file -->
+<answers
+	xmlns="http://www.cnio.es/scombio/xcesc/1.0"
+>
+	<answer targetId="ANOTHERUUID">
+		<!-- domain attribute is used to tell something about the method class -->
+		<jobEvaluation targetId="1" timeStamp="2009-10-21T19:34:52.426111465+02:00">
+			<matchEvaluation place="right" annotation="over" score="" p-value="">
+				<report><!-- It should contain native output report --></report>
+				<match domain="HMMer" timeStamp="2009-10-21T19:12:59.453647576+02:00">
+					<scope from="1" to="116"/>
+					<term namespace="GO" id="GO:0004866" score="2000" p-value="0.01"/>
+				</match>
+			</matchEvaluation>
+			<matchEvaluation place="under" annotation="right" score="" p-value="">
+				<report><!-- It should contain native output report --></report>
+				<match domain="HMMer" timeStamp="2009-10-21T19:13:20.833425242+02:00">
+					<scope from="131" to="212"/>
+					<term namespace="GO" id="GO:0005576" score="1000" p-value="0.02"/>
+					<term namespace="GO" id="GO:0004421" score="500" p-value="0.03"/>
+				</match>
+			</matchEvaluation>
+		</jobEvaluation>
+		<!-- Evaluation for the other jobs will be sent in a different message -->
+	</answer>
+</answers>

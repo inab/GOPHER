@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<queries
+	callback="http://gopher.bioinfo.cnio.es/XCESC-logic/evapobox.xql/SOMEUUID/MOREUUID/LASTUUID"
+	xmlns="http://www.cnio.es/scombio/xcesc/1.0"
+>
+	<query queryId="ANOTHERUUID">
+		<target publicId="2JK5_1" namespace="pdbpre" description="Entity 1" level="1.0">
+			<query queryId="1"><![CDATA[QVQLQQPGAELVKPGASVKLSCKASGYTFTSDWIHWVKQRPGHGLEWIGEIIPSYGRANYNEKIQKKATLTADKSSSTAFMQLSSLTSEDSAVYYCARERGDGYFAVWGAGTTVTVSSAKTTPPSVYPLAPGSAAQTNSMVTLGCLVKGYFPEPVTVTWNSGSLSSGVHTFPAVLQSDLYTLSSSVTVPSSSWPSETVTCNVAHPASSTKVDKKIVPRD]]></query>
+			<!-- domain attribute is used to tell something about the method class -->
+			<match domain="HMMer" timeStamp="2009-10-21T19:12:59.453647576+02:00">
+				<scope from="1" to="116"/>
+				<term namespace="GO" publicId="GO:0004866" score="2000" p-value="0.01"/>
+			</match>
+			<match domain="HMMer" timeStamp="2009-10-21T19:13:20.833425242+02:00">
+				<scope from="131" to="212"/>
+				<term namespace="GO" publicId="GO:0005576" score="1000" p-value="0.02"/>
+				<term namespace="GO" publicId="GO:0004421" score="500" p-value="0.03"/>
+			</match>
+		</target>
+		<target publicId="2JK5_3" namespace="pdbpre" description="Entity 3" level="0.0">
+			<query queryId="2"><![CDATA[MPPMLSGLLARLVKLLLGRHGSALHWRAAGAATVLLVIVLLAGSYLAVLAERGAPGAQLITYPRALWWSVETATTVGYGDLYPVTLWGRCVAVVVMVAGITSFGLVTAALATWFVGREQERRGH]]></query>
+			<!-- This one did not get matches, so it is empty -->
+		</target>
+		<target publicId="2JK5_2" namespace="pdbpre" description="Entity 2" level="0.75">
+			<query queryId="3"><![CDATA[DILLTQSPAILSVSPGERVSFSCRASQSIGTDIHWYQQRTNGSPRLLIKYASESISGIPSRFSGSGSGTDFTLSINSVESEDIANYYCQQSNRWPFTFGSGTKLEIKRADAAPTVSIFPPSSEQLTSGGASVVCFLNNFYPKDINVKWKIDGSERQNGVLNSWTDQDSKDSTYSMSSTLTLTKDEYERHNSYTCEATHKTSTSPIVKSFNRN]]></query>
+			<match domain="Pfam" timeStamp="2009-10-21T19:13:44.977189325+02:00">
+				<!-- This one maps more than one segment -->
+				<scope from="10" to="40"/>
+				<scope from="60" to="80"/>
+				<term namespace="GO" publicId="GO:0005615" score="2000" p-value="0.01"/>
+			</match>
+		</target>
+		<target publicId="2JKY_1" namespace="pdbpre" description="Entity 1" level="0.20">
+			<query queryId="4"><![CDATA[SANDKQYISYNNVHQLCQVSAERIKNFKPDLIIAIGGGGFIPARILRTFLKEPGVPTIRIFAIILSLYEDLNSVGSEVEEVGVKVSRTQWIDYEQCKLDLVGKNVLIVDEVDDTRTTLHYALSELEKDAAEQAKAKGIDTEKSPEMKTNFGIFVLHDKQKPKKADLPAEMLNDKNRYFAAKTVPDKWYAYPWESTDIVFHTRMAIEQGNDIFI]]></query>
+			<match domain="Blast" timeStamp="2009-10-21T19:14:00.413601006+02:00">
+				<!-- This one is mapped to the whole sequence -->
+				<term namespace="GO" publicId="GO:0005737" score="2000" p-value="0.01"/>
+				<term namespace="GO" publicId="GO:0005634" score="2000" p-value="0.01"/>
+				<term namespace="GO" publicId="GO:0004422" score="2000" p-value="0.01"/>
+				<term namespace="GO" publicId="GO:0000287" score="2000" p-value="0.01"/>
+				<term namespace="GO" publicId="GO:0005515" score="2000" p-value="0.01"/>
+				<term namespace="GO" publicId="GO:0032263" score="2000" p-value="0.01"/>
+				<term namespace="GO" publicId="GO:0032264" score="2000" p-value="0.01"/>
+			</match>
+		</target>
+	</query>
+</queries>
