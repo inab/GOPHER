@@ -85,18 +85,22 @@ weeklyGOPHER-eXist-module glue classes by jmfernandez Ant script</description>
 	</target>
 	
 	<target name="compile.eXist" depends="init" description="It compiles eXist libs needed">
-		<ant inheritAll="false" inheritRefs="false" dir="${eXist.dir}" />
+		<ant inheritAll="false" inheritRefs="false" dir="${eXist.dir}">
+			<property file="${ant.file.dir.parent}/shared-eXist.properties" />
+		</ant>
 	</target>
 	
 	<target name="clean.eXist" depends="init" description="It cleans up eXist libs">
-		<ant inheritAll="false" inheritRefs="false" dir="${eXist.dir}" target="clean" />
+		<ant inheritAll="false" inheritRefs="false" dir="${eXist.dir}" target="clean">
+			<property file="${ant.file.dir.parent}/shared-eXist.properties" />
+		</ant>
 	</target>
 	
 	<target name="compile.PDBSeq" depends="init" description="It compiles PDBSeq lib needed">
-		<ant inheritAll="false" inheritRefs="false" dir="${GOPHERPrepare.dir}" />
+		<ant inheritAll="false" inheritRefs="false" dir="${GOPHERPrepare.dir}"/>
 	</target>
 	
 	<target name="clean.PDBSeq" depends="init" description="It cleans up PDBSeq lib">
-		<ant inheritAll="false" inheritRefs="false" dir="${GOPHERPrepare.dir}" target="clean" />
+		<ant inheritAll="false" inheritRefs="false" dir="${GOPHERPrepare.dir}" target="clean"/>
 	</target>
 </project>

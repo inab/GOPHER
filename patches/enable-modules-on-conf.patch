@@ -1,34 +1,38 @@
 --- ../weeklyGOPHER-eXist-module/eXist/conf.xml.tmpl	2009-06-12 16:07:51.000000000 +0200
 +++ conf.xml.tmpl	2009-06-14 22:40:25.000000000 +0200
-@@ -108,8 +108,8 @@
+@@ -128,8 +128,8 @@
          you have some more memory to waste. If you deal with lots of 
          collections, you can also increase the collectionCacheSize value 
      -->
 -    <db-connection cacheSize="48M" collectionCache="24M" database="@database@"
--        files="webapp/WEB-INF/data" pageSize="4096">
+-        files="@dataDir@" pageSize="4096" nodesBuffer="-1" cacheShrinkThreshold="10000">
 +    <db-connection cacheSize="@memory@" collectionCache="24M" database="native"
-+        files="@data.dir@" pageSize="4096">
++        files="@data.dir@" pageSize="4096" nodesBuffer="-1" cacheShrinkThreshold="10000">
  
          <!--
              Specifies the default permissions for all resources and collections
-@@ -243,8 +243,8 @@
+@@ -263,8 +263,8 @@
  				backup to the same directory.
          -->
          <recovery enabled="yes" group-commit="no" 
--			journal-dir="webapp/WEB-INF/data" size="100M"
+-			journal-dir="@dataDir@" size="100M"
 -            sync-on-commit="no" force-restart="no"
 +			journal-dir="@data.dir@" size="100M"
 +            sync-on-commit="yes" force-restart="no"
  			consistency-check="yes"/>
  
          <!-- 
-@@ -496,7 +496,23 @@
-             <parameter name="backup" value="no"/>
+@@ -520,7 +520,27 @@
+			<parameter name="max" value="2"/>
          </job>
          -->
 +
++	<job type="user" name="weeklyGOPHERAssess" cron-trigger="0 0 22 ? * 4 *"
++		xquery="/db/XCESC-logic/cronjobAssessWrapper.xql"
++	/>
++
 +	<job type="user" name="weeklyGOPHER" cron-trigger="0 0 23 ? * 4 *"
-+		xquery="/db/XCESC-logic/cronjob.xql"
++		xquery="/db/XCESC-logic/cronjobWrapper.xql"
 +	/>
          
 +        <job type="system" name="backup"
@@ -46,7 +50,7 @@
          <!-- 
              Automatically creates a copy of the database .dbx files every 2 minutes
              
-@@ -627,7 +643,10 @@
+@@ -623,7 +643,10 @@
          
      -->
      <transformer
@@ -58,12 +62,11 @@
  
      <!--
          Settings for XML validation
-@@ -787,6 +804,28 @@
-                     uri="http://exist-db.org/xquery/xmldiff" />
-             <module class="org.exist.xquery.modules.cache.CacheModule"
-                 uri="http://exist-db.org/xquery/cache" />
-+            -->
-+
+@@ -752,6 +773,25 @@
+             <module src="resource:net/xproc/xprocxq/src/xquery/naming.xqm" 
+                 uri="http://xproc.net/xproc/naming"/>
+             
++		<!-- Modules needed by AtomicWiki -->
 +			<module uri="http://www.w3.org/2005/Atom"
 +				src="resource:org/exist/atomic/atom.xql"/>
 +			<module uri="http://atomic.exist-db.org/xq/config"
@@ -75,16 +78,13 @@
 +			<module uri="http://atomic.exist-db.org/x2cw"
 +				src="resource:org/exist/atomic/XHTML2CommonWiki.xql"/>
 +
++		<!-- Modules needed/used by XCESC-->
 +			<module class="org.exist.xquery.modules.math.MathModule"
 +				uri="http://exist-db.org/xquery/math" />
-+			<module class="org.exist.xquery.modules.httpclient.HTTPClientModule"
-+				uri="http://exist-db.org/xquery/httpclient" />
 +			<module class="org.exist.xquery.modules.mail.MailModule"
 +				uri="http://exist-db.org/xquery/mail" />
 +			<module class="org.exist.xquery.modules.jfreechart.JFreeChartModule"
 +				uri="http://exist-db.org/xquery/jfreechart"/> 
-+			<!--
- 
-             <module class="org.exist.xquery.modules.jfreechart.JFreeChartModule"
-                     uri="http://exist-db.org/xquery/jfreechart"/> 
- 
+             <!-- Optional Modules -->
+             <!--
+             <module class="org.exist.backup.xquery.BackupModule"

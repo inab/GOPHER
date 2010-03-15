@@ -9,6 +9,9 @@
         <xs:documentation><![CDATA[XCESC job management configuration schema]]></xs:documentation>
     </xs:annotation>
     
+    <!-- This one is needed because we are using xs:dayTimeDuration, which can be ordered, whereas xs:duration it is not -->
+    <xs:import namespace="http://www.w3.org/2001/XMLSchema" schemaLocation="http://www.w3.org/2007/xpath-datatypes"/>
+    
     <xs:element name="jobManagement">
         <xs:annotation>
             <xs:documentation><![CDATA[The root element for the job management configuration data]]></xs:documentation>
@@ -67,6 +70,21 @@
             <xs:attribute name="roundsSubCollection" use="required" type="xs:string">
                 <xs:annotation>
                     <xs:documentation><![CDATA[The subcollection based on "collection" where each round job data is going to be stored.]]></xs:documentation>
+                </xs:annotation>
+            </xs:attribute>
+            <xs:attribute name="intervalBeforeAssessment" use="required" type="xs:dayTimeDuration">
+                <xs:annotation>
+                    <xs:documentation><![CDATA[The minimal interval of time which must be spent in order to evaluate a prediction]]></xs:documentation>
+                </xs:annotation>
+            </xs:attribute>
+            <xs:attribute name="participantDeadline" use="required" type="xs:dayTimeDuration">
+                <xs:annotation>
+                    <xs:documentation><![CDATA[The maximal interval of time which can be spent in order to issue a prediction]]></xs:documentation>
+                </xs:annotation>
+            </xs:attribute>
+            <xs:attribute name="evaluatorDeadline" use="required" type="xs:dayTimeDuration">
+                <xs:annotation>
+                    <xs:documentation><![CDATA[The maximal interval of time which can be spent in order to evaluate a prediction]]></xs:documentation>
                 </xs:annotation>
             </xs:attribute>
             <xs:attribute name="physicalScratch" use="required" type="xs:string">

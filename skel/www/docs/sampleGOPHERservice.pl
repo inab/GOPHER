@@ -78,7 +78,7 @@ sub launchJob($$) {
 			# my($term)=$answerDoc->createElementNS($XCESC_NS,'term');
 			# $match->appendChild($term);
 			# $term->setAttribute('namespace','GO');
-			# $term->setAttribute('id','GO:0004174');
+			# $term->setAttribute('publicId','GO:0004174');
 			# $term->setAttribute('score',100);
 			# $term->setAttribute('p-value',0.5);
 			#

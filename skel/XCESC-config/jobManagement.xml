@@ -4,6 +4,9 @@
     collection="GOPHER-data"
     roundsSubCollection="rounds"
     physicalScratch="/tmp"
+    intervalBeforeAssessment="P180D"
+    participantDeadline="P7D"
+    evaluatorDeadline="P7D"
 >
     <job:queriesComputation
         namespace="http://www.cnio.es/scombio/gopher/1.0/xquery/jobManagement/GOPHERCASP"
@@ -13,10 +16,12 @@
         storagePattern="*"
     />
     
-    <job:custom key="PDB_PATH">/drives/databases/FastaDB/pdb</job:custom>   
-    <job:custom key="PREPDB_PATH">/drives/databases/FastaDB/pdbpre</job:custom>   
+    <job:custom key="PDB_PATH">/drives/databases/FastaDB/pdb</job:custom>
+    <job:custom key="PREPDB_PATH">/drives/databases/FastaDB/pdbpre</job:custom>
+    <job:custom key="PDB_DIR">/drives/databases/wwPDB/divided</job:custom>
+    <job:custom key="PREPDB_URI">http://www.rcsb.org/pdb/search/searchStatusDoSearch.do?newSearch=yes&amp;full=true&amp;format=SEQ</job:custom>
     <job:custom key="dynCoreJar">xmldb:exist:///db/GOPHER-logic/GOPHERPrepare.jar</job:custom>
-    <job:custom key="dynCoreSeedMethod">StaticDoGOPHERPrepare</job:custom>
+    <job:custom key="dynCoreSeedMethod">StaticDoGOPHERPrepareSeed</job:custom>
     <job:custom key="dynCoreQueryMethod">StaticDoGOPHERPrepare</job:custom>
     <job:custom key="ENV">
     	<env key="PATH" value="/databases/eXist/bin"/>

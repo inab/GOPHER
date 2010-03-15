@@ -110,7 +110,60 @@
 		<mkdir dir="${AtomicWiki.dir}/java/lib/endorsed"/>
 	</target>
 	
-	<target name="bootstrap.eXist.exists" depends="init">
+	<target name="bootstrap.gopher.eXist.version">
+		<exec dir="${project.home}" executable="/bin/sh" outputproperty="gopher.eXist.version.weekly" failonerror="false">
+			<arg value="-c"/>
+			<arg value="svn propget svn:externals '${weeklyGOPHER-eXist-module.dir.rel}' | grep -o -- '-r[0-9]*'"/>
+		</exec>
+		<exec dir="${project.home}" executable="/bin/sh" outputproperty="gopher.eXist.checkout.uri.weekly" failonerror="false">
+			<arg value="-c"/>
+			<arg value="svn propget svn:externals '${weeklyGOPHER-eXist-module.dir.rel}' | grep -o -- 'http[^ ]*'"/>
+		</exec>
+		<exec dir="${project.home}" executable="/bin/sh" outputproperty="gopher.eXist.version.forms" failonerror="false">
+			<arg value="-c"/>
+			<arg value="svn propget svn:externals 'skel/${guiManagement(XForms-root)}' | grep -o -- '-r[0-9]*'"/>
+		</exec>
+		<exec dir="${project.home}" executable="/bin/sh" outputproperty="gopher.eXist.checkout.uri.forms" failonerror="false">
+			<arg value="-c"/>
+			<arg value="svn propget svn:externals 'skel/${guiManagement(XForms-root)}' | grep -o -- 'http[^ ]*'"/>
+		</exec>
+		
+		<condition property="gopher.eXist.version.uptodate">
+			<and>
+				<equals arg1="${gopher.eXist.version.weekly}" arg2="${gopher.eXist.version}"/>
+				<equals arg1="${gopher.eXist.checkout.uri.weekly}" arg2="${gopher.eXist.checkout.uri}"/>
+				<equals arg1="${gopher.eXist.version.forms}" arg2="${gopher.eXist.version}"/>
+				<equals arg1="${gopher.eXist.checkout.uri.forms}" arg2="${gopher.eXist.checkout.uri}/webapp/xforms/xsltforms"/>
+			</and>
+		</condition>
+	</target>
+	
+	<target name="conditional.bootstrap.gopher.eXist.version" depends="bootstrap.gopher.eXist.version" unless="gopher.eXist.version.uptodate">
+		<!-- First one -->
+		<exec dir="${project.home}" executable="svn" failonerror="true">
+			<arg value="propset"/>
+			<arg value="svn:externals"/>
+			<arg value="eXist	${gopher.eXist.version}	${gopher.eXist.checkout.uri}"/>
+			<arg value="${weeklyGOPHER-eXist-module.dir.rel}"/>
+		</exec>
+		<exec dir="${project.home}" executable="svn" failonerror="true">
+			<arg value="update"/>
+			<arg value="${weeklyGOPHER-eXist-module.dir.rel}"/>
+		</exec>
+		<!-- Second one -->
+		<exec dir="${project.home}" executable="svn" failonerror="true">
+			<arg value="propset"/>
+			<arg value="svn:externals"/>
+			<arg value="xsltforms	${gopher.eXist.version}	${gopher.eXist.checkout.uri}/webapp/xforms/xsltforms"/>
+			<arg value="skel/${guiManagement(XForms-root)}"/>
+		</exec>
+		<exec dir="${project.home}" executable="svn" failonerror="true">
+			<arg value="update"/>
+			<arg value="skel/${guiManagement(XForms-root)}"/>
+		</exec>
+	</target>
+	
+	<target name="bootstrap.eXist.exists" depends="init,conditional.bootstrap.gopher.eXist.version">
 		<available file="${eXist.jar}" property="eXist.archive.present"/>
 	</target>
 	
@@ -126,7 +179,7 @@
 		</copy>
 	</target>
 	
-	<target name="bootstrap.eXist" depends="compile.eXist" description="It compiles eXist">
+	<target name="bootstrap.eXist" depends="conditional.bootstrap.gopher.eXist.version,compile.eXist" description="It compiles eXist">
 	</target>
 	
 
@@ -261,6 +314,7 @@
 		</fail>
 		<filter token="port" value="${deploy.eXist.port}"/>
 		<filter token="tmpdir" value="${job:jobManagement(physicalScratch)}"/>
+		<filter token="XCESCConfig" value="${xcesc.config.col}"/>
 		<filter token="AtomicLogic" value="${guiManagement(AtomicWiki-logic)}"/>
 		<filter token="AtomicVirtual" value="${guiManagement(AtomicWiki-VirtualRoot)}"/>
 		<filter token="XForms.dir" value="${guiManagement(XForms-root)}"/>
@@ -451,24 +505,43 @@
 			command="if [ -f '${deploy.home.dir}/${GOPHER.startup}' ] ; then chmod -f +x '${deploy.home.dir}/${GOPHER.startup}' &amp;&amp; '${deploy.home.dir}/${GOPHER.startup}' stop  ; fi"
 		/>
 		
-		<!-- Then, checkout code (if needed) -->
+		<!-- Then, checkout or update code (if needed) -->
 		<sshexec
 			host="${deploy.host}"
 			username="${deploy.ssh.user}"
 			keyfile="${deploy.ssh.keyfile}"
 			trust="yes"
 			passphrase="${deploy.ssh.passphrase}"
-			command="if [ ! -d '${deploy.eXist.dir}' ] ; then svn co https://exist.svn.sourceforge.net/svnroot/exist/trunk/eXist '${deploy.eXist.dir}' ; fi"
+			command="if [ ! -d '${deploy.eXist.dir}' ] ; then svn co ${gopher.eXist.version} '${gopher.eXist.checkout.uri}' '${deploy.eXist.dir}' ; else svn update ${gopher.eXist.version} '${deploy.eXist.dir}' ; fi"
 		/>
 		
-		<!-- Let's prepare it... -->
+		<!-- Copying Configuration files -->
+		<scp
+			todir="${deploy.ssh.user}@${deploy.host}:${deploy.eXist.conf.dir}"
+			keyfile="${deploy.ssh.keyfile}"
+			trust="yes"
+			passphrase="${deploy.ssh.passphrase}"
+		>
+			<fileset dir="${eXist.conf.dir}">
+				<include name="conf.xml"/>
+				<include name="server.xml"/>
+				<include name="server.xml.norewrite"/>
+				<include name="log4j.xml"/>
+				<include name="atom-services.xml"/>
+			</fileset>
+			<fileset dir="${project.home}">
+				<include name="shared-eXist.properties"/>
+			</fileset>
+		</scp>
+		
+		<!-- Let's prepare eXist... -->
 		<sshexec
 			host="${deploy.host}"
 			username="${deploy.ssh.user}"
 			keyfile="${deploy.ssh.keyfile}"
 			trust="yes"
 			passphrase="${deploy.ssh.passphrase}"
-			command="cd '${deploy.eXist.dir}' &amp;&amp; ant -Dinclude.module.jfreechart=true"
+			command="cd '${deploy.eXist.dir}' &amp;&amp; ant -propertyfile '${deploy.eXist.conf.dir}/shared-eXist.properties'"
 		/>
 		
 		<!-- Copying Startup script -->
@@ -492,22 +565,6 @@
 			passphrase="${deploy.ssh.passphrase}"
 			command="if [ -f '${deploy.home.dir}/${GOPHER.startup}' ] ; then chmod -f +x '${deploy.home.dir}/${GOPHER.startup}' ; fi"
 		/>
-		
-		<!-- Copying Configuration files -->
-		<scp
-			todir="${deploy.ssh.user}@${deploy.host}:${deploy.eXist.conf.dir}"
-			keyfile="${deploy.ssh.keyfile}"
-			trust="yes"
-			passphrase="${deploy.ssh.passphrase}"
-		>
-			<fileset dir="${eXist.conf.dir}">
-				<include name="conf.xml"/>
-				<include name="server.xml"/>
-				<include name="server.xml.norewrite"/>
-				<include name="log4j.xml"/>
-				<include name="atom-services.xml"/>
-			</fileset>
-		</scp>
 		
 		<!-- Copying additional Atomic configuration files -->
 		<scp
@@ -768,7 +825,9 @@
 	</target>
 	
 	<target name="compile.eXist" depends="init" description="compiles eXist inside weeklyGOPHER-eXist-module">
-		<ant inheritAll="false" inheritRefs="false" dir="${eXist.dir}" />
+		<ant inheritAll="false" inheritRefs="false" dir="${eXist.dir}">
+			<property file="${ant.file.dir.parent}/shared-eXist.properties" />
+		</ant>
 	</target>
 	
 	<target name="clean" depends="clean.weeklyGOPHER-eXist-module,clean.AtomicWiki" description="clean up ${ant.project.name}">

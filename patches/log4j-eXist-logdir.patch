@@ -1,5 +1,5 @@
---- log4j.xml	2009-08-11 13:29:59.000000000 +0200
-+++ log4j.xml	2009-08-14 17:02:30.000000000 +0200
+--- log4j.xml	2009-10-11 12:24:16.000000000 +0200
++++ log4j.xml	2009-10-11 12:21:03.000000000 +0200
 @@ -23,7 +23,7 @@
           the following appenders write to files  
      -->
@@ -45,7 +45,7 @@
          <param name="MaxFileSize" value="500KB"/>
          <layout class="org.apache.log4j.PatternLayout">
              <param name="ConversionPattern" value="%d [%t] %-5p (%F [%M]:%L) - %m %n"/>
-@@ -66,7 +66,7 @@
+@@ -66,23 +66,34 @@
      </appender>
      
      <!--appender name="exist.validation" class="org.apache.log4j.RollingFileAppender">
@@ -54,17 +54,30 @@
          <param name="MaxFileSize" value="500KB"/>
          <layout class="org.apache.log4j.PatternLayout">
              <param name="ConversionPattern" value="%d [%t] %-5p (%F [%M]:%L) - %m %n"/>
-@@ -74,7 +74,7 @@
+         </layout>
      </appender-->
      
-     <!--appender name="exist.webdav" class="org.apache.log4j.RollingFileAppender">
+-    <!--appender name="exist.webdav" class="org.apache.log4j.RollingFileAppender">
 -        <param name="File" value="${exist.home}/webapp/WEB-INF/logs/webdav.log"/>
++    <appender name="exist.webdav" class="org.apache.log4j.RollingFileAppender">
 +        <param name="File" value="${exist.logsdir}/webdav.log"/>
          <param name="MaxFileSize" value="500KB"/>
++        <param name="Encoding" value="UTF-8"/>
          <layout class="org.apache.log4j.PatternLayout">
              <param name="ConversionPattern" value="%d [%t] %-5p (%F [%M]:%L) - %m %n"/>
-@@ -82,7 +82,7 @@
-     </appender-->
+         </layout>
+-    </appender-->
++    </appender>
++    
++    <appender name="xcesc.cron" class="org.apache.log4j.RollingFileAppender">
++        <param name="File" value="${exist.logsdir}/XCESC-cron.log"/>
++        <param name="MaxFileSize" value="500KB"/>
++        <param name="MaxBackupIndex" value="3"/>
++        <param name="Encoding" value="UTF-8"/>
++        <layout class="org.apache.log4j.PatternLayout">
++            <param name="ConversionPattern" value="%d [%t] %-5p (%F [%M]:%L) - %m %n"/>
++        </layout>
++    </appender>
      
      <appender name="exist.scheduler" class="org.apache.log4j.RollingFileAppender">
 -        <param name="File" value="${exist.home}/webapp/WEB-INF/logs/scheduler.log"/>
@@ -72,3 +85,21 @@
          <param name="MaxFileSize" value="500KB"/>
          <layout class="org.apache.log4j.PatternLayout">
              <param name="ConversionPattern" value="%d [%t] %-5p (%F [%M]:%L) - %m %n"/>
+@@ -146,10 +157,15 @@
+         <appender-ref ref="exist.validation"/>
+     </category-->
+     
+-    <!--category name="org.exist.http.webdav" additivity="false">
++    <category name="org.exist.http.webdav" additivity="false">
+         <priority value="debug"/>
+         <appender-ref ref="exist.webdav"/>
+-    </category-->
++    </category>
++
++    <category name="xcesc.cron" additivity="false">
++    	<priority value="debug"/>
++	<appender-ref ref="xcesc.cron"/>
++    </category>
+     
+     <category name="net.sf.ehcache" additivity="false">
+         <priority value="debug"/>

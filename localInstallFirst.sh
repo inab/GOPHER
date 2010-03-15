@@ -8,6 +8,14 @@ case "$PROJDIR" in
 		PROJDIR="${PWD}/${PROJDIR}"
 esac
 
+JAVA_TMPHOME="$(\ls -1d /opt/ibm-jdk-bin-1.6* 2> /dev/null |tail -n 1)"
+if [ -n "$JAVA_TMPHOME" ] ; then
+	JAVA_HOME="$JAVA_TMPHOME"
+	export JAVA_HOME
+	PATH="${JAVA_HOME}/bin:$PATH"
+	export PATH
+fi
+
 DEPLOY_EXIST_DATA_DIR_REL=webapp/WEB-INF/data
 DEPLOY_EXIST_LOGS_DIR_REL=webapp/WEB-INF/logs
 DEPLOY_HOME_DIR="$PROJDIR"/testbed

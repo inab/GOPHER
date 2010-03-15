@@ -13,28 +13,34 @@ import module namespace util="http://exist-db.org/xquery/util";
 import module namespace xmldb="http://exist-db.org/xquery/xmldb";
 
 declare variable $mgmt:configCol as xs:string := "/db/XCESC-config";
+declare variable $mgmt:configColURI as xs:string := xmldb:encode($mgmt:configCol);
+
+declare variable $mgmt:configRoot as element(mgmt:systemManagement) := collection($mgmt:configColURI)//mgmt:systemManagement[1];
 
 declare variable $mgmt:partServer as xs:string := 'participant';
 declare variable $mgmt:evalServer as xs:string := 'evaluator';
 
-declare variable $mgmt:adminUser as xs:string := collection($mgmt:configCol)//mgmt:systemManagement[1]/mgmt:admin/@user/string();
-declare variable $mgmt:adminPass as xs:string := collection($mgmt:configCol)//mgmt:systemManagement[1]/mgmt:admin/@password/string();
+declare variable $mgmt:adminUser as xs:string := $mgmt:configRoot/mgmt:admin/@user/string();
+declare variable $mgmt:adminPass as xs:string := $mgmt:configRoot/mgmt:admin/@password/string();
 
-declare variable $mgmt:xcescGroup as xs:string := collection($mgmt:configCol)//mgmt:systemManagement[1]/@group/string();
+declare variable $mgmt:xcescGroup as xs:string := $mgmt:configRoot/@group/string();
 
-declare variable $mgmt:mgmtCol as xs:string := collection($mgmt:configCol)//mgmt:systemManagement[1]/@collection/string();
-declare variable $mgmt:mgmtDoc as xs:string := collection($mgmt:configCol)//mgmt:systemManagement[1]/@managementDoc/string();
+declare variable $mgmt:mgmtCol as xs:string := $mgmt:configRoot/@collection/string();
+declare variable $mgmt:mgmtColURI as xs:string := xmldb:encode($mgmt:mgmtCol);
+declare variable $mgmt:mgmtDoc as xs:string := $mgmt:configRoot/@managementDoc/string();
+declare variable $mgmt:mgmtDocURI as xs:string := xmldb:encode($mgmt:mgmtDoc);
 
-declare variable $mgmt:publicServerPort as xs:string := collection($mgmt:configCol)//mgmt:systemManagement[1]/@publicServerPort/string();
+declare variable $mgmt:publicServerPort as xs:string := $mgmt:configRoot/@publicServerPort/string();
 declare variable $mgmt:publicBaseURI as xs:string := concat(
 	if($mgmt:publicServerPort eq '443') then 'https' else 'http',
 	'://',
-	collection($mgmt:configCol)//mgmt:systemManagement[1]/@publicServerName/string(),
+	$mgmt:configRoot/@publicServerName/string(),
 	if($mgmt:publicServerPort ne '80' and $mgmt:publicServerPort ne '443') then concat(':',$mgmt:publicServerPort) else '',
-	collection($mgmt:configCol)//mgmt:systemManagement[1]/@publicBasePath/string()
+	$mgmt:configRoot/@publicBasePath/string()
 	);
 
 declare variable $mgmt:mgmtDocPath as xs:string := string-join(($mgmt:mgmtCol,$mgmt:mgmtDoc),'/');
+declare variable $mgmt:mgmtDocPathURI as xs:string := xmldb:encode($mgmt:mgmtDocPath);
 
 (:::::::::::::::::::::::)
 (: Management Document :)
@@ -43,14 +49,15 @@ declare variable $mgmt:mgmtDocPath as xs:string := string-join(($mgmt:mgmtCol,$m
 declare function mgmt:getManagementDoc()
 	as element(xcesc:managementData)
 {
-	if(doc-available($mgmt:mgmtDocPath)) then (
-		doc($mgmt:mgmtDocPath)/element()
+	if(doc-available($mgmt:mgmtDocPathURI)) then (
+		doc($mgmt:mgmtDocPathURI)/element()
 	) else (
 		let $newDoc := <xcesc:managementData><xcesc:users/><xcesc:servers/></xcesc:managementData>
-		let $dummy := xmldb:create-collection("/",$mgmt:mgmtCol)
-		let $retElem := doc(xmldb:store($mgmt:mgmtCol,$mgmt:mgmtDoc,$newDoc,'application/xml'))/element()
+		let $mgmtColURI := xmldb:encode($mgmt:mgmtCol)
+		let $dummy := xmldb:create-collection("/",$mgmtColURI)
+		let $retElem := doc(xmldb:store($mgmtColURI,$mgmt:mgmtDocURI,$newDoc,'application/xml'))/element()
 		(: Only the owner can look at/change this file :)
-		let $empty := xmldb:set-resource-permissions($mgmt:mgmtCol,$mgmt:mgmtDoc,$mgmt:adminUser,$mgmt:xcescGroup,7*64)
+		let $empty := xmldb:set-resource-permissions($mgmt:mgmtColURI,$mgmt:mgmtDocURI,$mgmt:adminUser,$mgmt:xcescGroup,7*64)
 		return $retElem
 	)
 };
@@ -70,7 +77,7 @@ declare function mgmt:changeServerOwnership($oldOwnerId as xs:string,$serverId a
 		if(empty($userDoc)) then
 			error((),string-join(("On server ownership change, user",$newOwnerId,"was not found"),' '))
 		else (
-			let $serverDoc := $mgmtDoc//xcesc:server[@id eq $serverId and @managerId eq $oldOwnerId]
+			let $serverDoc := $mgmtDoc//xcesc:server[@id eq $serverId][@managerId eq $oldOwnerId]
 			return
 				if(empty($serverDoc)) then
 					error((),string-join(("On server ownership change, server",$serverId,"is not owned by",$oldOwnerId),' '))
@@ -129,7 +136,7 @@ declare function mgmt:deleteServer($managerId as xs:string,$id as xs:string)
 	(: } :)
 };
 
-(: It returns the set of available participant online servers :)
+(: It returns the set of available participant and evaluation online servers :)
 declare function mgmt:getOnlineServers()
 	as element(xcesc:server)*
 {
@@ -150,21 +157,40 @@ declare function mgmt:getOnlineServers($serverType as xs:string)
 };
 
 (: It returns the set of available participant online servers at a specified date :)
-declare function mgmt:getOnlineServers($currentDateTime as xs:dateTime)
+declare function mgmt:getOnlineParticipants($currentDateTime as xs:dateTime)
 	as element(xcesc:server)*
 {
 	(: (# exist:batch-transaction #) { :)
-	mgmt:getOnlineServers($currentDateType,$mgmt:partServer)
+	mgmt:getOnlineServers($currentDateTime,$mgmt:partServer)
 	(: } :)
 };
 
-(: It returns the set of available online servers :)
-declare function mgmt:getOnlineServers($currentDateTime as xs:dateTime,$serverType as xs:string)
+(: It returns the set of available participant online servers at a specified date :)
+declare function mgmt:getOnlineEvaluators($currentDateTime as xs:dateTime)
+	as element(xcesc:server)*
+{
+	(: (# exist:batch-transaction #) { :)
+	mgmt:getOnlineServers($currentDateTime,$mgmt:evalServer)
+	(: } :)
+};
+
+(: It returns the set of available online servers of a any type :)
+declare function mgmt:getOnlineServers($currentDateTime as xs:dateTime)
 	as element(xcesc:server)*
 {
 	(: (# exist:batch-transaction #) { :)
 		let $mgmtDoc:=mgmt:getManagementDoc()
 		return $mgmtDoc//xcesc:server[@id eq $mgmtDoc//xcesc:user[@status eq 'enabled']/@id][empty(xcesc:downTime[xs:dateTime(@since)<=$currentDateTime][empty(@until) or xs:dateTime(@until)>$currentDateTime])]
+	(: } :)
+};
+
+(: It returns the set of available online servers of a matching type :)
+declare function mgmt:getOnlineServers($currentDateTime as xs:dateTime,$serverType as xs:string)
+	as element(xcesc:server)*
+{
+	(: (# exist:batch-transaction #) { :)
+		let $mgmtDoc:=mgmt:getManagementDoc()
+		return $mgmtDoc//xcesc:server[@id eq $mgmtDoc//xcesc:user[@status eq 'enabled']/@id][@type eq $serverType][empty(xcesc:downTime[xs:dateTime(@since)<=$currentDateTime][empty(@until) or xs:dateTime(@until)>$currentDateTime])]
 	(: } :)
 };
 
@@ -245,8 +271,8 @@ declare function mgmt:createUser($nickname as xs:string,$nickpass as xs:string,$
 				let $id:=util:uuid()
 				(: Perhaps in the future we will add bloggers group... :)
 				let $emp:=system:as-user(
-					collection($mgmt:configCol)//meta:metaManagement[1]/@user/string(),
-					collection($mgmt:configCol)//meta:metaManagement[1]/@password/string(),
+					collection($mgmt:configColURI)//meta:metaManagement[1]/@user/string(),
+					collection($mgmt:configColURI)//meta:metaManagement[1]/@password/string(),
 					xmldb:create-user($nickname,$nickpass,($mgmt:xcescGroup),())
 				)
 				let $newUser:=<xcesc:user id="{$id}" nickname="{$nickname}" firstName="{$firstName}" lastName="{$lastName}" organization="{$organization}" status="enabled">
@@ -282,8 +308,8 @@ declare function mgmt:deleteUser($id as xs:string,$nickname as xs:string)
 				 error((),string-join(("On user deletion,",$id,"is not allowed to erase",$nickname,"or some of them are unknown"),' '))
 			else (
 				system:as-user(
-					collection($mgmt:configCol)//meta:metaManagement[1]/@user/string(),
-					collection($mgmt:configCol)//meta:metaManagement[1]/@password/string(),
+					collection($mgmt:configColURI)//meta:metaManagement[1]/@user/string(),
+					collection($mgmt:configColURI)//meta:metaManagement[1]/@password/string(),
 					xmldb:delete-user($nickname)
 				),
 				update delete $userDoc
@@ -299,8 +325,8 @@ declare function mgmt:deleteDeletedUsers($users as element(xcesc:deletedUser)*)
 		for $deluser in $users[@id ne '' and @nickname ne ''], $userDoc in $mgmtDoc//xcesc:user[@id eq $deluser/@id and @nickname eq $deluser/@nickname]
 		return (
 			system:as-user(
-				collection($mgmt:configCol)//meta:metaManagement[1]/@user/string(),
-				collection($mgmt:configCol)//meta:metaManagement[1]/@password/string(),
+				collection($mgmt:configColURI)//meta:metaManagement[1]/@user/string(),
+				collection($mgmt:configColURI)//meta:metaManagement[1]/@password/string(),
 				xmldb:delete-user($deluser/@nickname)
 			),
 			update delete $userDoc
@@ -384,8 +410,8 @@ declare function mgmt:changeUserPass($id as xs:string, $nickname as xs:string,$o
 		return
 			if($userDoc and ($reset or xmldb:authenticate('/db',$nickname,$oldpass))) then (
 				system:as-user(
-					collection($mgmt:configCol)//meta:metaManagement[1]/@user/string(),
-					collection($mgmt:configCol)//meta:metaManagement[1]/@password/string(),
+					collection($mgmt:configColURI)//meta:metaManagement[1]/@user/string(),
+					collection($mgmt:configColURI)//meta:metaManagement[1]/@password/string(),
 					xmldb:change-user($nickname,$newpass,(),())
 				)
 			) else

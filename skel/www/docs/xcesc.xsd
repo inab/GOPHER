@@ -327,6 +327,77 @@
 		</xsd:attribute>
 	</xsd:attributeGroup>
 	
+	<xsd:attributeGroup name="namespaceAttributesGroup">
+		<xsd:attribute name="namespace" type="xsd:string" use="required">
+			<xsd:annotation>
+				<xsd:documentation><![CDATA[The namespace of the annotation. For instance, GO]]></xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="publicId" type="xsd:string" use="required">
+			<xsd:annotation>
+				<xsd:documentation><![CDATA[The id of the annotation]]></xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+	</xsd:attributeGroup>
+	
+	<xsd:attributeGroup name="sharedJobAttributesGroup">
+		<xsd:annotation>
+			<xsd:documentation><![CDATA[These attributes are shared by experiment and assessment]]></xsd:documentation>
+		</xsd:annotation>
+		<xsd:attribute name="name" type="xsd:string" use="required">
+			<xsd:annotation>
+				<xsd:documentation><![CDATA[The name (usually the experiment or assessment job ticket), so we can link to it]]></xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="stamp" type="xsd:dateTime" use="required">
+			<xsd:annotation>
+				<xsd:documentation><![CDATA[The experiment or assessment's timestamp (when it started)]]></xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="baseStamp" type="xsd:date" use="required">
+			<xsd:annotation>
+				<xsd:documentation><![CDATA[The previous experiment or assessment's timestamp (used to track changes)]]></xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="deadline" type="xsd:dateTime" use="required">
+			<xsd:annotation>
+				<xsd:documentation><![CDATA[The experiment or assessment's deadline (after this one no result is accepted)]]></xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="test" type="xsd:boolean" use="optional" default="false">
+			<xsd:annotation>
+				<xsd:documentation><![CDATA[Is it a test experiment/assessment?]]></xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+	</xsd:attributeGroup>
+
+	<xsd:attributeGroup name="sharedEvaExpAttributesGroup">
+		<xsd:annotation>
+			<xsd:documentation><![CDATA[Shared attribute declarations used by
+				experiment and evaluator]]></xsd:documentation>
+		</xsd:annotation>
+		<xsd:attribute name="ticket" type="xsd:string" use="required">
+			<xsd:annotation>
+				<xsd:documentation><![CDATA[The unique evaluator ticket]]></xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="startStamp" type="xsd:dateTime" use="required">
+			<xsd:annotation>
+				<xsd:documentation><![CDATA[The timestamp of the evaluation submission]]></xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="lastStamp" type="xsd:dateTime" use="required">
+			<xsd:annotation>
+				<xsd:documentation><![CDATA[The timestamp of the last received in time evaluation result]]></xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="lastMessage" type="xsd:string" use="optional">
+			<xsd:annotation>
+				<xsd:documentation><![CDATA[Last human-readable message fetched from server on submission, i.e., an error]]></xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+	</xsd:attributeGroup>
+
 	<xsd:element name="match">
 		<xsd:annotation>
 			<xsd:documentation><![CDATA[A match/result found by the server]]></xsd:documentation>
@@ -369,16 +440,7 @@ It depends on the units system and it is always an inclusive limit.]]></xsd:docu
 							<xsd:documentation><![CDATA[An annotated element]]></xsd:documentation>
 						</xsd:annotation>
 						<xsd:complexType>
-							<xsd:attribute name="namespace" type="xsd:string" use="required">
-								<xsd:annotation>
-									<xsd:documentation><![CDATA[The namespace of the annotation. For instance, GO]]></xsd:documentation>
-								</xsd:annotation>
-							</xsd:attribute>
-							<xsd:attribute name="id" type="xsd:string" use="required">
-								<xsd:annotation>
-									<xsd:documentation><![CDATA[The id of the annotation]]></xsd:documentation>
-								</xsd:annotation>
-							</xsd:attribute>
+							<xsd:attributeGroup ref="xcesc:namespaceAttributesGroup"/>
 							<xsd:attributeGroup ref="xcesc:scoreAttributesGroup"/>
 						</xsd:complexType>
 					</xsd:element>
@@ -420,7 +482,7 @@ ab initio, then the origin of the match must be identified]]></xsd:documentation
 		</xsd:annotation>
 		<xsd:complexType>
 			<xsd:sequence minOccurs="1" maxOccurs="1">
-				<xsd:element name="matchEvaluation">
+				<xsd:element name="matchEvaluation" minOccurs="0" maxOccurs="unbounded">
 					<xsd:complexType>
 						<xsd:sequence minOccurs="1" maxOccurs="1">
 							<xsd:element name="report">
@@ -455,6 +517,7 @@ ab initio, then the origin of the match must be identified]]></xsd:documentation
 								</xsd:restriction>
 							</xsd:simpleType>
 						</xsd:attribute>
+						<xsd:attributeGroup ref="xcesc:scoreAttributesGroup"></xsd:attributeGroup>
 					</xsd:complexType>
 				</xsd:element>
 			</xsd:sequence>
@@ -566,26 +629,11 @@ ab initio, then the origin of the match must be identified]]></xsd:documentation
 				-->
 				<xsd:element ref="xcesc:match" minOccurs="0" maxOccurs="unbounded"/>
 			</xsd:sequence>
-			<xsd:attribute name="publicId" type="xsd:string" use="required">
-				<xsd:annotation>
-					<xsd:documentation><![CDATA[The public id of the query (for instance, a PDB id)]]></xsd:documentation>
-				</xsd:annotation>
-			</xsd:attribute>
+			<xsd:attributeGroup ref="xcesc:namespaceAttributesGroup"/>
 			<xsd:attribute name="description" type="xsd:string" use="required">
 				<xsd:annotation>
 					<xsd:documentation><![CDATA[A descriptive line for the query (for instance, from PDB or PDBPre)]]></xsd:documentation>
 				</xsd:annotation>
-			</xsd:attribute>
-			<xsd:attribute name="origin" use="required">
-				<xsd:annotation>
-					<xsd:documentation><![CDATA[The origin of the query, for instance PDB or PDBPre]]></xsd:documentation>
-				</xsd:annotation>
-				<xsd:simpleType>
-					<xsd:restriction base="xsd:string">
-						<xsd:enumeration value="pdb"/>
-						<xsd:enumeration value="pdbpre"/>
-					</xsd:restriction>
-				</xsd:simpleType>
 			</xsd:attribute>
 			<xsd:attribute name="level">
 				<xsd:annotation>
@@ -718,37 +766,14 @@ ab initio, then the origin of the match must be identified]]></xsd:documentation
 								</xsd:element>
 							</xsd:choice>
 						</xsd:sequence>
-						<xsd:attribute name="ticket" type="xsd:string" use="required">
-							<xsd:annotation>
-								<xsd:documentation><![CDATA[The unique job ticket]]></xsd:documentation>
-							</xsd:annotation>
-						</xsd:attribute>
-						<xsd:attribute name="startStamp" type="xsd:dateTime" use="required">
-							<xsd:annotation>
-								<xsd:documentation><![CDATA[The timestamp of the job submission]]></xsd:documentation>
-							</xsd:annotation>
-						</xsd:attribute>
-						<xsd:attribute name="lastMessage" type="xsd:string" use="optional">
-							<xsd:annotation>
-								<xsd:documentation><![CDATA[Last human-readable message fetched from server on submission, i.e., an error]]></xsd:documentation>
-							</xsd:annotation>
-						</xsd:attribute>
+						<xsd:attributeGroup ref="xcesc:sharedEvaExpAttributesGroup"/>
 					</xsd:complexType>
 				</xsd:element>
 			</xsd:sequence>
-			<xsd:attribute name="stamp" type="xsd:dateTime" use="required">
+			<xsd:attributeGroup ref="xcesc:sharedJobAttributesGroup"/>
+			<xsd:attribute name="isAssessed" type="xsd:boolean" use="required">
 				<xsd:annotation>
-					<xsd:documentation><![CDATA[The experiment's timestamp (when it started)]]></xsd:documentation>
-				</xsd:annotation>
-			</xsd:attribute>
-			<xsd:attribute name="baseStamp" type="xsd:date" use="required">
-				<xsd:annotation>
-					<xsd:documentation><![CDATA[The previous experiment's timestamp (used to track changes)]]></xsd:documentation>
-				</xsd:annotation>
-			</xsd:attribute>
-			<xsd:attribute name="test" type="xsd:boolean" use="optional" default="false">
-				<xsd:annotation>
-					<xsd:documentation><![CDATA[Is it a test experiment?]]></xsd:documentation>
+					<xsd:documentation><![CDATA[Has the experiment being officially assessed at least once?]]></xsd:documentation>
 				</xsd:annotation>
 			</xsd:attribute>
 		</xsd:complexType>
@@ -912,44 +937,11 @@ ab initio, then the origin of the match must be identified]]></xsd:documentation
 								</xsd:element>
 							</xsd:choice>
 						</xsd:sequence>
-						<xsd:attribute name="ticket" type="xsd:string" use="required">
-							<xsd:annotation>
-								<xsd:documentation><![CDATA[The unique evaluator ticket]]></xsd:documentation>
-							</xsd:annotation>
-						</xsd:attribute>
-						<xsd:attribute name="startStamp" type="xsd:dateTime" use="required">
-							<xsd:annotation>
-								<xsd:documentation><![CDATA[The timestamp of the evaluation submission]]></xsd:documentation>
-							</xsd:annotation>
-						</xsd:attribute>
-						<xsd:attribute name="lastMessage" type="xsd:string" use="optional">
-							<xsd:annotation>
-								<xsd:documentation><![CDATA[Last human-readable message fetched from server on submission, i.e., an error]]></xsd:documentation>
-							</xsd:annotation>
-						</xsd:attribute>
+						<xsd:attributeGroup ref="xcesc:sharedEvaExpAttributesGroup"/>
 					</xsd:complexType>
 				</xsd:element>
 			</xsd:sequence>
-			<xsd:attribute name="stamp" type="xsd:dateTime" use="required">
-				<xsd:annotation>
-					<xsd:documentation><![CDATA[The assessment's timestamp (when it started)]]></xsd:documentation>
-				</xsd:annotation>
-			</xsd:attribute>
-			<xsd:attribute name="baseStamp" type="xsd:date" use="required">
-				<xsd:annotation>
-					<xsd:documentation><![CDATA[The previous assessment's timestamp (used to track changes)]]></xsd:documentation>
-				</xsd:annotation>
-			</xsd:attribute>
-			<xsd:attribute name="test" type="xsd:boolean" use="optional" default="false">
-				<xsd:annotation>
-					<xsd:documentation><![CDATA[Is it a test assessment?]]></xsd:documentation>
-				</xsd:annotation>
-			</xsd:attribute>
-			<xsd:attribute name="assessmentTicket" type="xsd:string" use="required">
-				<xsd:annotation>
-					<xsd:documentation><![CDATA[The experiment job ticket, so we can link to it]]></xsd:documentation>
-				</xsd:annotation>
-			</xsd:attribute>
+			<xsd:attributeGroup ref="xcesc:sharedJobAttributesGroup"/>
 		</xsd:complexType>
 		<xsd:key name="assessment_target_key">
 			<xsd:annotation>

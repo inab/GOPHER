@@ -12,8 +12,8 @@ import module namespace mgmt="http://www.cnio.es/scombio/xcesc/1.0/xquery/system
 import module namespace util="http://exist-db.org/xquery/util";
 
 (: Don't forget the starting slash! :)
-declare variable $gui:AtomicRoot as xs:string := concat('/',collection($mgmt:configCol)//gui:guiManagement[1]/@AtomicWiki-logic/string());
-declare variable $gui:AtomicVirtualRoot as xs:string := concat('/',collection($mgmt:configCol)//gui:guiManagement[1]/@AtomicWiki-VirtualRoot/string());
+declare variable $gui:AtomicRoot as xs:string := concat('/',collection($mgmt:configColURI)//gui:guiManagement[1]/@AtomicWiki-logic/string());
+declare variable $gui:AtomicVirtualRoot as xs:string := concat('/',collection($mgmt:configColURI)//gui:guiManagement[1]/@AtomicWiki-VirtualRoot/string());
 
 declare function gui:extract-path($uri as xs:string) as xs:string {
 	let $cp := request:get-context-path()

@@ -1,5 +1,5 @@
 (:
-	cronjob.xql
+	cronjobAssess.xql
 	
 	This module can only be run with elevated privileges,
 	but it is the caller's task to reach those privileges,
@@ -13,11 +13,7 @@ import module namespace job="http://www.cnio.es/scombio/xcesc/1.0/xquery/jobMana
 
 (: Network context detection, to avoid external "attacks" :)
 if(request:exists()) then
-	error((),'The cron job cannot be fired from outside. Quack!')
+	error((),'The assessment cron job cannot be fired from outside. Quack!')
 else (
-	if(empty(job:getLastRoundDocument()/@timeStamp)) then (
-		job:plantSeed()
-	) else (
-		job:doNextRound()
-	)
+	job:issueAssessments()
 )

@@ -1,0 +1,841 @@
+Index: xquery/src/org/exist/atomic/atom.xql
+===================================================================
+--- xquery/src/org/exist/atomic/atom.xql	(revision 113)
++++ xquery/src/org/exist/atomic/atom.xql	(working copy)
+@@ -145,7 +145,7 @@
+ };
+ 
+ declare function atom:delete($credentials as xs:string+, $feed1 as xs:string, $id as xs:string) {
+-    let $commentUri := xs:anyURI(concat(cfg:get-atom-uri(), '/edit/', $feed1, '/', util:md5($id), '/'))
++    let $commentUri := xs:anyURI(concat(cfg:get-atom-uri(), '/edit/', $feed1, '/', util:hash($id,'MD5'), '/'))
+     let $log := util:log("DEBUG", ("$commentUri: ", $commentUri))
+     let $deleted :=
+         httpclient:delete($commentUri, false(), atom:get-headers($credentials))
+@@ -178,7 +178,7 @@
+     let $oldUri := xs:anyURI(concat(cfg:get-atom-uri(), '/edit/', $feed, '?id=', $id))
+ 	let $newUri := xs:anyURI(concat(cfg:get-atom-uri(), '/edit', atom:wiki-root(), $dest))
+ 	(: old URI for the entry's comments :)
+-	let $oldCUri := xs:anyURI(concat(cfg:get-atom-uri(), '/edit/', $feed, '/', util:md5($id)))
++	let $oldCUri := xs:anyURI(concat(cfg:get-atom-uri(), '/edit/', $feed, '/', util:hash($id,'MD5')))
+ 	(: get entry data :)
+ 	let $data := httpclient:get($oldUri, false(), ())//atom:entry
+ 	(: get comments feed :)
+@@ -195,7 +195,7 @@
+         					let $newId := $response//atom:entry/atom:id/string()
+         					(: new comment URI :)
+         					let $newCUri := xs:anyURI(concat(cfg:get-atom-uri(), '/edit', 
+-        						atom:wiki-root(), $dest, '/', util:md5($newId)))
++        						atom:wiki-root(), $dest, '/', util:hash($newId,'MD5')))
+         					return
+         						if ($cdata) then
+         							(: copy comment feed to destination :)
+Index: xquery/src/org/exist/atomic/data.xql
+===================================================================
+--- xquery/src/org/exist/atomic/data.xql	(revision 113)
++++ xquery/src/org/exist/atomic/data.xql	(working copy)
+@@ -26,7 +26,7 @@
+             (: Edit existing entry :)
+             collection(concat(util:collection-name($feed), "/.feed.entry"))/atom:entry[atom:id = $id]
+         else if ($action eq 'load-comment') then
+-            for $entry in collection(concat(atom:wiki-root(), $path, '/', util:md5($id), '/.feed.entry'))/atom:entry
++            for $entry in collection(concat(atom:wiki-root(), $path, '/', util:hash($id,'MD5'), '/.feed.entry'))/atom:entry
+             return
+                 data:retrieve-entry($path, $entry, false())
+         else
+@@ -34,7 +34,7 @@
+ };
+ 
+ declare function data:comment-count($path as xs:string, $entry as element(atom:entry)) {
+-    let $commentCol := collection(concat(atom:wiki-root(), $path, '/', util:md5($entry/atom:id), '/.feed.entry'))
++    let $commentCol := collection(concat(atom:wiki-root(), $path, '/', util:hash($entry/atom:id,'MD5'), '/.feed.entry'))
+     let $commentCount := count($commentCol/atom:entry)
+     return
+         <blog:comments xmlns:blog="http://exist-db.org/xquery/blog" count="{$commentCount}"/>
+@@ -70,7 +70,7 @@
+             let $cache := $entry/wiki:cache/@enabled = "yes"
+             let $cached :=
+                 if ($cache) then
+-                    doc(concat("/db/atom/cache/", util:md5($entry/atom:id)))
++                    doc(concat("/db/atom/cache/", util:hash($entry/atom:id,'MD5')))
+                 else
+                     ()
+             let $useCached :=
+@@ -98,7 +98,7 @@
+                                 system:as-user($credentials[1], $credentials[2], 
+                                     (
+                                         xdb:create-collection("/db/atom", "cache"),
+-                                        xdb:store("/db/atom/cache/", util:md5($entry/atom:id), $result, "text/xml")
++                                        xdb:store("/db/atom/cache/", util:hash($entry/atom:id,'MD5'), $result, "text/xml")
+                                     )
+                                 )
+                         else
+Index: build.xml
+===================================================================
+--- build.xml	(revision 113)
++++ build.xml	(working copy)
+@@ -99,7 +99,7 @@
+         </copy>
+         <copy todir="${java.libs.tools}">
+             <fileset dir="${exist.dist}/tools/jetty/lib">
+-                <include name="org.mortbay.jetty.jar"/>
++                <include name="jetty-*.jar"/>
+             </fileset>
+             <fileset dir="${exist.dist}/lib/core">
+                 <include name="javax.servlet*.jar"/>
+@@ -151,7 +151,7 @@
+ 		<delete dir="${web.dir}/WEB-INF/data/fs"/>
+ 		<delete dir="${web.dir}/WEB-INF/data/fs.journal"/>
+ 		<delete dir="${web.dir}/WEB-INF/data/lucene"/>
+-        <delete file="${java.libs.tools}/org.mortbay.jetty.jar"/>
++        <delete file="${java.libs.tools}/jetty-*.jar"/>
+         <delete>
+             <fileset dir="${java.libs.exist}">
+                     <include name="*.jar"/>
+@@ -206,6 +206,8 @@
+    	<target xmlns:xdb="http://exist-db.org/ant" name="default-site" depends="antlibs">
+ 		<xdb:restore uri="${xmldb.uri}" user="admin" password="${admin.password}"
+ 			dir="${data.dir}/db/wiki"/>
++		<xdb:restore uri="${xmldb.uri}" user="admin" password="${admin.password}"
++			dir="${data.dir}/db/atom"/>
+ 	</target>
+ 
+     <target xmlns:xdb="http://exist-db.org/ant" name="styles" depends="antlibs">
+Index: build.sh
+===================================================================
+--- build.sh	(revision 113)
++++ build.sh	(working copy)
+@@ -13,7 +13,7 @@
+ 
+ LOCALCLASSPATH=$CLASSPATH:$ANT_HOME/lib/ant-launcher.jar:.
+ 
+-JAVA_OPTS="-Djava.endorsed.dirs=java/lib/endorsed -Dant.home=$ANT_HOME"
++JAVA_OPTS="-Djava.endorsed.dirs=../../weeklyGOPHER-eXist-module/eXist/lib/endorsed -Dant.home=$ANT_HOME"
+ 
+ echo Starting Ant...
+ echo
+Index: etc/webdefault.xml
+===================================================================
+--- etc/webdefault.xml	(revision 113)
++++ etc/webdefault.xml	(working copy)
+@@ -8,22 +8,21 @@
+ <!-- descriptor, it is applied before the contexts own web.xml file        -->
+ <!--                                                                       -->
+ <!-- A context may be assigned a default descriptor by:                    -->
+-<!--  + Allowing the default defaultweb.xml to be applied                  -->
+ <!--  + Calling WebApplicationContext.setDefaultsDescriptor                -->
+ <!--  + Passed an arg to addWebApplications                                -->
+ <!--                                                                       -->
+-<!-- If a defaults descriptor is set, it is first looked for as a system   -->
+-<!-- resource. The jetty jar contains a webdefault.xml file as a resource  -->
+-<!-- at "org/mortbay/jetty/servlet/webdefault.xml".   If a system resource -->
+-<!-- is not found, then a normal resource is tried, thus a filename or URL -->
+-<!-- may be used to specify an arbitrary file.                             -->
++<!-- This file is used both as the resource within the jetty.jar (which is -->
++<!-- used as the default if no explicit defaults descriptor is set) and it -->
++<!-- is copied to the etc directory of the Jetty distro and explicitly     -->
++<!-- by the jetty.xml file.                                                -->
+ <!--                                                                       -->
+ <!-- ===================================================================== -->
+ <web-app 
+-   xmlns="http://java.sun.com/xml/ns/j2ee" 
++   xmlns="http://java.sun.com/xml/ns/javaee" 
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+-   xsi:schemaLocation="http://java.sun.com/xml/ns/j2ee http://java.sun.com/xml/ns/j2ee/web-app_2_4.xsd" 
+-   version="2.4"> 
++   xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd" 
++   metadata-complete="true"
++   version="2.5"> 
+ 
+   <description>
+     Default web.xml file.  
+@@ -31,29 +30,27 @@
+   </description>
+ 
+ 
+-
+   <!-- ==================================================================== -->
+   <!-- Context params to control Session Cookies                            -->
+   <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -  -->
+   <!-- UNCOMMENT TO ACTIVATE
+   <context-param>
+-    <param-name>org.mortbay.jetty.servlet.SessionDomain</param-name>
++    <param-name>org.eclipse.jetty.servlet.SessionDomain</param-name>
+     <param-value>127.0.0.1</param-value>
+   </context-param>
+ 
+   <context-param>
+-    <param-name>org.mortbay.jetty.servlet.SessionPath</param-name>
++    <param-name>org.eclipse.jetty.servlet.SessionPath</param-name>
+     <param-value>/</param-value>
+   </context-param>
+ 
+   <context-param>
+-    <param-name>org.mortbay.jetty.servlet.MaxAge</param-name>
++    <param-name>org.eclipse.jetty.servlet.MaxAge</param-name>
+     <param-value>-1</param-value>
+   </context-param>
+   -->
+ 
+ 
+-
+   <!-- ==================================================================== -->
+   <!-- The default servlet.                                                 -->
+   <!-- This servlet, normally mapped to /, provides the handling for static -->
+@@ -66,25 +63,50 @@
+   <!--   dirAllowed       If true, directory listings are returned if no    -->
+   <!--                    welcome file is found. Else 403 Forbidden.        -->
+   <!--                                                                      -->
+-  <!--   putAllowed       If true, the PUT method is allowed                -->
++  <!--   welcomeServlets  If true, attempt to dispatch to welcome files     -->
++  <!--                    that are servlets, if no matching static          -->
++  <!--                    resources can be found.                           -->
+   <!--                                                                      -->
+-  <!--   delAllowed       If true, the DELETE method is allowed             -->
+-  <!--                                                                      -->
+   <!--   redirectWelcome  If true, redirect welcome file requests           -->
+   <!--                    else use request dispatcher forwards              -->
+   <!--                                                                      -->
+-  <!--   minGzipLength    If set to a positive integer, then static content -->
+-  <!--                    larger than this will be served as gzip content   -->
+-  <!--                    encoded if a matching resource is found ending    -->
+-  <!--                    with ".gz"                                        -->
++  <!--   gzip             If set to true, then static content will be served--> 
++  <!--                    as gzip content encoded if a matching resource is -->
++  <!--                    found ending with ".gz"                           -->
+   <!--                                                                      -->
+   <!--   resoureBase      Can be set to replace the context resource base   -->
+   <!--                                                                      -->
+-  <!-- The MOVE method is allowed if PUT and DELETE are allowed             -->
++  <!--   relativeResourceBase                                               -->
++  <!--                    Set with a pathname relative to the base of the   -->
++  <!--                    servlet context root. Useful for only serving     -->
++  <!--                    static content from only specific subdirectories. -->
++  <!--                                                                      -->
++  <!--   useFileMappedBuffer                                                -->
++  <!--                    If set to true (the default), a  memory mapped    -->
++  <!--                    file buffer will be used to serve static content  -->
++  <!--                    when using an NIO connector. Setting this value   -->
++  <!--                    to false means that a direct buffer will be used  -->
++  <!--                    instead. If you are having trouble with Windows   -->
++  <!--                    file locking, set this to false.                  -->
++  <!--                                                                      -->
++  <!--  cacheControl      If set, all static content will have this value   -->
++  <!--                    set as the cache-control header.                  -->
++  <!--                                                                      -->
++  <!--  maxCacheSize      Maximum size of the static resource cache         -->
++  <!--                                                                      -->
++  <!--  maxCachedFileSize Maximum size of any single file in the cache      -->
++  <!--                                                                      -->
++  <!--  maxCachedFiles    Maximum number of files in the cache              -->
++  <!--                                                                      -->
++  <!--  cacheType         "nio", "bio" or "both" to determine the type(s)   -->
++  <!--                    of resource cache. A bio cached buffer may be used-->
++  <!--                    by nio but is not as efficient as a nio buffer.   -->
++  <!--                    An nio cached buffer may not be used by bio.      -->
++  <!--                                                                      -->
+   <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -  -->
+   <servlet>
+     <servlet-name>default</servlet-name>
+-    <servlet-class>org.mortbay.jetty.servlet.Default</servlet-class>
++    <servlet-class>org.eclipse.jetty.servlet.DefaultServlet</servlet-class>
+     <init-param>
+       <param-name>acceptRanges</param-name>
+       <param-value>true</param-value>
+@@ -94,30 +116,55 @@
+       <param-value>true</param-value>
+     </init-param>
+     <init-param>
+-      <param-name>putAllowed</param-name>
++      <param-name>welcomeServlets</param-name>
++ 	    <param-value>false</param-value>
++ 	  </init-param>
++    <init-param>
++      <param-name>redirectWelcome</param-name>
+       <param-value>false</param-value>
+     </init-param>
+     <init-param>
+-      <param-name>delAllowed</param-name>
+-      <param-value>false</param-value>
++      <param-name>maxCacheSize</param-name>
++      <param-value>256000000</param-value>
+     </init-param>
+     <init-param>
+-      <param-name>redirectWelcome</param-name>
+-      <param-value>false</param-value>
++      <param-name>maxCachedFileSize</param-name>
++      <param-value>10000000</param-value>
+     </init-param>
+     <init-param>
+-      <param-name>minGzipLength</param-name>
+-      <param-value>8192</param-value>
++      <param-name>maxCachedFiles</param-name>
++      <param-value>1000</param-value>
+     </init-param>
++    <init-param>
++      <param-name>cacheType</param-name>
++      <param-value>both</param-value>
++    </init-param>
++    <init-param>
++      <param-name>gzip</param-name>
++      <param-value>true</param-value>
++    </init-param>
++    <init-param>
++      <param-name>useFileMappedBuffer</param-name>
++      <param-value>true</param-value>
++    </init-param>  
++    <!--
++    <init-param>
++      <param-name>cacheControl</param-name>
++      <param-value>max-age=3600,public</param-value>
++    </init-param>
++    -->
+     <load-on-startup>0</load-on-startup>
+   </servlet> 
++
++  <servlet-mapping> <servlet-name>default</servlet-name> <url-pattern>/</url-pattern> </servlet-mapping>
+   
++
+   <!-- ==================================================================== -->
+   <!-- JSP Servlet                                                          -->
+   <!-- This is the jasper JSP servlet from the jakarta project              -->
+   <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -  -->
+   <!-- The JSP page compiler and execution servlet, which is the mechanism  -->
+-  <!-- used by Tomcat to support JSP pages.  Traditionally, this servlet    -->
++  <!-- used by Glassfish to support JSP pages.  Traditionally, this servlet -->
+   <!-- is mapped to URL patterh "*.jsp".  This servlet supports the         -->
+   <!-- following initialization parameters (default values are in square    -->
+   <!-- brackets):                                                           -->
+@@ -137,6 +184,8 @@
+   <!--   classpath           What class path should I use while compiling   -->
+   <!--                       generated servlets?  [Created dynamically      -->
+   <!--                       based on the current web application]          -->
++  <!--                       Set to ? to make the container explicitly set  -->
++  <!--                       this parameter.                                -->
+   <!--                                                                      -->
+   <!--   development         Is Jasper used in development mode (will check -->
+   <!--                       for JSP modification on every access)?  [true] -->
+@@ -153,7 +202,7 @@
+   <!--                       [clsid:8AD9C840-044E-11D1-B3E9-00805F499D93]   -->
+   <!--                                                                      -->
+   <!--   javaEncoding        Java file encoding to use for generating java  -->
+-  <!--                       source files. [UTF8]                           -->
++  <!--                       source files. [UTF-8]                          -->
+   <!--                                                                      -->
+   <!--   keepgenerated       Should we keep the generated Java source code  -->
+   <!--                       for each page instead of deleting it? [true]   -->
+@@ -192,10 +241,11 @@
+   <!--   the property "-Dbuild.compiler.emacs=true" when starting Jetty     -->
+   <!--   to cause Jikes to emit error messages in a format compatible with  -->
+   <!--   Jasper.                                                            -->
+-  <!--   If you get an error reporting that jikes can't use UTF8 encoding,  -->
++  <!--   If you get an error reporting that jikes can't use UTF-8 encoding, -->
+   <!--   try setting the init parameter "javaEncoding" to "ISO-8859-1".     -->
+   <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -  -->
+-  <!--servlet>
++  <!--
++  <servlet id="jsp">
+     <servlet-name>jsp</servlet-name>
+     <servlet-class>org.apache.jasper.servlet.JspServlet</servlet-class>
+     <init-param>
+@@ -210,9 +260,28 @@
+         <param-name>xpoweredBy</param-name>
+         <param-value>false</param-value>
+     </init-param>
++    <  
++    <init-param>
++        <param-name>classpath</param-name>
++        <param-value>?</param-value>
++    </init-param>
++    -->
++    <!--
+     <load-on-startup>0</load-on-startup>
+-  </servlet-->
++  </servlet>
+ 
++  <servlet-mapping> 
++    <servlet-name>jsp</servlet-name> 
++    <url-pattern>*.jsp</url-pattern> 
++    <url-pattern>*.jspf</url-pattern>
++    <url-pattern>*.jspx</url-pattern>
++    <url-pattern>*.xsp</url-pattern>
++    <url-pattern>*.JSP</url-pattern> 
++    <url-pattern>*.JSPF</url-pattern>
++    <url-pattern>*.JSPX</url-pattern>
++    <url-pattern>*.XSP</url-pattern>
++  </servlet-mapping>
++    -->  
+   <!-- ==================================================================== -->
+   <!-- Dynamic Servlet Invoker.                                             -->
+   <!-- This servlet invokes anonymous servlets that have not been defined   -->
+@@ -232,9 +301,10 @@
+   <!--  *                        All other parameters are copied to the     -->
+   <!--                           each dynamic servlet as init parameters    -->
+   <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -  -->
++  <!-- Uncomment for dynamic invocation
+   <servlet>
+     <servlet-name>invoker</servlet-name>
+-    <servlet-class>org.mortbay.jetty.servlet.Invoker</servlet-class>
++    <servlet-class>org.eclipse.jetty.servlet.Invoker</servlet-class>
+     <init-param>
+       <param-name>verbose</param-name>
+       <param-value>false</param-value>
+@@ -250,37 +320,12 @@
+     <load-on-startup>0</load-on-startup>
+   </servlet>
+ 
+-  <!-- ==================================================================== -->
+-  <servlet-mapping>
+-    <servlet-name>default</servlet-name>
+-    <url-pattern>/</url-pattern>
+-  </servlet-mapping>
++  <servlet-mapping> <servlet-name>invoker</servlet-name> <url-pattern>/servlet/*</url-pattern> </servlet-mapping>
++  -->
+ 
+-  <!-- ==================================================================== -->
+-  <!--servlet-mapping>
+-    <servlet-name>jsp</servlet-name>
+-    <url-pattern>*.jsp</url-pattern>
+-  </servlet-mapping-->
+ 
+-  <!-- ==================================================================== -->
+-  <!--servlet-mapping>
+-    <servlet-name>jsp</servlet-name>
+-    <url-pattern>*.jspf</url-pattern>
+-  </servlet-mapping-->
+ 
+   <!-- ==================================================================== -->
+-  <!--servlet-mapping>
+-    <servlet-name>jsp</servlet-name>
+-    <url-pattern>*.jspx</url-pattern>
+-  </servlet-mapping-->
+-
+-  <!-- ==================================================================== -->
+-  <servlet-mapping>
+-    <servlet-name>invoker</servlet-name>
+-    <url-pattern>/servlet/*</url-pattern>
+-  </servlet-mapping>
+-
+-  <!-- ==================================================================== -->
+   <session-config>
+     <session-timeout>30</session-timeout>
+   </session-config>
+@@ -288,7 +333,7 @@
+   <!-- ==================================================================== -->
+   <!-- Default MIME mappings                                                -->
+   <!-- The default MIME mappings are provided by the mime.properties        -->
+-  <!-- resource in the org.mortbay.jetty.jar file.  Additional or modified  -->
++  <!-- resource in the org.eclipse.jetty.server.jar file.  Additional or modified  -->
+   <!-- mappings may be specified here                                       -->
+   <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -  -->
+   <!-- UNCOMMENT TO ACTIVATE
+@@ -347,6 +392,15 @@
+     <locale-encoding-mapping><locale>zh</locale><encoding>GB2312</encoding></locale-encoding-mapping>
+     <locale-encoding-mapping><locale>zh_TW</locale><encoding>Big5</encoding></locale-encoding-mapping>   
+   </locale-encoding-mapping-list>
+-
++  
++  <security-constraint>
++    <web-resource-collection>
++      <web-resource-name>Disable TRACE</web-resource-name>
++      <url-pattern>/</url-pattern>
++      <http-method>TRACE</http-method>
++    </web-resource-collection>
++    <auth-constraint/>
++  </security-constraint>
++  
+ </web-app>
+ 
+Index: etc/login.conf
+===================================================================
+--- etc/login.conf	(revision 0)
++++ etc/login.conf	(revision 0)
+@@ -0,0 +1,4 @@
++eXistDB {
++org.exist.security.internal.EXistDBLoginModule required
++debug="true";
++};
+Index: etc/jetty.xml
+===================================================================
+--- etc/jetty.xml	(revision 113)
++++ etc/jetty.xml	(working copy)
+@@ -1,181 +1,210 @@
+ <?xml version="1.0"?>
+-<!DOCTYPE Configure PUBLIC "-//Mort Bay Consulting//DTD Configure 1.2//EN" "http://jetty.mortbay.org/configure_1_2.dtd"><!-- =============================================================== -->
++<!DOCTYPE Configure PUBLIC "-//Jetty//Configure//EN" "http://www.eclipse.org/jetty/configure.dtd">
++
++<!-- =============================================================== -->
+ <!-- Configure the Jetty Server                                      -->
++<!--                                                                 -->
++<!-- Documentation of this file format can be found at:              -->
++<!-- http://docs.codehaus.org/display/JETTY/jetty.xml                -->
++<!--                                                                 -->
++<!-- $Id: jetty.xml 11071 2010-01-24 13:39:49Z shabanovd $                                                                -->
+ <!-- =============================================================== -->
+-<Configure class="org.mortbay.jetty.Server">
+ 
+-  <!-- =============================================================== -->
+-  <!-- Configure Logging                                               -->
+-  <!-- =============================================================== -->
+ 
+-  
+-  <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+-  <!-- Configure Jetty Logging.                                        -->
+-  <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+-  <!-- Uncomment if using jetty logging.
+-  <Call class="org.apache.commons.logging.LogFactory" name="getFactory">
+-    <Call name="getInstance">
+-      <Arg/>
+-      <Call name="reset"/>
+-      <Call name="add">
+-        <Arg>
+-          <New class="org.mortbay.log.OutputStreamLogSink">
+-            <Set name="filename"><SystemProperty name="jetty.home" default="."/>/logs/yyyy_mm_dd.jetty.log</Set>
+-            <Set name="retainDays">90</Set>
+-            <Set name="append">true</Set>
+-            <Set name="logLabels">true</Set>
+-            <Set name="logStackSize">true</Set>
+-            <Set name="logStackTrace">false</Set>
+-            <Set name="logOneLine">false</Set>
+-            <Set name="suppressStack">false</Set>
+-            <Set name="logTimeZone">GMT</Set>
+-          </New>
+-        </Arg>
+-      </Call>
+-    </Call>
+-  </Call>
+-  -->
+-  
+-  <!-- =============================================================== -->
+-  <!-- Configure the Request Listeners                                 -->
+-  <!-- =============================================================== -->
++<Configure id="Server" class="org.eclipse.jetty.server.Server">
+ 
+-  <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+-  <!-- Add and configure a HTTP listener to port 8080                       -->
+-  <!-- The default port can be changed using: java -Djetty.port=80     -->
+-  <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+-    <Call name="addListener">
+-        <Arg>
+-            <New class="org.mortbay.http.SocketListener">
+-                <Set name="Port">
+-                    <SystemProperty name="jetty.port" default="8000"/>
+-                </Set>
+-                <Set name="PoolName">P1</Set>
+-                <Set name="MinThreads">10</Set>
+-                <Set name="MaxThreads">200</Set>
+-                <Set name="MaxIdleTimeMs">30000</Set>
+-                <Set name="lowResources">50</Set>
+-                <Set name="LowResourcePersistTimeMs">2000</Set>
+-                <Set name="acceptQueueSize">0</Set>
+-                <Set name="ConfidentialPort">8443</Set>
+-                <Set name="IntegralPort">8443</Set>
+-            </New>
+-        </Arg>
+-    </Call>
++    <!-- =========================================================== -->
++    <!-- Server Thread Pool                                          -->
++    <!-- =========================================================== -->
++    <Set name="ThreadPool">
++      <!-- Default queued blocking threadpool 
++      -->
++      <New class="org.eclipse.jetty.util.thread.QueuedThreadPool">
++        <Set name="minThreads">10</Set>
++        <Set name="maxThreads">200</Set>
++      </New>
+ 
+-
+-  <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+-  <!-- Add a HTTPS SSL listener on port 8443                           -->
+-  <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+-  <!-- UNCOMMENT TO ACTIVATE 
+-    <Call name="addListener">
+-        <Arg>
+-            <New class="org.mortbay.http.SunJsseListener">
+-                <Set name="Port">8443</Set>
+-                <Set name="PoolName">P1</Set>
+-                <Set name="MaxIdleTimeMs">30000</Set>
+-                <Set name="lowResources">30</Set>
+-                <Set name="LowResourcePersistTimeMs">2000</Set>
+-                <Set name="Keystore">
+-                    <SystemProperty name="jetty.home"
+-                            default="."/>/etc/demokeystore</Set>
+-                <Set name="Password">secret</Set>
+-                <Set name="KeyPassword">secret</Set>
+-                <Set name="HttpHandler">
+-                    <New class="org.mortbay.http.handler.MsieSslHandler">
+-                        <Set name="UserAgentSubString">MSIE 5</Set>
+-                    </New>
+-                </Set>
+-            </New>
+-        </Arg>
+-    </Call>
+-  -->
+-
+-  <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+-  <!-- Add a AJP13 listener on port 8009                               -->
+-  <!-- This protocol can be used with mod_jk in apache, IIS etc.       -->
+-  <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+-  <!--
+-  <Call name="addListener">
+-    <Arg>
+-      <New class="org.mortbay.http.ajp.AJP13Listener">
+-        <Set name="Port">8009</Set>
+-        <Set name="MinThreads">5</Set>
+-        <Set name="MaxThreads">20</Set>
+-        <Set name="MaxIdleTimeMs">0</Set>
+-        <Set name="confidentialPort">443</Set>
++      <!-- Optional Java 5 bounded threadpool with job queue 
++      <New class="org.eclipse.thread.concurrent.ThreadPool">
++        <Set name="corePoolSize">50</Set>
++        <Set name="maximumPoolSize">50</Set>
+       </New>
+-    </Arg>
+-  </Call>
+-  -->
++      -->
++    </Set>
+ 
+ 
+-  <!-- =============================================================== -->
+-  <!-- Configure the Contexts                                          -->
+-  <!-- =============================================================== -->
+ 
++    <!-- =========================================================== -->
++    <!-- Set connectors                                              -->
++    <!-- =========================================================== -->
+ 
+-  <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+-  <!-- Add a all web application within the webapps directory.         -->
+-  <!-- + No virtual host specified                                     -->
+-  <!-- + Look in the webapps directory relative to jetty.home or .     -->
+-  <!-- + Use the webdefault.xml resource for the defaults descriptor   -->
+-  <!-- + Upack the war file                                            -->
+-  <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+-  <!--Set name="rootWebApp">exist</Set-->
+-  <!--Call name="addWebApplications">
+-    <Arg></Arg>
+-    <Arg><SystemProperty name="jetty.home" default="."/>/webapps/</Arg>
+-    <Arg><SystemProperty name="jetty.home" default="."/>/etc/webdefault.xml</Arg>
+-    <Arg type="boolean">true</Arg>
+-  </Call-->
+-
+-    <Call name="addWebApplication">
+-        <Arg>/</Arg>
+-        <Arg>webapp/</Arg>
+-	<Set name="defaultsDescriptor">etc/webdefault.xml</Set>
+-        <Set name="displayName">/</Set>
++    <Call name="addConnector">
++      <Arg>
++          <New class="org.eclipse.jetty.server.nio.SelectChannelConnector">
++            <Set name="host"><SystemProperty name="jetty.host" /></Set>
++            <Set name="port"><SystemProperty name="jetty.port" default="8000"/></Set>
++            <Set name="maxIdleTime">300000</Set>
++            <Set name="Acceptors">2</Set>
++            <Set name="statsOn">false</Set>
++            <Set name="confidentialPort">8443</Set>
++	    <Set name="lowResourcesConnections">20000</Set>
++	    <Set name="lowResourcesMaxIdleTime">5000</Set>
++          </New>
++      </Arg>
+     </Call>
+-  
+-  <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+-  <!-- Add and configure a specific web application                    -->
+-  <!-- + Set Unpack WAR files                                          -->
+-  <!-- + Set Default Descriptor.  Resource, file or URL                -->
+-  <!-- + Set Virtual Hosts. A Null host or empty array means all hosts -->
+-  <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+-  <!-- UNCOMMENT TO ACTIVATE
+-  <Call name="addWebApplication">
+-    <Arg>/context</Arg>
+-    <Arg>./webapps/root</Arg>
+ 
+-    <Set name="extractWAR">false</Set> 
++    <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
++    <!-- To add a HTTPS SSL connector                                    -->
++    <!-- mixin jetty-ssl.xml:                                            -->
++    <!--   java -jar start.jar etc/jetty.xml etc/jetty-ssl.xml           -->
++    <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
++    
++    <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
++    <!-- To add a HTTP blocking connector                                -->
++    <!-- mixin jetty-bio.xml:                                            -->
++    <!--   java -jar start.jar etc/jetty.xml etc/jetty-bio.xml           -->
++    <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
++    
++    <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
++    <!-- To allow Jetty to be started from xinetd                        -->
++    <!-- mixin jetty-xinetd.xml:                                         -->
++    <!--   java -jar start.jar etc/jetty.xml etc/jetty-xinetd.xml        -->
++    <!--                                                                 -->
++    <!-- See jetty-xinetd.xml for further instructions.                  -->
++    <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+ 
+-    <Set name="defaultsDescriptor">org/mortbay/jetty/servlet/webdefault.xml</Set>
++    <!-- =========================================================== -->
++    <!-- Set handler Collection Structure                            --> 
++    <!-- =========================================================== -->
++    <Set name="handler">
++      <New id="Handlers" class="org.eclipse.jetty.server.handler.HandlerCollection">
++        <Set name="handlers">
++         <Array type="org.eclipse.jetty.server.Handler">
++           <Item>
++             <New id="webapp" class="org.exist.http.WebAppContext">
++               <!-- can either be '/exist' or '/' -->
++               <Set name="contextPath">/</Set>
++               <Set name="war"><SystemProperty name="jetty.home" default="."/>/webapp/</Set>
++               <Set name="defaultsDescriptor"><SystemProperty name="jetty.home" default="."
++               />/etc/webdefault.xml</Set>
++             </New>
++           </Item>
++           <Item>
++             <New id="Contexts" class="org.eclipse.jetty.server.handler.ContextHandlerCollection"/>
++           </Item>
++           <Item>
++             <New id="DefaultHandler" class="org.eclipse.jetty.server.handler.DefaultHandler"/>
++           </Item>
++           <Item>
++             <New id="RequestLog" class="org.eclipse.jetty.server.handler.RequestLogHandler"/>
++           </Item>
++         </Array>
++        </Set>
++      </New>
++    </Set>
+ 
+-    <Set name="virtualHosts">
+-      <Array type="java.lang.String">
+-        <Item></Item>
+-        <Item>127.0.0.1</Item>
+-        <Item>localhost</Item>
+-        <Item>www.acme.com</Item>
+-      </Array>
+-    </Set>
+-  </Call>
++    <!-- =========================================================== -->
++    <!-- Configure the context deployer                              -->
++    <!-- A context deployer will deploy contexts described in        -->
++    <!-- configuration files discovered in a directory.              -->
++    <!-- The configuration directory can be scanned for hot          -->
++    <!-- deployments at the configured scanInterval.                 -->
++    <!--                                                             -->
++    <!-- This deployer is configured to deploy contexts configured   -->
++    <!-- in the $JETTY_HOME/contexts directory                       -->
++    <!--                                                             -->
++    <!-- =========================================================== -->
++  <!-- 
++    <Call name="addBean">
++      <Arg>
++        <New class="org.eclipse.jetty.deploy.ContextDeployer">
++          <Set name="contexts"><Ref id="Contexts"/></Set>
++          <Set name="configurationDir"><SystemProperty name="jetty.home" default="."/>/contexts</Set>
++          <Set name="scanInterval">5</Set>
++          <Call name="setAttribute">
++            <Arg>org.eclipse.jetty.server.webapp.ContainerIncludeJarPattern</Arg>
++            <Arg>.*/jsp-api-[^/]*\.jar$|.*/jsp-[^/]*\.jar$</Arg>
++          </Call>
++        </New>
++      </Arg>
++    </Call>
+   -->
++    <!-- =========================================================== -->
++    <!-- Configure the webapp deployer.                              -->
++    <!-- A webapp  deployer will deploy standard webapps discovered  -->
++    <!-- in a directory at startup, without the need for additional  -->
++    <!-- configuration files.    It does not support hot deploy or   -->
++    <!-- non standard contexts (see ContextDeployer above).          -->
++    <!--                                                             -->
++    <!-- This deployer is configured to deploy webapps from the      -->
++    <!-- $JETTY_HOME/webapps directory                               -->
++    <!--                                                             -->
++    <!-- Normally only one type of deployer need be used.            -->
++    <!--                                                             -->
++    <!-- =========================================================== -->
++  <!--
++    <Call name="addBean">
++      <Arg>
++        <New class="org.eclipse.jetty.deploy.WebAppDeployer">
++          <Set name="contexts"><Ref id="Contexts"/></Set>
++          <Set name="webAppDir"><SystemProperty name="jetty.home" default="."/>/webapps</Set>
++	  <Set name="parentLoaderPriority">false</Set>
++	  <Set name="extract">true</Set>
++	  <Set name="allowDuplicates">false</Set>
++          <Set name="defaultsDescriptor"><SystemProperty name="jetty.home" default="."/>/etc/webdefault.xml</Set>
++          <Call name="setAttribute">
++            <Arg>org.eclipse.jetty.server.webapp.ContainerIncludeJarPattern</Arg>
++            <Arg>.*/jsp-api-[^/]*\.jar$|.*/jsp-[^/]*\.jar$</Arg>
++          </Call>
++        </New>
++      </Arg>
++    </Call>
++  -->
+ 
+-  <!-- =============================================================== -->
+-  <!-- Configure the Other Server Options                              -->
+-  <!-- =============================================================== -->
+-    <Set name="requestsPerGC">2000</Set>
+-    <Set name="statsOn">false</Set>
+-    <Set class="org.mortbay.util.FileResource" name="checkAliases" type="boolean">true</Set>
+-</Configure>
++    <!-- =========================================================== -->
++    <!-- Configure Authentication Login Service                      -->
++    <!-- =========================================================== -->
++    <Call class="java.lang.System" name="setProperty">
++      <Arg>java.security.auth.login.config</Arg>
++      <Arg><SystemProperty name="jetty.home" default="." />/etc/login.conf</Arg>
++    </Call>
+ 
++    <Call name="addBean">
++      <Arg>
++        <New class="org.eclipse.jetty.plus.jaas.JAASLoginService">
++          <Set name="name">JAASLoginService</Set>
++          <Set name="LoginModuleName">eXistDB</Set>
++        </New>
++      </Arg>
++    </Call>
+ 
++    <!-- =========================================================== -->
++    <!-- Configure Request Log                                       -->
++    <!-- Request logs  may be configured for the entire server here, -->
++    <!-- or they can be configured for a specific web app in a       -->
++    <!-- contexts configuration (see $(jetty.home)/contexts/test.xml -->
++    <!-- for an example).                                            -->
++    <!-- =========================================================== -->
++    <Ref id="RequestLog">
++      <Set name="requestLog">
++        <New id="RequestLogImpl" class="org.eclipse.jetty.server.NCSARequestLog">
++          <Set name="filename"><SystemProperty name="jetty.home" default="."/>/logs/yyyy_mm_dd.request.log</Set>
++          <Set name="filenameDateFormat">yyyy_MM_dd</Set>
++          <Set name="retainDays">90</Set>
++          <Set name="append">true</Set>
++          <Set name="extended">false</Set>
++          <Set name="logCookies">false</Set>
++          <Set name="LogTimeZone">GMT</Set>
++        </New>
++      </Set>
++    </Ref>
+ 
++    <!-- =========================================================== -->
++    <!-- extra options                                               -->
++    <!-- =========================================================== -->
++    <Set name="stopAtShutdown">true</Set>
++    <Set name="sendServerVersion">true</Set>
++    <Set name="sendDateHeader">true</Set>
++    <Set name="gracefulShutdown">1000</Set>
+ 
+-
+-
+-
+-
+-
++</Configure>
+Index: startup.sh
+===================================================================
+--- startup.sh	(revision 113)
++++ startup.sh	(working copy)
+@@ -2,5 +2,5 @@
+ 
+ $JAVA_HOME/bin/java -Xms16m -Xmx128m $JMX_OPTS -Dfile.encoding=UTF-8 -Dexist.home=. \
+ -Djava.endorsed.dirs=java/lib/endorsed \
+--jar java/lib/exist/start.jar org.exist.JettyStart \
++-jar java/lib/exist/start.jar org.exist.jetty.JettyStart \
+ etc/jetty.xml webapp/WEB-INF/conf.xml

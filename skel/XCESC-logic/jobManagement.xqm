@@ -13,20 +13,31 @@ import module namespace util="http://exist-db.org/xquery/util";
 import module namespace xmldb="http://exist-db.org/xquery/xmldb";
 import module namespace mgmt="http://www.cnio.es/scombio/xcesc/1.0/xquery/systemManagement" at "xmldb:exist:///db/XCESC-logic/systemManagement.xqm";
 
+declare variable $job:configRoot as element(job:jobManagement) := collection($mgmt:configColURI)//job:jobManagement[1];
+
+(: Deadlines :)
+declare variable $job:intervalBeforeAssessment as xs:dayTimeDuration := xs:dayTimeDuration($job:configRoot/@intervalBeforeAssessment/string());
+declare variable $job:participantDeadline as xs:dayTimeDuration := xs:dayTimeDuration($job:configRoot/@participantDeadline/string());
+declare variable $job:evaluatorDeadline as xs:dayTimeDuration := xs:dayTimeDuration($job:configRoot/@evaluatorDeadline/string());
+
 (: The results collection :)
-declare variable $job:dataCol as xs:string := concat(('/db/',collection($mgmt:configCol)//job:jobManagement[1]/@collection/string()));
-declare variable $job:resultsBaseCol as xs:string := collection($mgmt:configCol)//job:jobManagement[1]/@roundsSubCollection/string();
+declare variable $job:dataCol as xs:string := concat('/db/',$job:configRoot/@collection/string());
+declare variable $job:resultsBaseCol as xs:string := $job:configRoot/@roundsSubCollection/string();
 declare variable $job:resultsCol as xs:string := string-join(($job:dataCol,$job:resultsBaseCol),'/');
+declare variable $job:resultsColURI as xs:string := xmldb:encode($job:resultsCol);
 
 (: Last round document :)
 declare variable $job:lastRoundDoc as xs:string := 'lastRound.xml';
-declare variable $job:lastRoundDocPath  as xs:string := string-join(($job:resultsCol,$job:lastRoundDoc),'/');
+declare variable $job:lastRoundDocURI as xs:string := xmldb:encode($job:lastRoundDoc);
+declare variable $job:lastRoundDocPath as xs:string := string-join(($job:resultsCol,$job:lastRoundDoc),'/');
+declare variable $job:lastRoundDocPathURI as xs:string := xmldb:encode($job:lastRoundDocPath);
 
 (: Scratch dir and storage patterns :)
-declare variable $job:physicalScratch as xs:string := collection($mgmt:configCol)//job:jobManagement[1]/@physicalScratch/string();
+declare variable $job:physicalScratch as xs:string := $job:configRoot/@physicalScratch/string();
 
 (: Queries document :)
 declare variable $job:queriesDoc as xs:string := 'roundData.xml';
+declare variable $job:queriesDocURI as xs:string := xmldb:encode($job:queriesDoc);
 declare variable $job:assessPrefix as xs:string := 'assess-';
 declare variable $job:assessPostfix as xs:string := '.xml';
 
@@ -44,11 +55,11 @@ declare variable $job:evaURI as xs:string := string-join(($mgmt:publicBaseURI,$j
 declare function job:getLastRoundDocument()
 	as element(xcesc:lastRound)
 {
-	if(doc-available($job:lastRoundDocPath)) then (
-		doc($job:lastRoundDocPath)/element()
+	if(doc-available($job:lastRoundDocPathURI)) then (
+		doc($job:lastRoundDocPathURI)/element()
 	) else (
 		let $newDoc := <xcesc:lastRound date=""/>
-		return doc(xmldb:store($job:resultsCol,$job:lastRoundDoc,$newDoc,'application/xml'))/element()
+		return doc(xmldb:store($job:resultsColURI,$job:lastRoundDocURI,$newDoc,'application/xml'))/element()
 	)
 };
 
@@ -63,34 +74,33 @@ declare function job:plantSeed()
 {
 	(: (# exist:batch-transaction #) { :)
 		(: First, get the last round document :)
-		let $currentDateTime:=current-dateTime()
-		let $currentDate:=xs:date($currentDateTime)
-		let $lastDoc:=job:getLastRoundDocument()
+		let $currentDateTime := current-dateTime()
+		let $currentDateStr :=xs:string(xs:date($currentDateTime))
+		let $lastDoc := job:getLastRoundDocument()
 		(: Third, snapshot of last round's date :)
-		let $lastDateTime:=$lastDoc/@timeStamp
-		let $lastDate:=xs:date($lastDateTime)
-		let $lastCol:=string-join(($job:resultsCol,$lastDate),'/')
-		let $physicalScratch:=string-join(($job:physicalScratch,$currentDate),'/')
-		let $roundCol:=xmldb:create-collection($job:resultsCol,$currentDate)
-		let $newCol:=string-join(($job:resultsCol,$currentDate),'/')
+		let $lastDateTime := $lastDoc/@timeStamp
+		let $lastDateStr:=xs:string(xs:date($lastDateTime))
+		let $lastCol:=xmldb:encode(string-join(($job:resultsCol,$lastDateStr),'/'))
+		let $physicalScratch:=string-join(($job:physicalScratch,$currentDateStr),'/')
+		let $newCol:=xmldb:create-collection($job:resultsColURI,xmldb:encode($currentDateStr))
 		
-		let $queriesComputation := collection($mgmt:configCol)//job:jobManagement[1]/job:queriesComputation
-		let $dynLoad := util:import-module($queriesComputation/@namespace,'dyn',$queriesComputation/@module),
-			util:function(QName($queriesComputation/@namespace,$queriesComputation/@seedEntryPoint),1)
+		let $queriesComputation := collection($mgmt:configColURI)//job:jobManagement[1]/job:queriesComputation
+		let $imod := util:import-module($queriesComputation/@namespace,'dyn',$queriesComputation/@module)
 		(: Sixth, let's compute the unique entries :)
-		let $queriesDoc := util:call($dynLoad,$physicalScratch)
+		let $queriesDoc := util:eval(concat("dyn:",xmldb:encode($queriesComputation/@seedEntryPoint),"($physicalScratch)"))
 		
 		(: Seventh, time to store and update! :)
-		let $stored:=xmldb:store-files-from-pattern($newCol,$physicalScratch,$queriesComputation/@storagePattern)
+		let $stored := xmldb:store-files-from-pattern($newCol,$physicalScratch,$queriesComputation/@storagePattern)
 		(:
-		let $storedExperiment:=xmldb:store($newCol,$job:queriesDoc,$queriesDoc,'application/xml')/element()
+		let $storedExperiment:=doc(xmldb:store($newCol,$job:queriesDocURI,$queriesDoc,'application/xml'))/element()
 		:)
-		return
+		return (
 			update value $lastDoc/@timeStamp with $currentDateTime,
 			(:
 			update insert (attribute stamp { $currentDateTime }, attribute baseStamp { $lastDateTime }) into $storedExperiment,
 			:)
 			$currentDateTime
+		)
 	(: } :)
 };
 
@@ -103,53 +113,54 @@ declare function job:doQueriesComputation($currentDateTime as xs:dateTime)
 {
 	(: (# exist:batch-transaction #) { :)
 		(: First, get the last round document :)
-		let $currentDate:=xs:date($currentDateTime)
+		let $currentDateStr:=xs:string(xs:date($currentDateTime))
 		let $lastDoc:=job:getLastRoundDocument()
 		(: Third, snapshot of last round's date :)
 		let $lastDateTime:=$lastDoc/@timeStamp
-		let $lastDate:=xs:date($lastDateTime)
-		let $lastCol:=string-join(($job:resultsCol,$lastDate),'/')
-		let $physicalScratch:=string-join(($job:physicalScratch,$currentDate),'/')
-		let $roundCol:=xmldb:create-collection($job:resultsCol,$currentDate)
-		let $newCol:=string-join(($job:resultsCol,$currentDate),'/')
+		let $lastDateStr:=xs:string(xs:date($lastDateTime))
+		let $lastCol:=xmldb:encode(string-join(($job:resultsCol,$lastDateStr),'/'))
+		let $physicalScratch:=string-join(($job:physicalScratch,$currentDateStr),'/')
+		let $newCol:=xmldb:create-collection($job:resultsColURI,xmldb:encode($currentDateStr))
 		
-		let $queriesComputation := collection($mgmt:configCol)//job:jobManagement[1]/job:queriesComputation
-		let $dynLoad := util:import-module($queriesComputation/@namespace,'dyn',$queriesComputation/@module),
-			util:function(QName($queriesComputation/@namespace,$queriesComputation/@queryEntryPoint),3)
+		let $queriesComputation := collection($mgmt:configColURI)//job:jobManagement[1]/job:queriesComputation
+		let $imod := util:import-module($queriesComputation/@namespace,'dyn',$queriesComputation/@module)
 		(: Sixth, let's compute the unique entries :)
-		let $queriesDoc := util:call($dynLoad,$lastCol,$newCol,$physicalScratch)
+		let $queriesDoc := util:eval(concat("dyn:",xmldb:encode($queriesComputation/@queryEntryPoint),"($lastCol,$newCol,$physicalScratch)"))
 		
 		(: Seventh, time to store and update! :)
-		let $stored:=xmldb:store-files-from-pattern($newCol,$physicalScratch,$queriesComputation/@storagePattern)
-		let $storedExperiment:=xmldb:store($newCol,$job:queriesDoc,$queriesDoc,'application/xml')/element()
-		return
+		let $stored := xmldb:store-files-from-pattern($newCol,$physicalScratch,$queriesComputation/@storagePattern)
+		let $storedExperiment := doc(xmldb:store($newCol,$job:queriesDocURI,$queriesDoc,'application/xml'))/element()
+		return (
 			update value $lastDoc/@timeStamp with $currentDateTime,
-			update insert (attribute stamp { $currentDateTime }, attribute baseStamp { $lastDateTime }) into $storedExperiment,
+			update insert (
+				attribute name { $currentDateTime },
+				attribute isAssessed { false },
+				attribute stamp { $currentDateTime },
+				attribute baseStamp { $lastDateTime },
+				attribute deadline { $currentDateTime + $job:participantDeadline }
+			) into $storedExperiment,
 			$storedExperiment
+		)
+		
 	(: } :)
 };
 
-declare function job:doRound($currentDate as xs:date,$storedExperiment as element(xcesc:experiment),$onlineServers as element(xcesc:server)*)
+declare function job:doRound($currentRound as xs:string,$storedExperiment as element(xcesc:experiment),$onlineServers as element(xcesc:server)*)
 	as empty()
 {
 	(: Fourth, get online servers based on currentDateTime :)
 	let $querySet:=$storedExperiment//xcesc:query
-	let $targetSet:=$storedExperiment//xcesc:target
 	let $jobs:=	for $job in $querySet
 		return <xcesc:job targetId="{$job/@queryId}" status="submitted"/>
 	(: Fifth, submit jobs!!!! :)
+	let $basePobox := string-join(($job:poboxURI,$currentRound),'/')
 	for $onlineServer in $onlineServers
 		let $ticketId:=util:uuid()
-		let $poboxURI := string-join(($job:poboxURI,$currentDate,$ticketId),'/')
-		let $queries:=(
-			if($onlineServer/@type eq $mgmt:partServer) then
-				<xcesc:queries callback="{$poboxURI}">{$querySet}</xcesc:queries>
-			else
-				<xcesc:toEvaluate callback="{$poboxURI}">{$targetSet}</xcesc:toEvaluate>
-		)
+		let $poboxURI := string-join(($basePobox,$ticketId),'/')
+		let $queries := <xcesc:queries callback="{$poboxURI}">{$querySet}</xcesc:queries>
 		let $sendDateTime:=current-dateTime()
 		let $ret:=httpclient:post($onlineServer/@uri,$queries,false,())
-	return
+	return (
 		(: (# exist:batch-transaction #) { :)
 			update insert <xcesc:participant ticket="{$ticketId}" startStamp="{$sendDateTime}">
 			{$onlineServer}
@@ -160,6 +171,7 @@ declare function job:doRound($currentDate as xs:date,$storedExperiment as elemen
 					<xcesc:errorMessage statusCode="$ret/@statusCode">{$ret/httpclient:body/*}</xcesc:errorMessage>
 			}
 			</xcesc:participant>  into $storedExperiment
+	)
 		(: } :)
 };
 
@@ -169,7 +181,7 @@ declare function job:doNextRound()
 	(: Fourth, get online servers based on currentDateTime :)
 	let $currentDateTime:=current-dateTime()
 	return
-		job:doRound(xs:date($currentDateTime),job:doQueriesComputation($currentDateTime),mgmt:getOnlineServers($currentDateTime))
+		job:doRound(xs:date($currentDateTime),job:doQueriesComputation($currentDateTime),mgmt:getOnlineParticipants($currentDateTime))
 };
 
 (:
@@ -196,17 +208,30 @@ declare function job:doTestRound($baseRound as xs:string,$servers as element(xce
 	as xs:string
 {
 	let $newRound:=util:uuid()
+	return job:doTestRound($baseRound,$newRound,$servers)
+};
+
+declare function job:doTestRound($baseRound as xs:string,$newRound as xs:string,$servers as element(xcesc:server)+)
+	as xs:string
+{
+	let $newRound:=util:uuid()
 	let $baseCol:=string-join(($job:resultsCol,$baseRound),'/')
 	let $newCol:=string-join(($job:resultsCol,$newRound),'/')
-	let $empty:=xmldb:copy($baseCol,$newCol)
-	let $newRoundsDoc := doc(string-join(($newCol,$job:queriesDoc),'/'))/element()
+	let $empty:=xmldb:copy(xmldb:encode($baseCol),xmldb:encode($newCol))
+	let $newRoundsDoc := doc(xmldb:encode(string-join(($newCol,$job:queriesDoc),'/')))/element()
 	let $empty2 := (: (# exist:batch-transaction #) { :)
+	(
+		update value $newRoundsDoc/@name with $newRound,
 		update value $newRoundsDoc/@baseStamp with $newRoundsDoc/@stamp,
 		update value $newRoundsDoc/@stamp with current-dateTime(),
-		if(empty($newRoundsDoc/@test)) then
+		update value $newRoundsDoc/@deadline with current-dateTime() + $job:participantDeadline ,
+		if(empty($newRoundsDoc/@test)) then (
 			update insert attribute test { true } into $newRoundsDoc
-		else
+		) else
 			()
+		,
+		update value $newRoundsDoc/@isAssessed with false
+	)
 	(: } :)
 	let $empty3 := job:doRound($newRound,$newRoundsDoc,$servers) 
 	return $newRound
@@ -216,39 +241,52 @@ declare function job:joinResults($round as xs:string,$ticket as xs:string,$times
 	as xs:positiveInteger
 {
 	(: (# exist:batch-transaction #) { :)
-		let $partElem:=doc(string-join(($job:resultsCol,$round,$job:queriesDoc),'/'))//xcesc:participant[@ticket=$ticket]
+		let $expElem:=doc(xmldb:encode(string-join(($job:resultsCol,$round,$job:queriesDoc),'/')))//xcesc:experiment[@name eq $round]
 		return
-			if(exists($partElem)) then (
-				(
-				for $answer in $answers//xcesc:answer
-					let $matches:= (
-						(: Match fixing and isolation :)
-						for $match in $answer//xcesc:match
-						return <xcesc:match domain="{$match/@domain}" timeStamp="{$timestamp}">{$match/node()}</xcesc:match>
-					)
+			if (exists($expElem/@deadline) and xs:dateTime($expElem/@deadline) >= $timestamp) then (
+				let $partElem:=$expElem/xcesc:participant[@ticket eq $ticket]
 				return
-					for $job in $partElem//xcesc:job[@targetId=$answer/@targetId]
-					return
+					if(exists($partElem)) then (
 						(
-							if(exists($job/@stopStamp)) then
-								update value $job/@stopStamp with $timestamp
-							else
-								update insert attribute stopStamp { $timestamp } into $job
-							,
-							update value $job/@status with 'finished',
-							if(exists($answer/@message)) then
-								update insert attribute lastMessage { $answer/@message } into $job
-							else
-								()
-							,
-							if(exists($matches)) then
-								update insert $matches into $job
-							else
-								()
-						)
-				),200
-			) else
-				404
+						for $answer in $answers//xcesc:answer
+							let $matches:= (
+								(: Match fixing and isolation :)
+								for $match in $answer//xcesc:match
+								return <xcesc:match domain="{$match/@domain}" timeStamp="{$timestamp}">{$match/node()}</xcesc:match>
+							)
+						return
+							for $job in $partElem//xcesc:job[@targetId eq $answer/@targetId]
+							return
+								(
+									if(exists($job/@stopStamp)) then
+										update value $job/@stopStamp with $timestamp
+									else
+										update insert attribute stopStamp { $timestamp } into $job
+									,
+									update value $job/@status with 'finished',
+									if(exists($answer/@message)) then
+										update insert attribute lastMessage { $answer/@message } into $job
+									else
+										()
+									,
+									if(exists($matches)) then
+										update insert $matches into $job
+									else
+										()
+								)
+						),
+						if(exists($partElem/@lastStamp)) then
+							update value $partElem/@lastStamp with $timestamp
+						else
+							update insert attribute lastStamp { $timestamp } into $partElem
+						,
+						200
+					) else (
+						404
+					)
+			) else (
+				403
+			)
 	(: } :)
 };
 
@@ -256,38 +294,114 @@ declare function job:joinAssessments($round as xs:string,$assessmentTicket as xs
 	as xs:positiveInteger
 {
 	(: (# exist:batch-transaction #) { :)
-		let $evalElem:=doc(string-join(($job:resultsCol,$round,concat($job:assessPrefix,$assessmentTicket,$job:assessPostfix)),'/'))//xcesc:evaluator[@ticket=$evaluatorTicket]
+		let $assessElem:=doc(xmldb:encode(string-join(($job:resultsCol,$round,concat($job:assessPrefix,$assessmentTicket,$job:assessPostfix)),'/')))//xcesc:assessment[@name eq $assessmentTicket]
 		return
-			if(exists($evalElem)) then (
-				(
-				for $answer in $answers//xcesc:answer
-					let $matches:= (
-						(: Match fixing and isolation :)
-						for $match in $answer//xcesc:jobEvaluation
-						return <xcesc:jobEvaluation targetId="{$match/@targetId}" timeStamp="{$timestamp}">{$match/node()}</xcesc:jobEvaluation>
-					)
+			if (exists($assessElem/@deadline) and xs:dateTime($assessElem/@deadline) >= $timestamp) then (
+				let $evalElem:=$assessElem/xcesc:evaluator[@ticket eq $evaluatorTicket]
 				return
-					for $job in $evalElem//xcesc:job[@participantTicket=$answer/@targetId]
-					return
+					if(exists($evalElem)) then (
 						(
-							if(exists($job/@stopStamp)) then
-								update value $job/@stopStamp with $timestamp
-							else
-								update insert attribute stopStamp { $timestamp } into $job
-							,
-							update value $job/@status with 'finished',
-							if(exists($answer/@message)) then
-								update insert attribute lastMessage { $answer/@message } into $job
-							else
-								()
-							,
-							if(exists($matches)) then
-								update insert $matches into $job
-							else
-								()
-						)
-				),200
-			) else
-				404
+						for $answer in $answers//xcesc:answer
+							let $matches:= (
+								(: Match fixing and isolation :)
+								for $match in $answer//xcesc:jobEvaluation
+								return <xcesc:jobEvaluation targetId="{$match/@targetId}" timeStamp="{$timestamp}">{$match/node()}</xcesc:jobEvaluation>
+							)
+						return
+							for $job in $evalElem//xcesc:job[@participantTicket eq $answer/@targetId]
+							return
+								(
+									if(exists($job/@stopStamp)) then (
+										update value $job/@stopStamp with $timestamp
+									) else (
+										update insert attribute stopStamp { $timestamp } into $job
+									),
+									update value $job/@status with 'finished',
+									if(exists($answer/@message)) then (
+										update insert attribute lastMessage { $answer/@message } into $job
+									) else
+										()
+									,
+									if(exists($matches)) then (
+										update insert $matches into $job
+									) else
+										()
+								)
+						),
+						if(exists($evalElem/@lastStamp)) then
+							update value $evalElem/@lastStamp with $timestamp
+						else
+							update insert attribute lastStamp { $timestamp } into $evalElem
+						,
+						200
+					) else (
+						404
+					)
+			) else (
+				403
+			)
 	(: } :)
+};
+
+declare function job:doAssessment($currentAssessment as xs:string,$round as xs:string,$onlineServers as element(xcesc:server)*,$dateTime as xs:dateTime,$isTest as xs:boolean)
+	as empty()
+{
+	(: Assessment skeleton :)
+	let $storedAssessment := doc(
+		xmldb:store(
+			string-join(($job:resultsCol,$round),'/'),
+			concat($job:assessPrefix,$currentAssessment,$job:assessPostfix),
+			<xcesc:assessment stamp="{$dateTime}" name="{$currentAssessment}" test="{$isTest}" deadline="{$dateTime + $job:evaluatorDeadline}"></xcesc:assessment>,
+			'application/xml'
+		)
+	)/element()
+	(: Fourth, get online servers based on currentDateTime :)
+	let $storedExperiment := doc(string-join(($job:resultsColURI,xmldb:encode($round),$job:queriesDocURI),'/'))
+	let $targetSet:=(
+		for $participant in $storedExperiment//xcesc:participant
+		return
+			<xcesc:query queryId="{$participant/@ticket}">{
+				for $target in $storedExperiment/xcesc:experiment/xcesc:target
+				return
+					<xcesc:target publicId="{$target/@publicId}" namespace="{$target/@namespace}" description="{$target/@description}" level="{$target/@level}">
+					{$target/xcesc:query}
+					{$participant/xcesc:job[@targetId eq $target/xcesc:query/@queryId]/xcesc:match}
+					</xcesc:target>
+			}</xcesc:query>
+	)
+	let $jobs:=	for $job in $targetSet
+		return <xcesc:job targetId="{$job/@queryId}" status="submitted"/>
+	(: Fifth, submit jobs!!!! :)
+	let $basePobox := string-join(($job:evaURI,$round,$currentAssessment),'/')
+	for $onlineServer in $onlineServers
+		let $ticketId:=util:uuid()
+		let $poboxURI := string-join(($basePobox,$ticketId),'/')
+		let $queries := <xcesc:queries callback="{$poboxURI}">{$targetSet}</xcesc:queries>
+		let $sendDateTime:=current-dateTime()
+		let $ret:=httpclient:post($onlineServer/@uri,$queries,false,())
+	return (
+		(: (# exist:batch-transaction #) { :)
+			update insert <xcesc:evaluator ticket="{$ticketId}" startStamp="{$sendDateTime}">
+			{$onlineServer}
+			{
+				if($ret/@statusCode eq '200' or $ret/@statusCode eq '202') then
+					$jobs
+				else
+					<xcesc:errorMessage statusCode="$ret/@statusCode">{$ret/httpclient:body/*}</xcesc:errorMessage>
+			}
+			</xcesc:evaluator>  into $storedAssessment
+	)
+		(: } :)
+};
+
+declare function job:issueAssessments()
+	as empty()
+{
+	let $currentDateTime:=current-dateTime()
+	for $unassessed in collection($job:resultsColURI)//xcesc:experiment[not(@test)][not(@isAssessed)][($currentDateTime - xs:dateTime(@stamp)) > $job:intervalBeforeAssessment]
+		let $rcol := tokenize(base-uri($unassessed),'/')[last()-1]
+		let $assessmentTicket:=util:uuid()
+		let $assess := job:doAssessment($assessmentTicket,$rcol,mgmt:getOnlineEvaluators($currentDateTime),$currentDateTime,false)
+	return
+		update value $unassessed/@isAssessed with true
 };
