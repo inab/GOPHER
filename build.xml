@@ -1046,7 +1046,7 @@
 			</fileset>
 		</xdb:store>
 		
-		<xdb:store uri="${xmldb.uri}/db/${guiManagement(AtomicWiki-VirtualRoot)}" user="${deploy.eXist.admin.user}" password="${deploy.eXist.admin.pass}" failonerror="true" createsubcollections="true">
+		<xdb:store uri="${xmldb.uri}/db/${guiManagement(AtomicWiki-VirtualRoot)}" user="${deploy.eXist.admin.user}" password="${deploy.eXist.admin.pass}" failonerror="true" createcollection="true">
 			<fileset dir="${GOPHER.patches.dir}">
 				<include name="controller.xql" />
 			</fileset>
