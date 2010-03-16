@@ -42,11 +42,10 @@
 +	
 +	<!-- XQueryURLRewrite -->
 +	<filter enabled="yes"
-+		path="/@AtomicVirtual@/*"
++		path="/*"
 +		class="org.exist.http.urlrewrite.XQueryURLRewrite">
 +		
 +		<param name="config" value="xmldb:exist:///db/@XCESCConfig@/controller-config.xml"/>
-+		<param name="xquery" value="xmldb:exist:///db/@AtomicLogic@/dispatcher.xql"/>
 +	</filter>
 +	<!--__________________________________-->
 +	<!--    Finish configuration block    -->

@@ -656,6 +656,7 @@
 		</antcall>
 		
 		<!-- Because we have to place there the dispatcher.xql -->
+		<!--
 		<xdb:store uri="${xmldb.uri}/db" user="${deploy.eXist.admin.user}" password="${deploy.eXist.admin.pass}" failonerror="true" createsubcollections="true">
 			<fileset dir="${project.home}/skel">
 				<include name="${guiManagement(AtomicWiki-logic)}/**" />
@@ -664,6 +665,7 @@
 				<exclude name="**/.svn/**" />
 			</fileset>
 		</xdb:store>
+		-->
 	</target>
 
 	<target
@@ -1025,7 +1027,7 @@
 			<param name="the.dir" value="${eXist.conf.dir}/webapp-AtomicWiki"/>
 		</antcall>
 		
-		<!-- And the last step! -->
+		<!-- And the last steps! -->
 		<xdb:store uri="${xmldb.uri}/db/${guiManagement(AtomicWiki-logic)}" user="${deploy.eXist.admin.user}" password="${deploy.eXist.admin.pass}" failonerror="true" createsubcollections="true">
 			<fileset dir="${eXist.conf.dir}/webapp-AtomicWiki">
 				<include name="**"/>
@@ -1041,6 +1043,12 @@
 				<exclude name="**/*.xq*" />
 				<exclude name="**/.svn" />
 				<exclude name="**/.svn/**" />
+			</fileset>
+		</xdb:store>
+		
+		<xdb:store uri="${xmldb.uri}/db/${guiManagement(AtomicWiki-VirtualRoot)}" user="${deploy.eXist.admin.user}" password="${deploy.eXist.admin.pass}" failonerror="true" createsubcollections="true">
+			<fileset dir="${GOPHER.patches.dir}">
+				<include name="controller.xql" />
 			</fileset>
 		</xdb:store>
 		

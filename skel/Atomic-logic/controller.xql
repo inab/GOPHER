@@ -25,6 +25,15 @@ declare function exist:extract-page($uri as xs:string) as xs:string+ {
             subsequence(text:groups($path, '^/?(.*)/([^/]+)$'), 2)
 };
 
+declare function exist:get-render-url($feedConfig as element(conf:feed-config), $view as element(conf:view)) {
+    if ($view/@render) then
+        <exist:forward url="{concat('/rest', util:collection-name($feedConfig), '/', $view/@render)}"/>
+    else
+	    <exist:forward url="{$gui:AtomicRoot}/apply-theme.xql">
+			<exist:add-parameter name="theme" value="{$view/@theme}"/>
+		</exist:forward>
+};
+
 declare function exist:feed-config($feed as xs:string, $action as xs:string?) as xs:string {
     let $mode := 
         if ($action = ('new', 'edit')) then
@@ -40,7 +49,7 @@ declare function exist:feed-config($feed as xs:string, $action as xs:string?) as
         return $config
     return
         if (empty($configs)) then
-            'view.xql'
+            <exist:forward url="{$gui:AtomicRoot}/view.xql"/>
         else
             let $feedConfig := $configs[1]
             let $view := 
@@ -49,11 +58,11 @@ declare function exist:feed-config($feed as xs:string, $action as xs:string?) as
                 else
                     $feedConfig/conf:view[1]
             return
-                concat(util:collection-name($feedConfig), "/", $view/@render)
+	    	exist:get-render-url($feedConfig, $view)
 };
 
 let $origuri := request:get-uri()
-let $uri := substring-after($origuri, $gui:AtomicVirtualRoot)
+let $uri := substring-after($origuri, $exist:controller)
 let $action := request:get-parameter('action', ())[1]
 let $addFeed := request:get-parameter('add-feed', ())
 let $quiet := request:get-parameter("quiet", ())
@@ -67,7 +76,7 @@ return
 		<exist:forward url="{$gui:AtomicRoot}/{$uri}"/>
 	</exist:dispatch>
 
-    else if (matches($uri, "^/(xmlrpc|atom/|webdav|thumbs|db)")) then
+    else if (matches($uri, "^/(xmlrpc|atom/|webdav|rest|thumbs|db)")) then
 	<exist:dispatch>
 		<exist:redirect url="{$uri}"/>
 	</exist:dispatch>
@@ -79,27 +88,27 @@ return
 			<exist:forward url="{$newuri}"/>
 		</exist:dispatch>
 
-    else if (not(ends-with($uri, 'setup.html') or doc-available("/db/atom/configuration.xml"))) then
+    else if (not($exist:resource = 'setup.html' or doc-available("/db/atom/configuration.xml"))) then
 	<exist:dispatch>
     		<exist:forward url="{$gui:AtomicRoot}/setup.html">
 			<exist:set-header name="Cache-Control" value="no-cache"/>
 		</exist:forward>
 	</exist:dispatch>    
 
-    else if (ends-with($uri, '.xql')) then
-        if (ends-with($uri, 'upload.xql')) then (
+    else if (ends-with($exist:resource, '.xql')) then
+        if ($exist:resource = 'upload.xql') then (
 		util:log("DEBUG", ("FEED: ", request:get-parameter("feed", ()))),
 		<exist:dispatch>
 			<exist:forward url="{$gui:AtomicRoot}/upload.xql"/>
 		</exist:dispatch>
         ) else
 		<exist:dispatch>
-			<exist:forward url="{$gui:AtomicRoot}/{replace($uri, '.*/([^/]+)$', '$1')}"/>
+			<exist:forward url="{$gui:AtomicRoot}/{$exist:resource}"/>
 		</exist:dispatch>
             
     else if ($addFeed) then
 	<exist:dispatch>
-		<exist:redirect url="{$gui:AtomicVirtualRoot}{replace($uri, '^(.*/)[^/]*$', '$1')}{$addFeed}/?create=y"/>
+		<exist:redirect url="{$exist:controller}{replace($uri, '^(.*/)[^/]*$', '$1')}{$addFeed}/?create=y"/>
 	</exist:dispatch>
         
     else if ($action eq 'preview') then
@@ -119,7 +128,7 @@ return
     )
     else if (matches($uri, "\.\w+\??")) then
         <exist:dispatch>
-		<exist:forward url="{atom:wiki-root()}{$uri}"/>
+		<exist:forward url="/rest{atom:wiki-root()}{$uri}"/>
 	</exist:dispatch>
             
     else
@@ -137,7 +146,7 @@ return
 				{
 					if (not($quiet)) then
 						<exist:view>
-							<exist:forward url="/{exist:feed-config($params[1], $action)}"/>
+							{ exist:feed-config($params[1], $action) }
 						</exist:view>
 					else
 						()
@@ -156,7 +165,7 @@ return
 					{
 						if (not($quiet)) then
 							<exist:view>
-								<exist:forward url="/{exist:feed-config($feed, $action)}"/>
+								{ exist:feed-config($feed, $action) }
 							</exist:view>
 						else
 							()

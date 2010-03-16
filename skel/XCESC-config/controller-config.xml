@@ -19,6 +19,8 @@
 	<forward pattern="/atom/" servlet="AtomServlet"/>
 	<!-- AtomicWiki thumbnails -->
 	<forward pattern="/thumbs" servlet="org.atomicwiki.servlets.GetThumbnail"/>
+	<!-- AtomicWiki thumbnails -->
+	<forward pattern="/Atomic" servlet="XQueryURLRewrite"/>
 	
 	<!-- 
 		++ Main web application is served from the
@@ -35,5 +37,5 @@
 	-->
 	
 	<root pattern=".*" path="xmldb:exist:///db/www"/>
-	<forward pattern=".*\.(xql|xqy|xquery)$" servlet="XQueryServlet"/>
+	<forward pattern=".*\.(xq|xql|xqy|xquery)$" servlet="XQueryServlet"/>
 </configuration>
