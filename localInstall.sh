@@ -21,7 +21,7 @@ DEPLOY_EXIST_LOGS_DIR_REL=webapp/WEB-INF/logs
 DEPLOY_HOME_DIR="$PROJDIR"/testbed
 DEPLOY_EXIST_DIR=${DEPLOY_HOME_DIR}/eXist
 
-ant \
+LOCALCLASSPATH="${PROJDIR}/weeklyGOPHER-eXist-module/eXist/lib/core/xmldb.jar" ANT_OPTS="-Djava.endorsed.dirs=${PROJDIR}/weeklyGOPHER-eXist-module/eXist/lib/endorsed" ant \
 '-Ddeploy.host=127.0.0.1' \
 "-Ddeploy.home.dir=$DEPLOY_HOME_DIR" \
 '-Ddeploy.ssh.user=jmfernandez' \

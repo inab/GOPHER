@@ -33,6 +33,11 @@
 	<property name="GOPHER.patches.dir" location="patches" />
 	<property name="GOPHER.startup" value="starteXist${deploy.eXist.basebranch}.sh"/>
 	
+	<!-- This one will be the default value when we have a true template wiki site
+	<property name="GOPHER.AtomicWiki-site" location="${GOPHER.patches.dir}/AtomicWiki-site"/>
+	-->
+	<property name="GOPHER.AtomicWiki-site" location="${eXist.conf.dir}/AtomicWiki-site"/>
+	
 	<dirname property="project.home.parent" file="${project.home}"/>
 	
 	<property name="GOPHERPrepare.dir.rel" value="GOPHERPrepare" />
@@ -850,7 +855,7 @@
 			<property name="wiki.admin.user" value="${deploy.eXist.wiki.admin.user}"/>
 			<property name="wiki.admin.password" value="${deploy.eXist.wiki.admin.pass}"/>
 			<property name="wiki.base-uri" value="${publicBaseURI}"/>
-			<property name="data.dir" value="${GOPHER.patches.dir}/AtomicWiki-site"/>
+			<property name="data.dir" value="${GOPHER.AtomicWiki-site}"/>
 			
 			<reference refid="AtomicWiki.classpath.core" torefid="classpath.core"/>
 			<reference refid="AtomicWiki.classpath.tools" torefid="classpath.tools"/>
@@ -865,7 +870,7 @@
 			<property name="wiki.admin.user" value="${deploy.eXist.wiki.admin.user}"/>
 			<property name="wiki.admin.password" value="${deploy.eXist.wiki.admin.pass}"/>
 			<property name="wiki.base-uri" value="${publicBaseURI}"/>
-			<property name="data.dir" value="${GOPHER.patches.dir}/AtomicWiki-site"/>
+			<property name="data.dir" value="${GOPHER.AtomicWiki-site}"/>
 			
 			<reference refid="AtomicWiki.classpath.core" torefid="classpath.core"/>
 			<reference refid="AtomicWiki.classpath.tools" torefid="classpath.tools"/>
@@ -893,7 +898,7 @@
 			<arg value="-Dwiki.admin.user=${deploy.eXist.wiki.admin.user}"/>
 			<arg value="-Dwiki.admin.password=${deploy.eXist.wiki.admin.pass}"/>
 			<arg value="-Dwiki.base-uri=${publicBaseURI}"/>
-			<arg value="-Ddata.dir=${GOPHER.patches.dir}/AtomicWiki-site"/>
+			<arg value="-Ddata.dir=${GOPHER.AtomicWiki-site}"/>
 			<arg value="${the.target}"/>
 		</exec>
 		-->
@@ -904,8 +909,8 @@
 		description="This target is used to obtain a fresh copy of the default AtomicWiki site"
 	>
 		<!-- First we are going to copy the wiki data directory, so binary resources are taken into account -->
-		<delete dir="${GOPHER.patches.dir}/AtomicWiki-site" failonerror="false"/>
-		<copy todir="${GOPHER.patches.dir}/AtomicWiki-site">
+		<delete dir="${GOPHER.AtomicWiki-site}" failonerror="false"/>
+		<copy todir="${GOPHER.AtomicWiki-site}">
 			<fileset dir="${AtomicWiki.dir}/site">
 				<exclude name="**/.svn" />
 				<exclude name="**/.svn/**" />
@@ -915,13 +920,13 @@
 		<!-- Then let's patch -->
 		<patch
 			patchfile="${GOPHER.patches.dir}/AtomicWiki-util-xql.patch"
-			dir="${GOPHER.patches.dir}/AtomicWiki-site"
+			dir="${GOPHER.AtomicWiki-site}"
 			strip="1"/>
 		
 		<!-- And translate -->
 		<xslt
 			basedir="${AtomicWiki.dir}/site"
-			destdir="${GOPHER.patches.dir}/AtomicWiki-site"
+			destdir="${GOPHER.AtomicWiki-site}"
 			style="${GOPHER.patches.dir}/atomic.xsl"
 			force="true"
 		>
@@ -932,7 +937,7 @@
 			<param name="newowner" expression="${deploy.eXist.wiki.admin.user}"/>
 		</xslt>
 		<antcall target="patch-context-path">
-			<param name="the.dir" value="${GOPHER.patches.dir}/AtomicWiki-site"/>
+			<param name="the.dir" value="${GOPHER.AtomicWiki-site}"/>
 		</antcall>
 		
 		<!--
@@ -953,13 +958,18 @@
 		<touch millis="0" file="${AtomicWiki.dir}/etc/configuration.xml"/>
 		<!-- This cannot be done so, because subants inherit typedef declarations -->
 			<ant inheritAll="false" inheritRefs="false" dir="${AtomicWiki.dir}">
+				<property name="already.init.eXist.extension" value="true"/>
+			
+				<property name="java.libs.exist" location="${eXist.ant.dir}"/>
+				<property name="java.libs.tools" location="${eXist.ant.dir}/lib/core"/>
+				<property name="java.libs.endorsed" value="${java.endorsed.dirs}"/>
 				<property name="exist.dist" location="${eXist.dir}"/>
 				<property name="xmldb.uri" value="${xmldb.uri}"/>
 				<property name="admin.password" value="${deploy.eXist.admin.pass}"/>
 				<property name="wiki.admin.user" value="${deploy.eXist.wiki.admin.user}"/>
 				<property name="wiki.admin.password" value="${deploy.eXist.wiki.admin.pass}"/>
 				<property name="wiki.base-uri" value="${publicBaseURI}"/>
-				<property name="data.dir" value="${GOPHER.patches.dir}/AtomicWiki-site"/>
+				<property name="data.dir" value="${GOPHER.AtomicWiki-site}"/>
 				
 				<reference refid="AtomicWiki.classpath.core" torefid="classpath.core"/>
 				<reference refid="AtomicWiki.classpath.tools" torefid="classpath.tools"/>
@@ -972,6 +982,37 @@
 		<!-- -->
 		
 		<!--
+		<java classname="org.apache.tools.ant.launch.Launcher" fork="true" failonerror="true"
+			dir="${AtomicWiki.dir}" timeout="4000000" taskname="startAnt"
+		>
+			<classpath>
+				<pathelement location="${ant.home}/lib/ant-launcher.jar"/>
+				<pathelement path="${java.class.path}"/>
+			</classpath>
+			
+			<jvmarg value="-Djava.endorsed.dirs=${java.endorsed.dirs}"/>
+			
+			<!- - Properties - ->
+			<arg value="-Djava.libs.exist=${eXist.ant.dir}"/>
+			<arg value="-Djava.libs.tools=${eXist.ant.dir}/lib/core"/>
+			<arg value="-Djava.libs.endorsed=${java.endorsed.dirs}"/>
+			<arg value="-Dexist.dist=${eXist.dir}"/>
+			<arg value="-Dxmldb.uri=${xmldb.uri}"/>
+			<arg value="-Dadmin.password=${deploy.eXist.admin.pass}"/>
+			<arg value="-Dwiki.admin.user=${deploy.eXist.wiki.admin.user}"/>
+			<arg value="-Dwiki.admin.password=${deploy.eXist.wiki.admin.pass}"/>
+			<arg value="-Dwiki.base-uri=${publicBaseURI}"/>
+			<arg value="-Ddata.dir=${GOPHER.AtomicWiki-site}"/>
+			
+			<!- - Targets - ->
+			<arg value="configuration"/>
+			<arg value="init"/>
+			<arg value="styles"/>
+			<arg value="default-site"/>
+		</java>
+		-->
+		
+		<!--
 		<exec executable="ant" dir="${AtomicWiki.dir}" failonerror="true">
 			<arg value="-Dexist.dist=${eXist.dir}"/>
 			<arg value="-Dxmldb.uri=${xmldb.uri}"/>
@@ -979,7 +1020,7 @@
 			<arg value="-Dwiki.admin.user=${deploy.eXist.wiki.admin.user}"/>
 			<arg value="-Dwiki.admin.password=${deploy.eXist.wiki.admin.pass}"/>
 			<arg value="-Dwiki.base-uri=${publicBaseURI}"/>
-			<arg value="-Ddata.dir=${GOPHER.patches.dir}/AtomicWiki-site"/>
+			<arg value="-Ddata.dir=${GOPHER.AtomicWiki-site}"/>
 			<arg value="-d"/>
 			<arg value="configuration"/>
 			<arg value="init"/>
@@ -1028,7 +1069,7 @@
 		</antcall>
 		
 		<!-- And the last steps! -->
-		<xdb:store uri="${xmldb.uri}/db/${guiManagement(AtomicWiki-logic)}" user="${deploy.eXist.admin.user}" password="${deploy.eXist.admin.pass}" failonerror="true" createsubcollections="true">
+		<xdb:store uri="${xmldb.uri}/db/${guiManagement(AtomicWiki-logic)}" user="${deploy.eXist.admin.user}" password="${deploy.eXist.admin.pass}" failonerror="true" createcollection="true" createsubcollections="true">
 			<fileset dir="${eXist.conf.dir}/webapp-AtomicWiki">
 				<include name="**"/>
 			</fileset>
