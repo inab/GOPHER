@@ -61,7 +61,8 @@ declare function exist:feed-config($feed as xs:string, $action as xs:string?) as
 	    	exist:get-render-url($feedConfig, $view)
 };
 
-let $origuri := request:get-uri()
+let $genuineuri := request:get-uri()
+let $origuri := if ( $genuineuri eq $gui:AtomicVirtualRoot ) then concat($genuineuri,'/') else $genuineuri
 let $uri := substring-after($origuri, $exist:controller)
 let $action := request:get-parameter('action', ())[1]
 let $addFeed := request:get-parameter('add-feed', ())

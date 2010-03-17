@@ -37,8 +37,8 @@
 	<root pattern="/db.*" path="xmldb:exist:///db"/>
 	-->
 	
-	<redirect pattern="/" url="/index.html"/>
-	<root pattern="/@AtomicVirtual@.*" path="xmldb:exist:///db/@AtomicVirtual@"/>
+	<root pattern="^/@AtomicVirtual@.*" path="xmldb:exist:///db/@AtomicVirtual@"/>
+	<root pattern="^/$" path="xmldb:exist:///db/www/index.html"/>
 	<root pattern=".*" path="xmldb:exist:///db/www"/>
 	<forward pattern=".*\.(xq|xql|xqy|xquery)$" servlet="XQueryServlet"/>
 </configuration>
