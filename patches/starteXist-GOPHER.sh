@@ -2,10 +2,12 @@
 
 # Safety, the first
 LC_ALL=C
-export LC_ALL
+LANG=C
+export LC_ALL LANG
 
 BRANCH="@branch@"
 BASEBRANCHES="@basedir@"
+EXIST_PORT="@port@"
 EXIST_HOME="${BASEBRANCHES}/eXist${BRANCH}"
 EXISTDATACONF_HOME="${BASEBRANCHES}/dataconf${BRANCH}"
 EXIST_DATADIR="@datadir@"
@@ -26,10 +28,12 @@ JAVA_OPTIONS="-Xmx768m -Xms384m -Dfile.encoding=UTF-8 -Djavax.xml.transform.Tran
 # Deciding the configuration file to use
 case "$status" in
 	startnw)
-		JAVA_OPTIONS="$JAVA_OPTIONS -Dserver.xml=${SERVERXMLNOREWRITE}"
+		# JAVA_OPTIONS="$JAVA_OPTIONS -Dserver.xml=${SERVERXMLNOREWRITE}"
+		JAVA_OPTIONS="$JAVA_OPTIONS -Djetty.port=${EXIST_PORT} -Djetty.home=${EXIST_CONFDIR}"
 		;;
 	*)
-		JAVA_OPTIONS="$JAVA_OPTIONS -Dserver.xml=${SERVERXML}"
+		# JAVA_OPTIONS="$JAVA_OPTIONS -Dserver.xml=${SERVERXML}"
+		JAVA_OPTIONS="$JAVA_OPTIONS -Djetty.port=${EXIST_PORT} -Djetty.home=${EXIST_CONFDIR}"
 		;;
 esac
 # Setting the logs dir through a property

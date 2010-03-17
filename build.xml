@@ -234,6 +234,17 @@
 		</uptodate>
 	</target>
 	
+	<target name="is.patched.controller-config.xml" depends="init">
+		<uptodate
+			property="already.patched.controller-config.xml"
+			targetfile="${eXist.conf.dir}/controller-config.xml"
+		>
+			<srcfiles file="${ant.file}"/>
+			<srcfiles file="${ant.file.properties}"/>
+			<srcfiles file="${project.home}/skel/${xcesc.config.col}/guiManagement.xml"/>
+		</uptodate>
+	</target>
+	
 	<target name="is.patched.log4j.xml" depends="init">
 		<uptodate
 			property="already.patched.log4j.xml"
@@ -265,6 +276,9 @@
 			<srcfiles file="${ant.file}"/>
 			<srcfiles file="${ant.file.properties}"/>
 		</uptodate>
+	</target>
+	
+	<target name="conditional.patches" depends="conditional.patch.conf.xml,conditional.patch.controller-config.xml,conditional.patch.log4j.xml,conditional.patch.startup,patch.jetty.config" description="Conditional patching of configuration files">
 	</target>
 	
 	<!-- Generating configuration files by patch -->
@@ -330,6 +344,41 @@
 			filtering="true"
 		/>
 	</target>
+
+	<target name="conditional.patch.controller-config.xml" depends="is.patched.controller-config.xml" unless="already.patched.controller-config.xml">
+		<filter token="port" value="${deploy.eXist.port}"/>
+		<filter token="tmpdir" value="${job:jobManagement(physicalScratch)}"/>
+		<filter token="XCESCConfig" value="${xcesc.config.col}"/>
+		<filter token="AtomicLogic" value="${guiManagement(AtomicWiki-logic)}"/>
+		<filter token="AtomicVirtual" value="${guiManagement(AtomicWiki-VirtualRoot)}"/>
+		<filter token="XForms.dir" value="${guiManagement(XForms-root)}"/>
+		<copy
+			file="${GOPHER.patches.dir}/controller-config.xml"
+			tofile="${eXist.conf.dir}/controller-config.xml"
+			overwrite="true"
+			filtering="true"
+		/>
+	</target>
+	
+	<target name="patch.jetty.config">
+		<filter token="port" value="${deploy.eXist.port}"/>
+		<filter token="tmpdir" value="${job:jobManagement(physicalScratch)}"/>
+		<filter token="XCESCConfig" value="${xcesc.config.col}"/>
+		<filter token="AtomicLogic" value="${guiManagement(AtomicWiki-logic)}"/>
+		<filter token="AtomicVirtual" value="${guiManagement(AtomicWiki-VirtualRoot)}"/>
+		<filter token="XForms.dir" value="${guiManagement(XForms-root)}"/>
+		
+		<copy
+			todir="${eXist.conf.dir}/etc"
+			overwrite="true"
+			filtering="true"
+		>
+			<fileset dir="${GOPHER.patches.dir}/jetty-etc">
+				<exclude name="**/.svn" />
+				<exclude name="**/.svn/**" />
+			</fileset>
+		</copy>
+	</target>
 	
 	<target name="conditional.patch.log4j.xml" depends="is.patched.log4j.xml" unless="already.patched.log4j.xml">
 		<delete file="${eXist.conf.dir}/log4j.xml" failonerror="false"/>
@@ -351,6 +400,7 @@
 		</fail>
 	</target>
 	
+	<!--
 	<target name="conditional.patch.server.xml.norewrite" depends="conditional.patch.server.xml,is.patched.server.xml.norewrite" unless="already.patched.server.xml.norewrite">
 		<xslt
 			in="${eXist.conf.dir}/server.xml"
@@ -361,8 +411,10 @@
 			<outputproperty name="method" value="xml"/>
 		</xslt>
 	</target>
+	-->
 	
 	<target name="conditional.patch.startup" depends="is.patched.startup" unless="already.patched.startup">
+		<filter token="port" value="${deploy.eXist.port}"/>
 		<filter token="basedir" value="${deploy.home.dir}"/>
 		<filter token="branch" value="${deploy.eXist.basebranch}"/>
 		<filter token="datadir" value="${deploy.eXist.startup.datadir}"/>
@@ -489,7 +541,7 @@
 	</target>
 	
 	<target name="deploy.skel.meta"
-		depends="init.eXist.extension,conditional.patch.conf.xml,conditional.patch.server.xml.norewrite,conditional.patch.log4j.xml,conditional.patch.startup,uncompress-saxon-bundle,build-atomic-xquery-jar,compile.AtomicWiki"
+		depends="init.eXist.extension,conditional.patches,uncompress-saxon-bundle,build-atomic-xquery-jar,compile.AtomicWiki"
 		description="Remote eXist Meta-skeleton for GOPHER"
 	>
 		<!-- First, stop the patient (it may fail) -->
@@ -529,10 +581,13 @@
 		>
 			<fileset dir="${eXist.conf.dir}">
 				<include name="conf.xml"/>
+				<!--
 				<include name="server.xml"/>
 				<include name="server.xml.norewrite"/>
+				-->
 				<include name="log4j.xml"/>
 				<include name="atom-services.xml"/>
+				<include name="etc/**"/>
 			</fileset>
 			<fileset dir="${project.home}">
 				<include name="shared-eXist.properties"/>
@@ -580,6 +635,9 @@
 		>
 			<fileset dir="${AtomicWiki.dir}">
 				<include name="etc/**"/>
+				<exclude name="etc/jetty.xml"/>
+				<exclude name="etc/webdefault.xml"/>
+				<exclude name="etc/login.conf"/>
 			</fileset>
 		</scp>
 		
@@ -711,6 +769,7 @@
 				<include name="system/**/*.xml" />
 			</fileset>
 		</xdb:store>
+		
 		<!-- Second, GOPHER XML content -->
 		<xdb:store uri="${xmldb.uri}/db" user="${deploy.eXist.gopher.user}" password="${deploy.eXist.gopher.pass}" failonerror="true" createsubcollections="true">
 			<fileset dir="skel">
@@ -723,6 +782,9 @@
 				<exclude name="system/**/*.xsl" />
 				<exclude name="system/**/*.xconf" />
 				<exclude name="system/**/*.xml" />
+			</fileset>
+			<fileset dir="${eXist.conf.dir}">
+				<include name="controller-config.xml"/>
 			</fileset>
 		</xdb:store>
 		
@@ -1059,7 +1121,7 @@
 			<fileset dir="${AtomicWiki.dir}/webapp">
 				<include name="**/*.xq*" />
 				
-				<exclude name="dispatcher.xql" />
+				<exclude name="controller.xql" />
 				<exclude name="**/.svn" />
 				<exclude name="**/.svn/**" />
 			</fileset>

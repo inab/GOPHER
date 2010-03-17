@@ -19,8 +19,9 @@
 	<forward pattern="/atom/" servlet="AtomServlet"/>
 	<!-- AtomicWiki thumbnails -->
 	<forward pattern="/thumbs" servlet="org.atomicwiki.servlets.GetThumbnail"/>
-	<!-- AtomicWiki thumbnails -->
-	<forward pattern="/Atomic" servlet="org.exist.http.urlrewrite.XQueryURLRewrite"/>
+	<!--
+	<forward pattern="/@AtomicVirtual@" servlet="org.exist.http.urlrewrite.XQueryURLRewrite"/>
+	-->
 	
 	<!-- 
 		++ Main web application is served from the
@@ -36,7 +37,8 @@
 	<root pattern="/db.*" path="xmldb:exist:///db"/>
 	-->
 	
-	<redirect pattern="/" path="/index.html"/>
+	<redirect pattern="/" url="/index.html"/>
+	<root pattern="/@AtomicVirtual@.*" path="xmldb:exist:///db/@AtomicVirtual@"/>
 	<root pattern=".*" path="xmldb:exist:///db/www"/>
 	<forward pattern=".*\.(xq|xql|xqy|xquery)$" servlet="XQueryServlet"/>
 </configuration>

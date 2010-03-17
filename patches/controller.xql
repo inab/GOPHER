@@ -108,7 +108,7 @@ return
             
     else if ($addFeed) then
 	<exist:dispatch>
-		<exist:redirect url="{$exist:controller}{replace($uri, '^(.*/)[^/]*$', '$1')}{$addFeed}/?create=y"/>
+		<exist:redirect url="{$gui:AtomicVirtualRoot}{replace($uri, '^(.*/)[^/]*$', '$1')}{$addFeed}/?create=y"/>
 	</exist:dispatch>
         
     else if ($action eq 'preview') then
