@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?><theme xmlns="http://atomic.exist-db.org/themes" name="Default" xml:id="default-theme">
+    <template name="default-template"/>
+    <block region="navbar">
+        <breadcrumbs/>
+        <feed-title/>
+    </block>
+    <block region="sidebar1">
+        <load feed="util" entry="MainLinks" collapsible="false"/>
+        <load feed="util" entry="LatestPosts" collapsible="false"/>
+    </block>
+    <block region="sidebar2">
+        <login/>
+        <load feed="util" entry="QuickSearch" collapsible="false"/>
+        <load feed="util" entry="MarkupHelp" collapsible="true"/>
+    </block>
+    <block region="content">
+        <content/>
+    </block>
+</theme>

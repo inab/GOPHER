@@ -312,7 +312,8 @@
 			filtering="true"
 		/>
 	</target>
-
+	
+	<!--
 	<target name="conditional.patch.server.xml" depends="is.patched.server.xml" unless="already.patched.server.xml">
 		<delete file="${eXist.conf.dir}/server.xml.tmpl" failonerror="false"/>
 		<delete file="${eXist.conf.dir}/server.xml.tmpl.rej" failonerror="false"/>
@@ -344,6 +345,7 @@
 			filtering="true"
 		/>
 	</target>
+	-->
 
 	<target name="conditional.patch.controller-config.xml" depends="is.patched.controller-config.xml" unless="already.patched.controller-config.xml">
 		<filter token="port" value="${deploy.eXist.port}"/>
@@ -452,9 +454,35 @@
 		</replaceregexp>
 		<replaceregexp match='cfg:get-html-uri\(\)' replace='gui:get-gui-path()' flags="g" byline="true">
 			<fileset dir="${the.dir}">
-				<include name="*.xq"/>
+				<include name="**/*.xq*"/>
 			</fileset>
 		</replaceregexp>
+		
+		<!-- Special treatment for apply-theme.xql -->
+		<loadfile property="theme.process-links" srcFile="${GOPHER.patches.dir}/theme_process-links.xql">
+		</loadfile>
+		
+		<replaceregexp match='declare\s+function\s+theme:process-links\([^;]+\};' replace='@PLACEHOLDER@' flags="s" byline="false">
+			<fileset dir="${the.dir}">
+				<include name="**/apply-theme.xql"/>
+			</fileset>
+		</replaceregexp>
+		
+		<replace dir="${the.dir}" token='@PLACEHOLDER@' value='${theme.process-links}'>
+			<include name="**/apply-theme.xql"/>
+		</replace>
+		
+		<!-- Special treatment for search.xql -->
+		<loadfile property="theme.process-links" srcFile="${GOPHER.patches.dir}/theme_process-links.xql">
+		</loadfile>
+		
+		<replaceregexp match='concat\("//"' replace='concat("collection(atom:wiki-root())//"' flags="s" byline="false">
+			<fileset dir="${the.dir}">
+				<include name="**/search.xql"/>
+			</fileset>
+		</replaceregexp>
+		
+		<!-- Fixes for hard-coded users -->
 		<replaceregexp match='xdb:login\("xmldb:exist:///db",\s*"admin",\s*""\)' replace='xdb:login("xmldb:exist:///db", "${deploy.eXist.admin.user}", "${deploy.eXist.admin.pass}")' flags="g" byline="true">
 			<fileset dir="${the.dir}">
 				<include name="**/*.xq*" />
@@ -504,7 +532,10 @@
 			force="true"
 		>
 			<outputproperty name="method" value="xml"/>
+			<!--
 			<param name="AtomicLogic" expression="${guiManagement(AtomicWiki-logic)}"/>
+			-->
+			<param name="AtomicLogic" expression="${guiManagement(AtomicWiki-VirtualRoot)}"/>
 		</xslt>
 		<!-- Build patched atomic-xquery jar -->
 		<delete dir="${eXist.conf.dir}/xquery-AtomicWiki"/>
@@ -986,12 +1017,14 @@
 		</copy>
 		
 		<!-- Then let's patch -->
+		<!--
 		<patch
 			patchfile="${GOPHER.patches.dir}/AtomicWiki-util-xql.patch"
 			dir="${GOPHER.AtomicWiki-site}"
 			strip="1"/>
+		-->
 		
-		<!-- And translate -->
+		<!-- And translate, so wiki admin user is fixed -->
 		<xslt
 			basedir="${AtomicWiki.dir}/site"
 			destdir="${GOPHER.AtomicWiki-site}"
@@ -1003,6 +1036,7 @@
 			<identitymapper/>
 			<outputproperty name="method" value="xml"/>
 			<param name="newowner" expression="${deploy.eXist.wiki.admin.user}"/>
+			<param name="AtomicVirtual" expression="${guiManagement(AtomicWiki-VirtualRoot)}"/>
 		</xslt>
 		<antcall target="patch-context-path">
 			<param name="the.dir" value="${GOPHER.AtomicWiki-site}"/>
@@ -1112,6 +1146,15 @@
 		</antcall>
 		-->
 		
+		<!-- Overwrite default theme with our own -->
+		<xdb:store uri="${xmldb.uri}/db/atom/themes/Default" user="${deploy.eXist.admin.user}" password="${deploy.eXist.admin.pass}" failonerror="true" createcollection="true" createsubcollections="true">
+			<fileset dir="${GOPHER.patches.dir}/AtomicWiki-theme">
+				<include name="**"/>
+				<exclude name="**/.svn" />
+				<exclude name="**/.svn/**" />
+			</fileset>
+		</xdb:store>
+		
 		<!-- Change default editor password -->
 		<antcall target="create-update-user">
 			<param name="the.user" value="${deploy.eXist.wiki.editor.user}"/>
@@ -1137,7 +1180,7 @@
 		</antcall>
 		
 		<!-- And the last steps! -->
-		<xdb:store uri="${xmldb.uri}/db/${guiManagement(AtomicWiki-logic)}" user="${deploy.eXist.admin.user}" password="${deploy.eXist.admin.pass}" failonerror="true" createcollection="true" createsubcollections="true">
+		<xdb:store uri="${xmldb.uri}/db/${guiManagement(AtomicWiki-VirtualRoot)}" user="${deploy.eXist.admin.user}" password="${deploy.eXist.admin.pass}" failonerror="true" createcollection="true" createsubcollections="true">
 			<fileset dir="${eXist.conf.dir}/webapp-AtomicWiki">
 				<include name="**"/>
 			</fileset>

@@ -11,30 +11,26 @@ import module namespace util="http://exist-db.org/xquery/util";
 import module namespace gui="http://www.cnio.es/scombio/xcesc/1.0/xquery/guiManagement" at "xmldb:exist:///db/XCESC-logic/guiManagement.xqm";
 
 declare function exist:extract-feed($uri as xs:string)  as xs:string {
-    let $path := gui:extract-path($uri)
-	return
-        replace($path, "^/*(.*?)/*?$", "$1")
+    replace(gui:extract-path($uri), "^/*(.*?)/*?$", "$1")
 };
 
 declare function exist:extract-page($uri as xs:string) as xs:string+ {
-    let $path := gui:extract-path($uri)
-    return
-        if (ends-with($path, '/')) then
-            exist:extract-feed($path)
-        else
-            subsequence(text:groups($path, '^/?(.*)/([^/]+)$'), 2)
+    if (ends-with($uri, '/')) then
+        exist:extract-feed($uri)
+    else
+        subsequence(text:groups(gui:extract-path($uri), '^/?(.*)/([^/]+)$'), 2)
 };
 
 declare function exist:get-render-url($feedConfig as element(conf:feed-config), $view as element(conf:view)) {
     if ($view/@render) then
-        <exist:forward url="{concat('/rest', util:collection-name($feedConfig), '/', $view/@render)}"/>
+        <exist:forward url="{concat('/rest', $gui:AtomicVirtualRoot,util:collection-name($feedConfig), '/', $view/@render)}"/>
     else
-	    <exist:forward url="{$gui:AtomicRoot}/apply-theme.xql">
+	    <exist:forward url="/rest{$gui:AtomicVirtualRoot}/apply-theme.xql">
 			<exist:add-parameter name="theme" value="{$view/@theme}"/>
 		</exist:forward>
 };
 
-declare function exist:feed-config($feed as xs:string, $action as xs:string?) as xs:string {
+declare function exist:feed-config($feed as xs:string, $action as xs:string?) as element() {
     let $mode := 
         if ($action = ('new', 'edit')) then
             'edit'
@@ -49,7 +45,7 @@ declare function exist:feed-config($feed as xs:string, $action as xs:string?) as
         return $config
     return
         if (empty($configs)) then
-            <exist:forward url="{$gui:AtomicRoot}/view.xql"/>
+            <exist:forward url="/view.xql"/>
         else
             let $feedConfig := $configs[1]
             let $view := 
@@ -63,18 +59,18 @@ declare function exist:feed-config($feed as xs:string, $action as xs:string?) as
 
 let $genuineuri := request:get-uri()
 let $origuri := if ( $genuineuri eq $gui:AtomicVirtualRoot ) then concat($genuineuri,'/') else $genuineuri
-let $uri := substring-after($origuri, $exist:controller)
+let $uri := gui:extract-path($origuri)
 let $action := request:get-parameter('action', ())[1]
 let $addFeed := request:get-parameter('add-feed', ())
 let $quiet := request:get-parameter("quiet", ())
 return
     if (not(starts-with($uri , '/'))) then
 	<exist:dispatch>
-		<exist:redirect url="{$gui:AtomicVirtualRoot}/"/>
+		<exist:redirect url="/"/>
 	</exist:dispatch>
     else if (matches($uri, "^/(scripts|styles|assets|images|AtomicWiki.png|logo.jpg|setup.xql)")) then
 	<exist:dispatch>
-		<exist:forward url="{$gui:AtomicRoot}/{$uri}"/>
+		<exist:forward url="{$uri}"/>
 	</exist:dispatch>
 
     else if (matches($uri, "^/(xmlrpc|atom/|webdav|rest|thumbs|db)")) then
@@ -91,7 +87,7 @@ return
 
     else if (not($exist:resource = 'setup.html' or doc-available("/db/atom/configuration.xml"))) then
 	<exist:dispatch>
-    		<exist:forward url="{$gui:AtomicRoot}/setup.html">
+    		<exist:forward url="/setup.html">
 			<exist:set-header name="Cache-Control" value="no-cache"/>
 		</exist:forward>
 	</exist:dispatch>    
@@ -100,47 +96,47 @@ return
         if ($exist:resource = 'upload.xql') then (
 		util:log("DEBUG", ("FEED: ", request:get-parameter("feed", ()))),
 		<exist:dispatch>
-			<exist:forward url="{$gui:AtomicRoot}/upload.xql"/>
+			<exist:forward url="/upload.xql"/>
 		</exist:dispatch>
         ) else
 		<exist:dispatch>
-			<exist:forward url="{$gui:AtomicRoot}/{$exist:resource}"/>
+			<exist:forward url="/{$exist:resource}"/>
 		</exist:dispatch>
             
     else if ($addFeed) then
 	<exist:dispatch>
-		<exist:redirect url="{$gui:AtomicVirtualRoot}{replace($uri, '^(.*/)[^/]*$', '$1')}{$addFeed}/?create=y"/>
+		<exist:redirect url="{replace($uri, '^(.*/)[^/]*$', '$1')}{$addFeed}/?create=y"/>
 	</exist:dispatch>
         
     else if ($action eq 'preview') then
         <exist:dispatch>
-    		<exist:forward url="{$gui:AtomicRoot}/preview.xql">
-            		<exist:add-parameter name="feed" value="{exist:extract-feed($origuri)}"/>
+    		<exist:forward url="/preview.xql">
+            		<exist:add-parameter name="feed" value="{exist:extract-feed($uri)}"/>
 		</exist:forward>
         </exist:dispatch>
         
     else if ($action = ('store-comment', 'load-comment')) then (
 		util:log("DEBUG", ("URL: ", $uri)),
         <exist:dispatch>
-		<exist:forward url="${gui:AtomicRoot}/comment.xql">
-            		<exist:add-parameter name="feed" value="{exist:extract-feed($origuri)}"/>
+		<exist:forward url="/comment.xql">
+            		<exist:add-parameter name="feed" value="{exist:extract-feed($uri)}"/>
 		</exist:forward>
         </exist:dispatch>
     )
     else if (matches($uri, "\.\w+\??")) then
         <exist:dispatch>
-		<exist:forward url="/rest{atom:wiki-root()}{$uri}"/>
+		<exist:redirect url="/rest{atom:wiki-root()}{$uri}"/>
 	</exist:dispatch>
             
     else
-        let $params := exist:extract-page($origuri)
+        let $params := exist:extract-page($uri)
 	(:
 		let $alert := util:log-system-err(($origuri,' ',$params," /{exist:feed-config($feed, $action)}"))
 	:)
         return
 		if (count($params) eq 2) then
 			<exist:dispatch>
-				<exist:forward url="{$gui:AtomicRoot}/index.xql">
+				<exist:forward url="/index.xql">
 					<exist:add-parameter name="feed" value="{$params[1]}"/>
 					<exist:add-parameter name="ref" value="{$params[2]}"/>
 				</exist:forward>
@@ -154,13 +150,13 @@ return
 				}
 			</exist:dispatch>
 		else
-			let $feed := exist:extract-feed($origuri)
+			let $feed := exist:extract-feed($uri)
 			(:
 				let $alert := util:log-system-err(($origuri,' ',$feed,'  ',exist:feed-config($feed, $action)))
 			:)
 			return
 				<exist:dispatch>
-					<exist:forward url="{$gui:AtomicRoot}/index.xql">
+					<exist:forward url="/index.xql">
 						<exist:add-parameter name="feed" value="{$feed}"/>
 					</exist:forward>
 					{
