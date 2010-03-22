@@ -126,11 +126,11 @@
 		</exec>
 		<exec dir="${project.home}" executable="/bin/sh" outputproperty="gopher.eXist.version.forms" failonerror="false">
 			<arg value="-c"/>
-			<arg value="svn propget svn:externals 'skel/${guiManagement(XForms-root)}' | grep -o -- '-r[0-9]*'"/>
+			<arg value="svn propget svn:externals 'skel/www/${guiManagement(XForms-root)}' | grep -o -- '-r[0-9]*'"/>
 		</exec>
 		<exec dir="${project.home}" executable="/bin/sh" outputproperty="gopher.eXist.checkout.uri.forms" failonerror="false">
 			<arg value="-c"/>
-			<arg value="svn propget svn:externals 'skel/${guiManagement(XForms-root)}' | grep -o -- 'http[^ ]*'"/>
+			<arg value="svn propget svn:externals 'skel/www/${guiManagement(XForms-root)}' | grep -o -- 'http[^ ]*'"/>
 		</exec>
 		
 		<condition property="gopher.eXist.version.uptodate">
@@ -160,11 +160,11 @@
 			<arg value="propset"/>
 			<arg value="svn:externals"/>
 			<arg value="xsltforms	${gopher.eXist.version}	${gopher.eXist.checkout.uri}/webapp/xforms/xsltforms"/>
-			<arg value="skel/${guiManagement(XForms-root)}"/>
+			<arg value="skel/www/${guiManagement(XForms-root)}"/>
 		</exec>
 		<exec dir="${project.home}" executable="svn" failonerror="true">
 			<arg value="update"/>
-			<arg value="skel/${guiManagement(XForms-root)}"/>
+			<arg value="skel/www/${guiManagement(XForms-root)}"/>
 		</exec>
 	</target>
 	
