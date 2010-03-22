@@ -14,7 +14,7 @@ weeklyGOPHER-eXist-module glue classes by jmfernandez Ant script</description>
 
 	<property name="GOPHERPrepare.dir.rel" value="GOPHERPrepare" />
 	<property name="GOPHERPrepare.dir" location="${ant.file.dir.parent}/${GOPHERPrepare.dir.rel}" />
-	<property name="PDBSeq.jar.rel" value="dist/GOPHERPrepare.jar" />
+	<property name="PDBSeq.jar.rel" value="dist/PDBSeq.jar" />
 	<property name="PDBSeq.jar" location="${GOPHERPrepare.dir}/${PDBSeq.jar.rel}" />
 
 	<available file="${PDBSeq.jar}" property="PDBSeq.archive.present"/>
@@ -34,6 +34,7 @@ weeklyGOPHER-eXist-module glue classes by jmfernandez Ant script</description>
 		</fileset>
 		<fileset dir="${GOPHERPrepare.dir}">
 			<include name="dist/GOPHERPrepare.jar"/>
+			<include name="${PDBSeq.jar.rel}"/>
 		</fileset>
 	</path>
 	
