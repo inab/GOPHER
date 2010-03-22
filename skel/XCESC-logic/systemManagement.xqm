@@ -260,6 +260,36 @@ declare function mgmt:updateServer($managerId as xs:string,$serverConfig as elem
 (: User creation :)
 (: From XForms :)
 (: And the programatic way :)
+declare function mgmt:confirmUser($id as xs:string,$answer as xs:boolean)
+	as xs:string?
+{
+	(: (# exist:batch-transaction #) { :)
+		let $warn := util:log-system-err("KENOKENNOKNEO")
+		let $mgmtDoc:=mgmt:getManagementDoc()
+		let $userConfig := $mgmtDoc//xcesc:user[@id eq $id][@status eq 'unconfirmed']
+		return
+			if(exists($userConfig) and not(xmldb:exists-user($userConfig/@nickname))) then (
+				if($answer) then (
+					(: Perhaps in the future we will add bloggers group... :)
+					let $emp:=system:as-user(
+						collection($mgmt:configColURI)//meta:metaManagement[1]/@user/string(),
+						collection($mgmt:configColURI)//meta:metaManagement[1]/@password/string(),
+						xmldb:create-user($userConfig/@nickname,$userConfig/@nickpass,($mgmt:xcescGroup),())
+					)
+					return (
+						update value $userConfig/@status with 'enabled',
+						$id
+					)
+				) else (
+					mgmt:deleteUser($id,$userConfig/@nickname)
+				)
+			) else (
+				util:log-system-err(string-join(("On server creation, user",$nickname,"already existed"),' ')),
+				error((),string-join(("On user creation, user",$nickname,"already existed"),' '))
+			)
+	(: } :)
+};
+
 declare function mgmt:createUser($nickname as xs:string,$nickpass as xs:string,$firstName as xs:string,$lastName as xs:string,$organization as xs:string,$eMails as element(xcesc:eMail)+, $references as element(xcesc:reference)*)
 	as xs:string?
 {
@@ -270,12 +300,7 @@ declare function mgmt:createUser($nickname as xs:string,$nickpass as xs:string,$
 			if(empty($mgmtDoc//xcesc:user[@nickname eq $nickname]) and not(xmldb:exists-user($nickname))) then (
 				let $id:=util:uuid()
 				(: Perhaps in the future we will add bloggers group... :)
-				let $emp:=system:as-user(
-					collection($mgmt:configColURI)//meta:metaManagement[1]/@user/string(),
-					collection($mgmt:configColURI)//meta:metaManagement[1]/@password/string(),
-					xmldb:create-user($nickname,$nickpass,($mgmt:xcescGroup),())
-				)
-				let $newUser:=<xcesc:user id="{$id}" nickname="{$nickname}" firstName="{$firstName}" lastName="{$lastName}" organization="{$organization}" status="enabled">
+				let $newUser:=<xcesc:user id="{$id}" nickname="{$nickname}" firstName="{$firstName}" lastName="{$lastName}" organization="{$organization}" status="unconfirmed">
 					{$eMails}
 					{$references}
 				</xcesc:user>
@@ -302,16 +327,18 @@ declare function mgmt:deleteUser($id as xs:string,$nickname as xs:string)
 {
 	(: (# exist:batch-transaction #) { :)
 		let $mgmtDoc := mgmt:getManagementDoc()
-		let $userDoc := $mgmtDoc//xcesc:user[@id eq $id and @nickname eq $nickname]
+		let $userDoc := $mgmtDoc//xcesc:user[@id eq $id][@nickname eq $nickname]
 		return
 			if(empty($userDoc)) then
 				 error((),string-join(("On user deletion,",$id,"is not allowed to erase",$nickname,"or some of them are unknown"),' '))
 			else (
-				system:as-user(
-					collection($mgmt:configColURI)//meta:metaManagement[1]/@user/string(),
-					collection($mgmt:configColURI)//meta:metaManagement[1]/@password/string(),
-					xmldb:delete-user($nickname)
-				),
+				if($userDoc/@status ne 'unconfirmed' and xmldb:exists-user($nickname)) then (
+					system:as-user(
+						collection($mgmt:configColURI)//meta:metaManagement[1]/@user/string(),
+						collection($mgmt:configColURI)//meta:metaManagement[1]/@password/string(),
+						xmldb:delete-user($nickname)
+					)
+				) else (),
 				update delete $userDoc
 			)
 	(: } :)
@@ -322,13 +349,15 @@ declare function mgmt:deleteDeletedUsers($users as element(xcesc:deletedUser)*)
 {
 	(: (# exist:batch-transaction #) { :)
 		let $mgmtDoc := mgmt:getManagementDoc()
-		for $deluser in $users[@id ne '' and @nickname ne ''], $userDoc in $mgmtDoc//xcesc:user[@id eq $deluser/@id and @nickname eq $deluser/@nickname]
+		for $deluser in $users[@id ne '' and @nickname ne ''], $userDoc in $mgmtDoc//xcesc:user[@id eq $deluser/@id][@nickname eq $deluser/@nickname]
 		return (
-			system:as-user(
-				collection($mgmt:configColURI)//meta:metaManagement[1]/@user/string(),
-				collection($mgmt:configColURI)//meta:metaManagement[1]/@password/string(),
-				xmldb:delete-user($deluser/@nickname)
-			),
+			if($deluser/@status ne 'unconfirmed' and xmldb:exists-user($deluser/@nickname)) then (
+				system:as-user(
+					collection($mgmt:configColURI)//meta:metaManagement[1]/@user/string(),
+					collection($mgmt:configColURI)//meta:metaManagement[1]/@password/string(),
+					xmldb:delete-user($deluser/@nickname)
+				)
+			) else (),
 			update delete $userDoc
 		)
 	(: } :)
@@ -343,6 +372,12 @@ declare function mgmt:getUserFromId($id as xs:string)
 	mgmt:getManagementDoc()//xcesc:user[@id eq $id]
 };
 
+declare function mgmt:getActiveUserFromId($id as xs:string)
+	as element(xcesc:user)?
+{
+	mgmt:getManagementDoc()//xcesc:user[@id eq $id][@status eq 'enabled']
+};
+
 (: It obtains the whole user configuration, by nickname :)
 declare function mgmt:getUserFromNickname($nickname as xs:string)
 	as element(xcesc:user)?
@@ -351,10 +386,24 @@ declare function mgmt:getUserFromNickname($nickname as xs:string)
 };
 
 (: It obtains the whole user configuration, by nickname :)
+declare function mgmt:getActiveUserFromNickname($nickname as xs:string)
+	as element(xcesc:user)?
+{
+	mgmt:getManagementDoc()//xcesc:user[@nickname eq $nickname][@status eq 'enabled']
+};
+
+(: It obtains the whole set of users :)
 declare function mgmt:getUsers()
 	as element(xcesc:user)*
 {
 	mgmt:getManagementDoc()//xcesc:user
+};
+
+(: It obtains the whole set of active users :)
+declare function mgmt:getActiveUsers()
+	as element(xcesc:user)*
+{
+	mgmt:getManagementDoc()//xcesc:user[@status eq 'enabled']
 };
 
 (: It updates most pieces of the user declaration :)
@@ -362,13 +411,14 @@ declare function mgmt:updateUser($id as xs:string,$userConfig as element(xcesc:u
 	as empty() 
 {
 	(: (# exist:batch-transaction #) { :)
-		let $userDoc:=mgmt:getUserFromNickname($userConfig/@nickname)[@id eq $id]
+		let $userDoc:=mgmt:getUserFromNickname($userConfig/@nickname)[@id eq $id][@status ne 'unconfirmed']
 		return
 			if($userDoc) then (
-				for $user in $userDoc[@status ne $userConfig/@status]
-				return
-					update value $userDoc/@status with $userConfig/@status
-				,
+				if($userConfig/@status ne 'unconfirmed') then (
+					for $user in $userDoc[@status ne $userConfig/@status]
+					return
+						update value $userDoc/@status with $userConfig/@status
+				) else (),
 				for $user in $userDoc[@firstName ne $userConfig/@firstName]
 				return
 					update value $userDoc/@firstName with $userConfig/@firstName

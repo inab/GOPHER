@@ -864,6 +864,7 @@
 				<exclude name="**/*.xconf" />
 				<exclude name="**/*.xml" />
 				<exclude name="**/*.xhtml" />
+				<exclude name="**/*.php" />
 				<exclude name="**/.svn" />
 				<exclude name="**/.svn/**" />
 			</fileset>

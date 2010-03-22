@@ -234,6 +234,11 @@
 											<xsd:restriction base="xsd:string">
 												<xsd:enumeration value="disabled"/>
 												<xsd:enumeration value="enabled"/>
+												<xsd:enumeration value="unconfirmed">
+													<xsd:annotation>
+														<xsd:documentation><![CDATA[User is almost created, but it is not yet confirmed]]></xsd:documentation>
+													</xsd:annotation>
+												</xsd:enumeration>
 											</xsd:restriction>
 										</xsd:simpleType>
 									</xsd:attribute>
