@@ -15,7 +15,6 @@ import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.net.URL;
 import java.nio.channels.FileChannel;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -33,10 +32,8 @@ public class GOPHERPrepare {
 	protected final static double BLAST_EVALUE=1e-5;
 	protected final static int BLAST_HITS=500;
 	
-	protected final static String PDBPRE_LABEL="pdbpre";
-	protected final static String PDBPREFILE=PDBPRE_LABEL+".fas";
-	protected final static String PDB_LABEL="pdb";
-	protected final static String PDBFILE=PDB_LABEL+".fas";
+	protected final static String PDBPREFILE=PDBParser.PDBPRE_LABEL+".fas";
+	protected final static String PDBFILE=PDBParser.PDB_LABEL+".fas";
 	protected final static String ORIGPRE="prev-";
 	protected final static String FILTPRE="filtered-";
 	protected final static String SURVPRE="survivors-";
@@ -118,7 +115,7 @@ public class GOPHERPrepare {
 		this(System.err);
 	}
 	
-	protected boolean filterFASTAFile(File origFile,File newFile,File filtFile,File analFile)
+	protected boolean filterUsingFASTAFile(File origFile,File newFile,File filtFile,File analFile)
 		throws FileNotFoundException, IOException
 	{
 		boolean succeed=true;
@@ -136,7 +133,7 @@ public class GOPHERPrepare {
 		
 		if(newFile.isDirectory() && conf!=null && conf.containsKey(CIFDICT_LABEL)) {
 			PDBParser pdbParser = new PDBParser(new File(conf.get(CIFDICT_LABEL)));
-			List<PDBSeq> obtainedPDBSeq = pdbParser.parsePDBs(newFile, origHeaders,null,filtFile,analFile,false);
+			pdbParser.parsePDBs(newFile, origHeaders,null,filtFile,analFile,false);
 		} else {
 			List<String> newheaders=null;
 			BufferedReader NEW = new BufferedReader(new FileReader(newFile));
@@ -301,7 +298,7 @@ public class GOPHERPrepare {
 						throw new IOException("PDB Id "+pdbCode+" was not found! Perhaps the FASTA header was garbled");
 					}
 					PDBSeq leaderSeq=paq.get(pdbCode);
-					leaderSeq.features.put(PDBSeq.ORIGIN_KEY, PDBParser.PDBPREFIX.equals(procHeader[0])?PDB_LABEL:PDBPRE_LABEL);
+					leaderSeq.features.put(PDBSeq.ORIGIN_KEY, PDBParser.PDBPREFIX.equals(procHeader[0])?PDBParser.PDB_LABEL:PDBParser.PDBPRE_LABEL);
 					leaders.put(leaderSeq.id,leaderSeq);
 				}
 			}
@@ -654,8 +651,12 @@ public class GOPHERPrepare {
 		
 		File Worigpdb=new File(workdir,ORIG_PDBFILE);
 		try {
-			if(!Worigpdb.equals(origpdb))
+			// Special case
+			if(first && origpdb.isDirectory()) {
+				Worigpdb=origpdb;
+			} else if(!Worigpdb.equals(origpdb)) {
 				copyFile(origpdb,Worigpdb);
+			}
 		} catch(IOException ioe) {
 			throw new IOException("FATAL ERROR: Unable to copy "+origpdb.getAbsolutePath()+" to "+Worigpdb.getAbsolutePath()+" due "+ioe.getMessage()+". Reason:"+ioe.getMessage());
 		}
@@ -670,8 +671,14 @@ public class GOPHERPrepare {
 		
 		File Wnewpdb=new File(workdir,PDBFILE);
 		try {
-			if(!first && !Wnewpdb.equals(newpdb))
-				copyFile(newpdb,Wnewpdb);
+			if(!first) {
+				// Special case
+				if(newpdb.isDirectory()) {
+					Wnewpdb=newpdb;
+				} else if(!Wnewpdb.equals(newpdb)) {
+					copyFile(newpdb,Wnewpdb);
+				}
+			}
 		} catch(IOException ioe) {
 			throw new IOException("FATAL ERROR: Unable to copy "+newpdb.getAbsolutePath()+" to "+Wnewpdb.getAbsolutePath()+" due "+ioe.getMessage()+". Reason:"+ioe.getMessage());
 		}
@@ -691,12 +698,12 @@ public class GOPHERPrepare {
 			Wnewfiltpdb.createNewFile();
 
 			try {
-				filterFASTAFile(Wnewfiltprepdb,Worigprepdb,newprepdb,analprepdb);
+				filterUsingFASTAFile(Wnewfiltprepdb,Worigprepdb,newprepdb,analprepdb);
 			} catch(IOException ioe) {
 				throw new IOException("FATAL ERROR: Unable to generate "+analprepdb.getAbsolutePath()+" from "+Worigprepdb.getAbsolutePath()+" and "+Wnewprepdb.getAbsolutePath()+". Reason:"+ioe.getMessage());
 			}
 			try {
-				filterFASTAFile(Wnewfiltpdb,Worigpdb,newpdb,analpdb);
+				filterUsingFASTAFile(Wnewfiltpdb,Worigpdb,newpdb,analpdb);
 			} catch(IOException ioe) {
 				throw new IOException("FATAL ERROR: Unable to generate "+analpdb.getAbsolutePath()+" from "+Worigpdb.getAbsolutePath()+" and "+Wnewpdb.getAbsolutePath()+". Reason:"+ioe.getMessage());
 			}
@@ -706,12 +713,12 @@ public class GOPHERPrepare {
 			// Third, easy filtering phase (new only, 30 residues or more after
 			// prunning histidines heads and tails)
 			try {
-				filterFASTAFile(Worigprepdb,Wnewprepdb,Wnewfiltprepdb,analprepdb);
+				filterUsingFASTAFile(Worigprepdb,Wnewprepdb,Wnewfiltprepdb,analprepdb);
 			} catch(IOException ioe) {
 				throw new IOException("FATAL ERROR: Unable to generate "+analprepdb.getAbsolutePath()+" from "+Worigprepdb.getAbsolutePath()+" and "+Wnewprepdb.getAbsolutePath()+". Reason:"+ioe.getMessage());
 			}
 			try {
-				filterFASTAFile(Worigpdb,Wnewpdb,Wnewfiltpdb,analpdb);
+				filterUsingFASTAFile(Worigpdb,Wnewpdb,Wnewfiltpdb,analpdb);
 			} catch(IOException ioe) {
 				throw new IOException("FATAL ERROR: Unable to generate "+analpdb.getAbsolutePath()+" from "+Worigpdb.getAbsolutePath()+" and "+Wnewpdb.getAbsolutePath()+". Reason:"+ioe.getMessage());
 			}

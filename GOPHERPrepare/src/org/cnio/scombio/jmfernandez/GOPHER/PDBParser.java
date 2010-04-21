@@ -110,6 +110,8 @@ public class PDBParser {
 	protected PrintStream AFILE;
 	// The error messages file
 	protected PrintStream ERR;
+	protected final static String PDBPRE_LABEL="pdbpre";
+	protected final static String PDB_LABEL="pdb";
 	
 	public PDBParser(File cifdict)
 		throws IOException
@@ -623,8 +625,8 @@ public class PDBParser {
 					}
 					// At last, let's save the fragment of chain's sequence
 					if(prev_chain==null || localchain==null || !localchain.equals(prev_chain)) {
-						PDBSeq anotherChain = PRINTCMD(OUT, FOUT, pdbcode,prev_chain,chains,badchain,dirEntry);
-						if(anotherChain!=null) {
+						boolean anotherChain = PRINTCMD(pdbcode,prev_chain,chains,badchain);
+						if(anotherChain) {
 							// Mapping stuff will disappear from here because it must be applied from inside
 							List<PDBChain.Mapping> maplist = chains.getMappingList(prev_chain);
 							if(maplist!=null) {
@@ -650,9 +652,6 @@ public class PDBParser {
 //									ERR.println("PDB "+pdbcode+" CHAIN "+prev_chain+" START "+artifact.start+" END "+artifact.end+" REASON "+artifact.reason);
 //								}
 //							}
-							
-							if(parsed!=null)
-								parsed.add(anotherChain);
 						}
 						badchain=false;
 						
@@ -743,6 +742,10 @@ public class PDBParser {
 										if(FOUT!=null) {
 											WriteFASTASeq(FOUT,pruned.id+" mol:protein(pruned) length:"+prunedSeq.length()+"  "+pruned.iddesc,prunedSeq);
 										}
+										PDBSeq pdbSeq = new PDBSeq(pruned.id,pruned.iddesc,prunedSeq);
+										pdbSeq.features.put(PDBSeq.ORIGIN_KEY, PDB_LABEL);
+										pdbSeq.features.put(PDBSeq.PATH_KEY, dirEntry);
+										parsed.add(pdbSeq);
 									}
 								}
 								
@@ -813,10 +816,10 @@ public class PDBParser {
 		}
 	}
 	
-	protected PDBSeq PRINTCMD(PrintStream OUT, PrintStream FOUT, String pdbcode, String prev_chain, PDBChains chains, boolean badchain,File direntry)
+	protected boolean PRINTCMD(String pdbcode, String prev_chain, PDBChains chains, boolean badchain)
 		throws IOException
 	{
-		PDBSeq pdb = null;
+		boolean anotherChain = false;
 		if(prev_chain!=null) {
 			StringBuilder prev_seqB = chains.getSeqChain(prev_chain);
 			String prev_seq = (prev_seqB!=null)?prev_seqB.toString():null;
@@ -826,26 +829,14 @@ public class PDBParser {
 					ERR.println("BLAMEPDB: "+pdbcode);
 				
 				// First, internal storage
-				if(chainadvs!=null) {
-					// Let's process the sequence
-					pdb = new PDBSeq(chaincode,chains.getChainDescription(prev_chain),new StringBuilder(prev_seq));
-					pdb.features.put(PDBSeq.ORIGIN_KEY, GOPHERPrepare.PDB_LABEL);
-					pdb.features.put(PDBSeq.PATH_KEY, direntry);
-				}
-				
-				if(OUT!=null) {
-					WriteFASTASeq(OUT,chaincode+" mol:protein length:"+prev_seq.length()+"  "+chains.getChainDescription(prev_chain),prev_seq,SegSize);
-				}
-				if(FOUT!=null) {
-					WriteFASTASeq(FOUT,chaincode+" mol:protein length:"+prev_seq.length()+"  "+chains.getChainDescription(prev_chain),prev_seq,SegSize);
-				}
+				anotherChain = chainadvs!=null;
 			} else {
 				ERR.println("NOTICE: "+chaincode+" is not a protein sequence");
 			}
 		}
 		// $badchain=undef;
 		
-		return pdb;
+		return anotherChain;
 	}
 	
 	protected String[] PROCCOMP(String compline,String current_desc,PDBChains chains)
