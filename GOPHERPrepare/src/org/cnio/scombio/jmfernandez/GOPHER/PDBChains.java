@@ -71,6 +71,20 @@ public class PDBChains {
 		return chain;
 	}
 	
+	public boolean hasChain(String chainName) {
+		return chains.containsKey(chainName);
+	}
+	
+	public String getChainDescription(String chainName) {
+		PDBChain chain = getChain(chainName);
+		return chain.getDescription();
+	}
+	
+	public void setChainDescription(String chainName, String description) {
+		PDBChain chain = getChain(chainName);
+		chain.setDescription(description);
+	}
+	
 	public PDBChain.Mapping addMapping(String chainName, String db, String id, PDBCoord start, PDBCoord stop) {
 		PDBChain chain = getChain(chainName);
 		return chain.addMapping(db, id, start, stop);

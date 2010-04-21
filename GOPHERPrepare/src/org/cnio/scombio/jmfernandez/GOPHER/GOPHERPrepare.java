@@ -25,7 +25,6 @@ import java.util.regex.Pattern;
 import org.cnio.scombio.jmfernandez.GOPHER.PDBSeq;
 
 public class GOPHERPrepare {
-	protected final static int MINSEQLENGTH=30;
 	protected final static double CDHIT_IDENTITY=0.97;
 	protected final static int CDHIT_WORD_SIZE=5;
 	protected final static String BLAST_PATH="dc_blastall";
@@ -45,49 +44,11 @@ public class GOPHERPrepare {
 	protected final static String ORIGDB="original.fas";
 	protected final static String SURVDB="survivors.fas";
 	protected final static String LEADERSDB="leaders.fas";
-	protected final static String PDBPREPREFIX="N";
-	protected final static String PDBPREFIX="P";
-	protected final static String PREF_SEP=":";
 	protected final static String BLASTPOST=".blast";
 	
 	protected final static String ORIG_PDBPREFILE=ORIGPRE+PDBPREFILE;
 	protected final static String ORIG_PDBFILE=ORIGPRE+PDBFILE;
-	
-	// The beginning of the protein sequence
-	protected final static int HMIN=3;
-	protected final static int N_TERM_HAREA=30;
-	protected final static String[] N_TERM={
-		"M.*[HX]{"+HMIN+",}.*ENLYF[QG]",
-		"[HX]{"+HMIN+",}.*ENLYF[QG]",
-		"M.*[HX]{"+HMIN+",}.*GLVPRGS",
-		"[HX]{"+HMIN+",}.*GLVPRGS",
-	};
-	
-	// The end of the protein sequence
-	protected final static int C_TERM_HAREA=20;
-	protected final static String[] C_TERM={
-		"LE[HX]{"+HMIN+",}",
-		"EG[HX]{"+HMIN+",}",
-		"GS?[HX]{"+HMIN+",}",
-		"R[HX]{"+HMIN+",}",
-		"[HX]{5,}",
-	};
-	
-	protected static Pattern[] N_TERM_PAT=new Pattern[N_TERM.length];
-	protected static Pattern[] C_TERM_PAT=new Pattern[C_TERM.length];
-	
-	static {
-		int patpos=0;
-		for(String pat: N_TERM) {
-			N_TERM_PAT[patpos++]=Pattern.compile("^"+pat);
-		}
 		
-		patpos=0;
-		for(String pat: C_TERM) {
-			C_TERM_PAT[patpos++]=Pattern.compile(pat+"$");
-		}
-	};
-	
 	protected final static String queryParticle="Query=";
 	
 	protected final static String CIFDICT_LABEL="cifdict";
@@ -124,8 +85,8 @@ public class GOPHERPrepare {
 		}
 	}
 	
-	protected Pattern PDBHEADERPAT;
-	protected Pattern blhitspat;
+	protected static Pattern PDBHEADERPAT=Pattern.compile("PDB:([^ :]+)[ :]");
+	protected static Pattern blhitspat=Pattern.compile("\\([0-9]+ letters?\\)");
 	protected PrintStream logStream;
 	
 	File leadersdb;
@@ -140,8 +101,6 @@ public class GOPHERPrepare {
 	
 	public GOPHERPrepare(PrintStream logStream,Map<String,String> envp,Map<String,String> conf)
 	{
-		PDBHEADERPAT=Pattern.compile("PDB:([^ :]+)[ :]");
-		blhitspat=Pattern.compile("\\([0-9]+ letters?\\)");
 		this.logStream=logStream;
 		this.envp=envp;
 		this.conf=conf;
@@ -159,78 +118,17 @@ public class GOPHERPrepare {
 		this(System.err);
 	}
 	
-	protected ArrayList<String> readFASTAHeaders(BufferedReader FH)
-		throws IOException
-	{
-		ArrayList<String> headers=new ArrayList<String>();
-		
-		String line;
-		while((line=FH.readLine())!=null) {
-			if(line.length() > 0 && line.charAt(0)=='>') {
-				headers.add(line.substring(1));
-			}
-		}
-		
-		return headers;
-	}
-	
-	/**
-		This method takes a one-line sequence, and it removes
-		cloning artifacts from N and C terminal.
-	*/
-	protected String pruneSequence(String cutseq) {
-		if(cutseq.length()>=MINSEQLENGTH) {
-			boolean foundPat;
-		
-			// Let's prune those cloning artifacts!!!
-			do {
-				foundPat=false;
-				int cutlen=cutseq.length();
-				int firstPos=cutlen-C_TERM_HAREA;
-				String tail = cutseq.substring(firstPos,cutlen);
-				for(Pattern pat: C_TERM_PAT) {
-					Matcher m=pat.matcher(tail);
-					if(m.find()) {
-						cutseq=cutseq.substring(0,firstPos+m.start());
-						
-						foundPat=true;
-						break;
-					}
-				}
-			} while(foundPat && cutseq.length()>=MINSEQLENGTH);
-			
-			// On both sides!
-			if(cutseq.length()>=MINSEQLENGTH) {
-				do {
-					foundPat=false;
-					String head = cutseq.substring(0,N_TERM_HAREA);
-					for(Pattern pat: N_TERM_PAT) {
-						Matcher m=pat.matcher(head);
-						if(m.find()) {
-							cutseq=cutseq.substring(m.end());
-							
-							foundPat=true;
-							break;
-						}
-					}
-				} while(foundPat && cutseq.length()>=MINSEQLENGTH);
-			}
-		}
-
-		return cutseq;
-	}
-	
 	protected boolean filterFASTAFile(File origFile,File newFile,File filtFile,File analFile)
 		throws FileNotFoundException, IOException
 	{
 		boolean succeed=true;
 		BufferedReader ORIG=new BufferedReader(new FileReader(origFile));
-		List<String> origheaders=null;
+		List<String> origHeaders=null;
 		try {
-			origheaders=readFASTAHeaders(ORIG);
-			String[] orArr = origheaders.toArray(new String[] {});
+			origHeaders=PDBParser.ReadFASTAHeaders(ORIG);
+			String[] orArr = origHeaders.toArray(new String[] {});
 			Arrays.sort(orArr);
-			origheaders=Arrays.asList(orArr);
+			origHeaders=Arrays.asList(orArr);
 			// We don't need it any more
 		} finally {
 			ORIG.close();
@@ -238,12 +136,12 @@ public class GOPHERPrepare {
 		
 		if(newFile.isDirectory() && conf!=null && conf.containsKey(CIFDICT_LABEL)) {
 			PDBParser pdbParser = new PDBParser(new File(conf.get(CIFDICT_LABEL)));
-			List<PDBSeq> obtainedPDBSeq = pdbParser.filterByPDBHeaders(newFile, origheaders);
+			List<PDBSeq> obtainedPDBSeq = pdbParser.parsePDBs(newFile, origHeaders,null,filtFile,analFile,false);
 		} else {
 			List<String> newheaders=null;
 			BufferedReader NEW = new BufferedReader(new FileReader(newFile));
 			try {
-				newheaders=readFASTAHeaders(NEW);
+				newheaders=PDBParser.ReadFASTAHeaders(NEW);
 				// We don't need it any more
 			} finally {
 				NEW.close();
@@ -254,17 +152,17 @@ public class GOPHERPrepare {
 			newheaders=Arrays.asList(newArr);
 			
 			// Now, let's find only new entries
-			int maxorigpos=origheaders.size();
+			int maxorigpos=origHeaders.size();
 			int maxnewpos=newheaders.size();
 			int origpos=0;
 			int newpos=0;
 			HashMap<String,Object> candidate=new HashMap<String,Object>();
 			while(origpos<maxorigpos && newpos<maxnewpos) {
-				if(origheaders.get(origpos).equals(newheaders.get(newpos))) {
+				if(origHeaders.get(origpos).equals(newheaders.get(newpos))) {
 					// Equal, next step!
 					origpos++;
 					newpos++;
-				} else if(origheaders.get(origpos).compareTo(newheaders.get(newpos))<0) {
+				} else if(origHeaders.get(origpos).compareTo(newheaders.get(newpos))<0) {
 					// Not skipped yet, next step on original!
 					origpos++;
 				} else {
@@ -289,13 +187,13 @@ public class GOPHERPrepare {
 					boolean doLast=true;
 					NEW = new BufferedReader(new FileReader(newFile));
 					while((line=NEW.readLine())!=null || doLast) {
-						if(line==null || (line.length()>0 && line.charAt(0)=='>')) {
+						if(line==null || (line.length()>0 && line.charAt(0)==PDBParser.FASTA_HEADER_PREFIX)) {
 							// We have a candidate sequence!
-							if(description!=null && sequence.length()>=MINSEQLENGTH) {
-								String cutseq=pruneSequence(sequence.toString().toUpperCase());
+							if(description!=null) {
+								String cutseq=PDBChain.PruneSequence(sequence.toString().toUpperCase());
 	
 								// Has passed the filters?
-								if(cutseq.length()>=MINSEQLENGTH) {
+								if(cutseq!=null) {
 									// Let's save it!
 									FILT.println(description);
 									FILT.println(cutseq);
@@ -329,7 +227,7 @@ public class GOPHERPrepare {
 		return succeed;
 	}
 	
-	protected String processFASTAPDBDesc(String desc) {
+	protected static String processFASTAPDBDesc(String desc) {
 		// Now, store
 		String id;
 		Matcher m=PDBHEADERPAT.matcher(desc);
@@ -344,7 +242,7 @@ public class GOPHERPrepare {
 		return id;
 	}
 	
-	protected HashMap<String,PDBSeq> copyWithPrefix(File fastaFile,String prefix,PrintWriter FH)
+	protected static HashMap<String,PDBSeq> copyWithPrefix(File fastaFile,String prefix,PrintWriter FH)
 		throws FileNotFoundException, IOException
 	{
 		HashMap<String,PDBSeq> seqs=new HashMap<String,PDBSeq>();
@@ -360,11 +258,11 @@ public class GOPHERPrepare {
 		try {
 			String line;
 			while((line=FASTA.readLine())!=null) {
-				if(line.charAt(0)=='>') {
+				if(line.charAt(0)==PDBParser.FASTA_HEADER_PREFIX) {
 					if(id!=null)
 						seqs.put(id,new PDBSeq(id,iddesc,sequence));
 					String desc=line.substring(1);
-					FH.println(">"+prefix+PREF_SEP+desc);
+					FH.println(PDBParser.FASTA_HEADER_PREFIX+prefix+PDBParser.PREF_SEP+desc);
 
 					// Now, store
 					id=processFASTAPDBDesc(desc);
@@ -384,35 +282,37 @@ public class GOPHERPrepare {
 		return seqs;
 	}
 	
-	protected HashMap<String,PDBSeq> parseLeaders(HashMap<String,HashMap<String,PDBSeq>> survivors,File leadersFile)
+	protected HashMap<String,PDBSeq> parseLeaders(HashMap<String,HashMap<String,PDBSeq>> survivors)
 		throws FileNotFoundException, IOException
 	{
 		HashMap<String,PDBSeq> leaders=new HashMap<String,PDBSeq>();
-		BufferedReader FH=new BufferedReader(new FileReader(leadersFile));
-		String line;
-		while((line=FH.readLine())!=null) {
-			if(line.length() > 0 && line.charAt(0)=='>') {
-				String[] procHeader = line.split(PREF_SEP, 2);
-				if(procHeader.length<2 || !survivors.containsKey(procHeader[0])) {
-					throw new IOException("Garbled FASTA header at "+leadersFile.getAbsolutePath());
+		BufferedReader FH=new BufferedReader(new FileReader(leadersdb));
+		try {
+			String line;
+			while((line=FH.readLine())!=null) {
+				if(line.length() > 0 && line.charAt(0)==PDBParser.FASTA_HEADER_PREFIX) {
+					String[] procHeader = line.split(PDBParser.PREF_SEP_STRING, 2);
+					if(procHeader.length<2 || !survivors.containsKey(procHeader[0])) {
+						throw new IOException("Garbled FASTA header at "+leadersdb.getAbsolutePath());
+					}
+					HashMap<String,PDBSeq> paq = survivors.get(procHeader[0]);
+					String pdbCode=processFASTAPDBDesc(procHeader[1]);
+					if(pdbCode==null || !paq.containsKey(pdbCode)) {
+						throw new IOException("PDB Id "+pdbCode+" was not found! Perhaps the FASTA header was garbled");
+					}
+					PDBSeq leaderSeq=paq.get(pdbCode);
+					leaderSeq.features.put(PDBSeq.ORIGIN_KEY, PDBParser.PDBPREFIX.equals(procHeader[0])?PDB_LABEL:PDBPRE_LABEL);
+					leaders.put(leaderSeq.id,leaderSeq);
 				}
-				HashMap<String,PDBSeq> paq = survivors.get(procHeader[0]);
-				String pdbCode=processFASTAPDBDesc(procHeader[1]);
-				if(pdbCode==null || !paq.containsKey(pdbCode)) {
-					throw new IOException("PDB Id "+pdbCode+" was not found! Perhaps the FASTA header was garbled");
-				}
-				PDBSeq leaderSeq=paq.get(pdbCode);
-				leaderSeq.features.put(PDBSeq.ORIGIN_KEY, PDBPREFIX.equals(procHeader[0])?PDB_LABEL:PDBPRE_LABEL);
-				leaders.put(leaderSeq.id,leaderSeq);
 			}
+		} finally {
+			FH.close();
 		}
-		
-		FH.close();
 		
 		return leaders;
 	}
 	
-	protected HashMap<String,PDBSeq> chooseLeaders(File workdir, File origprepdb, File origpdb, File analprepdb, File analpdb, File leadersdb, File leadersReport)
+	protected HashMap<String,PDBSeq> chooseLeaders(File workdir, File origprepdb, File origpdb, File analprepdb, File analpdb)
 		throws FileNotFoundException, IOException
 	{
 		// First, let's generate common original database
@@ -443,12 +343,12 @@ public class GOPHERPrepare {
 		HashMap<String,PDBSeq> pdbPreArray=null;
 		try {
 			try {
-				pdbArray=copyWithPrefix(analpdb,PDBPREFIX,SURVFH);
+				pdbArray=copyWithPrefix(analpdb,PDBParser.PDBPREFIX,SURVFH);
 			} catch(IOException ioe) {
 				throw new IOException("ERROR: Unable to concatenate "+analpdb.getAbsolutePath()+" to "+survdb.getAbsolutePath()+". Reason:"+ioe.getMessage());
 			}
 			try {
-				pdbPreArray=copyWithPrefix(analprepdb,PDBPREPREFIX,SURVFH);
+				pdbPreArray=copyWithPrefix(analprepdb,PDBParser.PDBPREPREFIX,SURVFH);
 			} catch(IOException ioe) {
 				throw new IOException("ERROR: Unable to concatenate "+analprepdb.getAbsolutePath()+" to "+survdb.getAbsolutePath()+". Reason:"+ioe.getMessage());
 			}
@@ -457,8 +357,8 @@ public class GOPHERPrepare {
 		}
 
 		HashMap<String,HashMap<String,PDBSeq>> survivors=new HashMap<String,HashMap<String,PDBSeq>>();
-		survivors.put(PDBPREFIX,pdbArray);
-		survivors.put(PDBPREPREFIX,pdbPreArray);
+		survivors.put(PDBParser.PDBPREFIX,pdbArray);
+		survivors.put(PDBParser.PDBPREPREFIX,pdbPreArray);
 
 		// Now, let's calculate needed memory for clustering
 		int cdmem=(int)Math.round(((double)(origdb.length()+survdb.length()))/(1024L*1024L)*20+0.5);
@@ -512,7 +412,7 @@ public class GOPHERPrepare {
 		}
 		
 		// Let's catch the leaders!
-		HashMap<String,PDBSeq> leaders=parseLeaders(survivors,leadersdb);
+		HashMap<String,PDBSeq> leaders=parseLeaders(survivors);
 		
 		// And now, information about the leaders!
 		String[] BLASTparams={
@@ -819,7 +719,7 @@ public class GOPHERPrepare {
 			// Fourth, heuristics and difficult filtering phase
 			leadersdb=new File(workdir,LEADERSDB);
 			leadersReport=new File(workdir,LEADERSDB+BLASTPOST);
-			return chooseLeaders(workdir,origprepdb,origpdb,analprepdb,analpdb,leadersdb,leadersReport);
+			return chooseLeaders(workdir,origprepdb,origpdb,analprepdb,analpdb);
 
 			// File leadersprepdb=new File(workdir,LEADERSPRE+PDBPREFILE);
 			// File leaderspdb=new File(workdir,LEADERSPRE+PDBFILE);

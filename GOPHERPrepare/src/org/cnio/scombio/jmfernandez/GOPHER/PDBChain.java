@@ -8,10 +8,110 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.Map.Entry;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class PDBChain {
-	// This method removes from an aminoacid sequence the aminoacids from the
-	// beginning and end
+	protected final static char CHAIN_SEP='_';
+	
+	protected final static int MINSEQLENGTH=30;
+
+	// The beginning of the protein sequence
+	protected final static int HMIN=3;
+	protected final static int N_TERM_HAREA=30;
+	protected final static String[] N_TERM={
+		"M.*[HX]{"+HMIN+",}.*ENLYF[QG]",
+		"[HX]{"+HMIN+",}.*ENLYF[QG]",
+		"M.*[HX]{"+HMIN+",}.*GLVPRGS",
+		"[HX]{"+HMIN+",}.*GLVPRGS",
+	};
+	
+	// The end of the protein sequence
+	protected final static int C_TERM_HAREA=20;
+	protected final static String[] C_TERM={
+		"LE[HX]{"+HMIN+",}",
+		"EG[HX]{"+HMIN+",}",
+		"GS?[HX]{"+HMIN+",}",
+		"R[HX]{"+HMIN+",}",
+		"[HX]{5,}",
+	};
+	
+	protected static Pattern[] N_TERM_PAT=new Pattern[N_TERM.length];
+	protected static Pattern[] C_TERM_PAT=new Pattern[C_TERM.length];
+	
+	static {
+		int patpos=0;
+		for(String pat: N_TERM) {
+			N_TERM_PAT[patpos++]=Pattern.compile("^"+pat);
+		}
+		
+		patpos=0;
+		for(String pat: C_TERM) {
+			C_TERM_PAT[patpos++]=Pattern.compile(pat+"$");
+		}
+	};
+	
+	/**
+		This static method takes a one-line sequence, and it removes
+		cloning artifacts from N and C terminal.
+		@param cutseq The sequence to be pruned of cloning artifacts
+		@return The pruned sequence
+	*/
+	protected static String PruneSequence(String cutseq) {
+		if(cutseq.length()>=MINSEQLENGTH) {
+			boolean foundPat;
+		
+			// Let's prune those cloning artifacts!!!
+			do {
+				foundPat=false;
+				int cutlen=cutseq.length();
+				int firstPos=cutlen-C_TERM_HAREA;
+				String tail = cutseq.substring(firstPos,cutlen);
+				for(Pattern pat: C_TERM_PAT) {
+					Matcher m=pat.matcher(tail);
+					if(m.find()) {
+						cutseq=cutseq.substring(0,firstPos+m.start());
+						
+						foundPat=true;
+						break;
+					}
+				}
+			} while(foundPat && cutseq.length()>=MINSEQLENGTH);
+			
+			// On both sides!
+			if(cutseq.length()>=MINSEQLENGTH) {
+				do {
+					foundPat=false;
+					String head = cutseq.substring(0,N_TERM_HAREA);
+					for(Pattern pat: N_TERM_PAT) {
+						Matcher m=pat.matcher(head);
+						if(m.find()) {
+							cutseq=cutseq.substring(m.end());
+							
+							foundPat=true;
+							break;
+						}
+					}
+				} while(foundPat && cutseq.length()>=MINSEQLENGTH);
+				
+				// Final check
+				if(cutseq.length()<MINSEQLENGTH) {
+					cutseq=null;
+				}
+			}
+		} else {
+			cutseq=null;
+		}
+	
+		return cutseq;
+	}
+
+	/**
+	 * This method removes from an aminoacid sequence the unknown aminoacids from
+	 * the beginning and end
+	 * @param seq A StringBuilder object which contains the aminoacid sequence
+	 * @return The possibly clipped sequence
+	 */
 	protected static String ClipSequence(StringBuilder seq) {
 		int minSub=0;
 		int maxSub=seq.length();
@@ -35,9 +135,9 @@ public class PDBChain {
 	
 	class Fragment {
 		public String reason;
-		public PDBCoord start;
-		public PDBCoord end;
-		public StringBuilder seq;
+		public final PDBCoord start;
+		public final PDBCoord end;
+		protected StringBuilder seq;
 		
 		Fragment(String reason,PDBAmino residue) {
 			// This is needed, because we are 
@@ -58,9 +158,9 @@ public class PDBChain {
 	};
 	
 	class Mapping {
-		public String chain;
-		public String db;
-		public String id;
+		public final String chain;
+		public final String db;
+		public final String id;
 		public PDBCoord start;
 		public PDBCoord end;
 		
@@ -118,11 +218,12 @@ public class PDBChain {
 	
 	protected final String pdbcode;
 	protected final String chainName;
-	protected boolean ignoreReason;
-	protected Map<String, Character> toOneAA;
-	protected Set<String> notAA;
+	protected final Map<String, Character> toOneAA;
+	protected final Set<String> notAA;
+	protected final boolean ignoreReason;
+	protected String description;
 	protected StringBuilder[] chainseqs;
-	protected List<PDBCoord> chaincoords;
+	protected List<PDBAmino> chainAminos;
 	// Segments of missing residues
 	protected List<List<PDBAmino>> missingList;
 	// Leftmost residues of the segment, ordered
@@ -138,23 +239,24 @@ public class PDBChain {
 	protected ArrayList<Mapping> artifactMapping;
 	protected HashMap<String,Mapping> artifactHash;
 	
-	public PDBChain(String pdbcode, String chainName, Map<String, Character> toOneAA, Set<String> notAA, boolean ignoreReason) {
+	public PDBChain(final String pdbcode, final String chainName, final Map<String, Character> toOneAA, final Set<String> notAA, final boolean ignoreReason) {
 		this(pdbcode, chainName, toOneAA, notAA, ignoreReason,null);
 	}
 	
-	public PDBChain(String pdbcode, String chainName, Map<String, Character> toOneAA, Set<String> notAA, boolean ignoreReason, List<List<PDBAmino>> missingList) {
+	public PDBChain(final String pdbcode, final String chainName, final Map<String, Character> toOneAA, final Set<String> notAA, boolean ignoreReason, List<List<PDBAmino>> missingList) {
 		this.pdbcode = pdbcode;
 		this.chainName = chainName;
 		this.toOneAA = toOneAA;
 		this.notAA = notAA;
 		this.ignoreReason=ignoreReason;
 		chainseqs = new StringBuilder[] { null, null };
-		chaincoords=new ArrayList<PDBCoord>();
+		chainAminos=new ArrayList<PDBAmino>();
 		initMissing(missingList);
 		artifactMapping=new ArrayList<Mapping>();
 		artifactHash=new HashMap<String,Mapping>();
 		isTERChain=false;
 		isJammeds = new boolean[] { false, false };
+		description = null;
 	}
 	
 	private void initMissing(List<List<PDBAmino>> missingList) {
@@ -205,6 +307,22 @@ public class PDBChain {
 		}
 	}
 	
+	public String getDescription() {
+		return description;
+	}
+	
+	public void setDescription(String description) {
+		this.description = description;
+	}
+	
+	public String getChainName() {
+		return chainName;
+	}
+	
+	public String getName() {
+		return pdbcode+CHAIN_SEP+chainName;
+	}
+	
 	public List<List<PDBAmino>> getMissingList() {
 		return missingList;
 	}
@@ -238,7 +356,7 @@ public class PDBChain {
 						piece.append(toOneAA.get(ires));
 					} else if(notAA.contains(ires)) {
 						//if(length($localseq)>0 || (defined($prev_chain) && defined($prev_seq) && $localchain eq $prev_chain && length($prev_seq)>0)) {
-							System.err.println("WARNING: Jammed chain: '"+ires+"' in "+pdbcode+"_"+chainName);
+							System.err.println("WARNING: Jammed chain: '"+ires+"' in "+getName());
 							piece.append('X');
 						//} else {
 						//	$localseq=undef;
@@ -246,7 +364,7 @@ public class PDBChain {
 						//}
 					} else {
 						piece.append('X');
-						System.err.println("WARNING: Unknown aminoacid '"+ires+"' in "+pdbcode+"_"+chainName+"!!!");
+						System.err.println("WARNING: Unknown aminoacid '"+ires+"' in "+getName()+"!!!");
 					}
 				//} else if(length($ires)==1) {
 				//	# Y los nucleótidos en códigos de una letra
@@ -280,25 +398,29 @@ public class PDBChain {
 		
 		if(retval) {
 			StringBuilder piece=new StringBuilder();
+			ArrayList<PDBAmino> pieceList = new ArrayList<PDBAmino>();
 			for(PDBRes pres: residues) {
 				String ires = pres.res;
 				if(ires.length()==3) {
 				// Por definición en PDB, los aminoácidos se expresan
 				// en códigos de 3 letras
+					char oneAmino;
 					if(toOneAA.containsKey(ires)) {
-						piece.append(toOneAA.get(ires));
+						oneAmino=toOneAA.get(ires);
 					} else if(notAA.contains(ires)) {
 						//if(length($localseq)>0 || (defined($prev_chain) && defined($prev_seq) && $localchain eq $prev_chain && length($prev_seq)>0)) {
-							System.err.println("WARNING: Jammed chain: '"+ires+"' at "+pres.coord+pres.coord_ins+" in "+pdbcode+"_"+chainName);
-							piece.append('X');
+							System.err.println("WARNING: Jammed chain: '"+ires+"' at "+pres.coord+pres.coord_ins+" in "+getName());
+							oneAmino=PDBAmino.UnknownAmino;
 						//} else {
 						//	$localseq=undef;
 						//	last;
 						//}
 					} else {
-						piece.append('X');
-						System.err.println("WARNING: Unknown aminoacid '"+ires+"' at "+pres.coord+pres.coord_ins+"' in "+pdbcode+"_"+chainName+"!!!");
+						System.err.println("WARNING: Unknown aminoacid '"+ires+"' at "+pres.coord+pres.coord_ins+"' in "+getName()+"!!!");
+						oneAmino=PDBAmino.UnknownAmino;
 					}
+					piece.append(oneAmino);
+					pieceList.add(new PDBAmino(oneAmino,pres));
 				//} else if(length($ires)==1) {
 				//	# Y los nucleótidos en códigos de una letra
 				//	$localseq=undef;
@@ -313,7 +435,7 @@ public class PDBChain {
 			}
 			if(!isJammeds[chainIdx]) {
 				chainseqs[chainIdx].append(piece);
-				chaincoords.addAll(Arrays.asList(residues));
+				chainAminos.addAll(pieceList);
 			}
 		}
 		
@@ -339,7 +461,7 @@ public class PDBChain {
 				ipiece++;
 			}
 			chainseqs[chainIdx].append(piece);
-			chaincoords.addAll(Arrays.asList(residues));
+			chainAminos.addAll(Arrays.asList(residues));
 		}
 		
 		return retval;
@@ -378,7 +500,7 @@ public class PDBChain {
 					if(prev_coord!=null) {
 						/*
 						//lowPos=0;
-						System.err.println("DEBUG PDB "+pdbcode+"_"+chainName+" HIGH "+highPos+" RES "+residue+new PDBCoord(residue));
+						System.err.println("DEBUG PDB "+getName()+" HIGH "+highPos+" RES "+residue+new PDBCoord(residue));
 					} else {
 					*/
 						Entry<PDBCoord, Integer> lowMark=missingLeft.higherEntry(prev_coord);
@@ -409,7 +531,7 @@ public class PDBChain {
 						}
 						if(retval && newFirstMissing) {
 							// And now, electing the new missing residue lower than the first known one
-							PDBCoord first = chaincoords.get(0);
+							PDBCoord first = chainAminos.get(0);
 							Entry<PDBCoord,Integer> newMissingBefore=missingRight.lowerEntry(first);
 							if(newMissingBefore!=null) {
 								missingBeforeFirst = newMissingBefore.getKey();
@@ -454,7 +576,7 @@ public class PDBChain {
 				iamin++;
 			}
 			chainseqs[chainIdx].insert(0,aminos);
-			chaincoords.addAll(0,Arrays.asList(residues));
+			chainAminos.addAll(0,Arrays.asList(residues));
 		}
 		
 		return retval;
@@ -565,13 +687,13 @@ public class PDBChain {
 				aminochar = toOneAA.get(res);
 			} else if(notAA.contains(res)) {
 				//if(length($localseq)>0 || (defined($prev_chain) && defined($prev_seq) && $localchain eq $prev_chain && length($prev_seq)>0)) {
-				System.err.println("WARNING: Jammed remark chain: '"+res+"' at "+residue.coord+residue.coord_ins+" in "+pdbcode+"_"+chainName);
+				System.err.println("WARNING: Jammed remark chain: '"+res+"' at "+residue.coord+residue.coord_ins+" in "+getName());
 				//} else {
 				//	$localseq=undef;
 				//	last;
 				//}
 			} else {
-				System.err.println("WARNING: Unknown remark aminoacid '"+res+"' at "+residue.coord+residue.coord_ins+" in "+pdbcode+"_"+chainName+"!!!");
+				System.err.println("WARNING: Unknown remark aminoacid '"+res+"' at "+residue.coord+residue.coord_ins+" in "+getName()+"!!!");
 			}
 			PDBAmino amino=new PDBAmino(aminochar,residue.coord,residue.coord_ins);
 			// Order of these sentences is very important!
@@ -664,7 +786,7 @@ public class PDBChain {
 				
 				//PDBCoord newKnownCoordRes=entry.getKey();
 				//int numUnknown=newKnownCoordRes.sub(lastKnownCoordRes)-1;
-				//System.err.println("DEBUG: "+pdbcode+"_"+chainName+" old: "+lastKnownCoordRes.coord+lastKnownCoordRes.coord_ins+" new: "+newKnownCoordRes.coord+newKnownCoordRes.coord_ins+" diff: "+numUnknown);
+				//System.err.println("DEBUG: "+getName()+" old: "+lastKnownCoordRes.coord+lastKnownCoordRes.coord_ins+" new: "+newKnownCoordRes.coord+newKnownCoordRes.coord_ins+" diff: "+numUnknown);
 				//if(numUnknown>0)
 				//	padChain(false,numUnknown);
 				//appendToChain(false,entry.getValue());
@@ -672,7 +794,7 @@ public class PDBChain {
 			}
 			
 			if(missing.size()>0) {
-				System.err.println("DEBUGWARNING: "+pdbcode+"_"+chainName+" has "+missing.size()+" unplaced missing residues");
+				System.err.println("DEBUGWARNING: "+getName()+" has "+missing.size()+" unplaced missing residues");
 			}
 		}
 		
@@ -688,7 +810,7 @@ public class PDBChain {
 			return false;
 		
 		boolean retval = false;
-		if(chaincoords.size()>0 && hasMissingResidues()) {
+		if(chainAminos.size()>0 && hasMissingResidues()) {
 			Integer[] missingSurvivors = missingLeft.values().toArray(new Integer[0]);
 			Arrays.sort(missingSurvivors);
 			boolean checkFirst=true;
@@ -696,7 +818,7 @@ public class PDBChain {
 			for(Integer iMissing: missingSurvivors) {
 				PDBAmino[] toPrepend = missingList.get(iMissing).toArray(new PDBAmino[0]);
 				if(checkFirst) {
-					PDBCoord firstKnownCoordRes=chaincoords.get(0);
+					PDBCoord firstKnownCoordRes=chainAminos.get(0);
 					checkFirst=toPrepend[toPrepend.length-1].compareTo(firstKnownCoordRes)<0;
 				}
 				if(checkFirst) {
@@ -773,7 +895,7 @@ public class PDBChain {
 
 					//PDBCoord newKnownCoordRes=higherEntry.getKey();
 					//int numUnknown=newKnownCoordRes.sub(lastKnownCoordRes)-1;
-					//System.err.println("DEBUG: "+pdbcode+"_"+chainName+" old: "+lastKnownCoordRes.coord+lastKnownCoordRes.coord_ins+" new: "+newKnownCoordRes.coord+newKnownCoordRes.coord_ins+" diff: "+numUnknown);
+					//System.err.println("DEBUG: "+getName()+" old: "+lastKnownCoordRes.coord+lastKnownCoordRes.coord_ins+" new: "+newKnownCoordRes.coord+newKnownCoordRes.coord_ins+" diff: "+numUnknown);
 					//if(numUnknown>0)
 					//	padChain(false,numUnknown);
 					//appendToChain(false,higherEntry.getValue());
@@ -782,7 +904,7 @@ public class PDBChain {
 			}
 			
 			if(missing.size()>0) {
-				System.err.println("DEBUGWARNING: "+pdbcode+"_"+chainName+" has "+missing.size()+" unplaced missing residues");
+				System.err.println("DEBUGWARNING: "+getName()+" has "+missing.size()+" unplaced missing residues");
 			}
 		*/
 		}
@@ -840,5 +962,27 @@ public class PDBChain {
 	public StringBuilder getAminos(boolean isSeq) {
 		int chainIdx=isSeq?1:0;
 		return (chainseqs[chainIdx]!=null)?chainseqs[chainIdx]:null;
+	}
+	
+	/**
+	 * This method returns the chain sequence with the cloning artifacts removed.
+	 * The sequence length is at least MINSEQLENGTH. If artifacts mapping was not
+	 * possible, then heuristics are used over the aminoacid sequence.
+	 * @return The pruned aminoacid sequence, or null 
+	 */
+	public PDBSeq getPrunedSequence() {
+		PDBSeq retval=null;
+		
+		String aminoSeq = ClipSequence(getSeqAminos());
+		String chainSeq = ClipSequence(getAminos());
+		if(aminoSeq.equals(chainSeq) && artifactMapping.size()>0) {
+			// TODO: pruning is done here using the info gathered from SEQADV fields
+		} else  {
+			CharSequence prunedSeq = PruneSequence(aminoSeq);
+			if(prunedSeq!=null) {
+				retval = new PDBSeq(getName(),description,prunedSeq);
+			}
+		}
+		return retval;
 	}
 }

@@ -15,12 +15,12 @@ public class PDBSeq {
 	public final static String PATH_KEY="path";
 	public final static String PREPROCESS_KEY="preprocess";
 	
-	public String id;
-	public String iddesc;
-	public StringBuilder sequence;
-	public HashMap<String,Object> features;
+	public final String id;
+	public final String iddesc;
+	public final CharSequence sequence;
+	public final HashMap<String,Object> features;
 	
-	public PDBSeq(String id,String iddesc,StringBuilder sequence) {
+	public PDBSeq(final String id,final String iddesc,final CharSequence sequence) {
 		this.id=id;
 		this.iddesc=iddesc;
 		this.sequence=sequence;

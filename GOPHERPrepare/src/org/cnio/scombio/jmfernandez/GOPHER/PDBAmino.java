@@ -3,10 +3,11 @@ package org.cnio.scombio.jmfernandez.GOPHER;
 public final class PDBAmino
 	extends PDBCoord
 {
+	public final static char UnknownAmino='X';
 	protected char amino;
 	
 	public PDBAmino() {
-		this('X');
+		this(UnknownAmino);
 	}
 	
 	public PDBAmino(char amino) {
@@ -15,6 +16,11 @@ public final class PDBAmino
 	
 	public PDBAmino(char amino,int coord) {
 		this(amino,coord,' ');
+	}
+	
+	public PDBAmino(char amino,PDBCoord coord) {
+		super(coord.coord,coord.coord_ins);
+		this.amino = amino;
 	}
 	
 	public PDBAmino(char amino,int coord,char coord_ins) {

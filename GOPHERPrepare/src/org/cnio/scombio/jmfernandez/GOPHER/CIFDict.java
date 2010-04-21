@@ -39,10 +39,10 @@ public class CIFDict {
 		InputStreamReader isr = new InputStreamReader((gis!=null)?gis:fis);
 		BufferedReader br = new BufferedReader(isr);
 		
-		boolean ispep = false;
-		String threelet = null;
-		boolean isamb = false;
-		Character onelet = null;
+		boolean isPep = false;
+		String threeLet = null;
+		// boolean isAmb = false;
+		Character oneLet = null;
 		String[] parents = new String[]{};
 		try {
 			String line;
@@ -50,25 +50,25 @@ public class CIFDict {
 				// '_chem_comp.type' => if($type eq 'ATOMP' || $type eq 'L-PEPTIDE LINKING');
 				// '_chem_comp.pdbx_type' => if($type eq 'ATOMP' || $type eq 'L-PEPTIDE LINKING');
 				if(line.startsWith("_chem_comp.type") || line.startsWith("_chem_comp.pdbx_type")) {
-					if(ispep && threelet!=null) {
+					if(isPep && threeLet!=null) {
 						// Let's save it!
-						// if(isamb) {
-						//	System.err.println("Warning: aminoacid "+threelet+" is ambiguous (one letter "+onelet+", parents "+parents.toString()+")");
+						// if(isAmb) {
+						//	System.err.println("Warning: aminoacid "+threeLet+" is ambiguous (one letter "+oneLet+", parents "+parents.toString()+")");
 						// }
 						
-						// toOneAA.put(threelet, (onelet!=null && onelet.equals('?'))?((parents.length>0)?parents:'X'):onelet);
+						// toOneAA.put(threeLet, (oneLet!=null && oneLet.equals('?'))?((parents.length>0)?parents:'X'):oneLet);
 						
-						if(onelet!=null && onelet.equals('?')) {
+						if(oneLet!=null && oneLet.equals('?')) {
 							if(parents.length>0) {
-								toOneAADeriv.put(threelet, parents);
+								toOneAADeriv.put(threeLet, parents);
 							} else {
-								toOneAA.put(threelet, 'X');
+								toOneAA.put(threeLet, 'X');
 							}
 						} else {
-							toOneAA.put(threelet,onelet);
+							toOneAA.put(threeLet,oneLet);
 						}
 						
-						// System.err.println("Notice: aminoacid "+threelet+" is "+onelet");
+						// System.err.println("Notice: aminoacid "+threeLet+" is "+oneLet");
 					}
 					
 					String[] tokens=line.split("[ \t]+",2);
@@ -77,21 +77,21 @@ public class CIFDict {
 					
 					
 					if("_chem_comp.type".equals(first)) {
-						ispep = ("ATOMP".equals(type) || "L-PEPTIDE LINKING".equals(type));
+						isPep = ("ATOMP".equals(type) || "L-PEPTIDE LINKING".equals(type));
 					} else {
-						ispep = ispep || ("ATOMP".equals(type) || "L-PEPTIDE LINKING".equals(type));
+						isPep = isPep || ("ATOMP".equals(type) || "L-PEPTIDE LINKING".equals(type));
 					}
 					
-					isamb=false;
-					onelet=null;
-					threelet=null;
+					// isAmb=false;
+					oneLet=null;
+					threeLet=null;
 					parents=new String[]{};
-				} else if(!ispep && line.startsWith("_chem_comp.three_letter_code")) {
+				} else if(!isPep && line.startsWith("_chem_comp.three_letter_code")) {
 					String[] tokens=line.split("[ \t]+",2);
 					String elem = tokens[1].toUpperCase().replaceAll("[\"']+", "").replaceFirst("[ \t]+$","");
 				
 					notAA.add(elem);
-				} else if(ispep) {
+				} else if(isPep) {
 					if(
 						line.startsWith("_chem_comp.pdbx_ambiguous_flag") ||
 						line.startsWith("_chem_comp.one_letter_code") ||
@@ -104,12 +104,12 @@ public class CIFDict {
 						String elem = tokens[1].toUpperCase().replaceAll("[\"']+", "").replaceFirst("[ \t]+$","");
 						
 						if("_chem_comp.pdbx_ambiguous_flag".equals(first)) {
-							if(!"N".equals(elem))
-								isamb=true;
+							// if(!"N".equals(elem))
+							// 	isAmb=true;
 						} else if("_chem_comp.one_letter_code".equals(first)) {
-							onelet=elem.charAt(0);
+							oneLet=elem.charAt(0);
 						} else if("_chem_comp.three_letter_code".equals(first)) {
-							threelet=elem;
+							threeLet=elem;
 						} else if("_chem_comp.mon_nstd_parent_comp_id".equals(first)) {
 							parents=elem.split("[ ,]+");
 							if("?".equals(parents[0])) {
@@ -148,25 +148,25 @@ public class CIFDict {
 			}
 		}
 		
-		if(ispep && threelet!=null) {
+		if(isPep && threeLet!=null) {
 			// Let's save it!
-			// if(isamb) {
-			//	System.err.println("Warning: aminoacid $threelet is ambiguous (one letter "+onelet+" parents "+parents.toString()+")");
+			// if(isAmb) {
+			//	System.err.println("Warning: aminoacid $threeLet is ambiguous (one letter "+oneLet+" parents "+parents.toString()+")");
 			// }
 			
-			// toOneAA.put(threelet, (onelet!=null && onelet.equals('?'))?((parents.length>0)?parents:'X'):onelet);
+			// toOneAA.put(threeLet, (oneLet!=null && oneLet.equals('?'))?((parents.length>0)?parents:'X'):oneLet);
 			
-			if(onelet!=null && onelet.equals('?')) {
+			if(oneLet!=null && oneLet.equals('?')) {
 				if(parents.length>0) {
-					toOneAADeriv.put(threelet, parents);
+					toOneAADeriv.put(threeLet, parents);
 				} else {
-					toOneAA.put(threelet, 'X');
+					toOneAA.put(threeLet, 'X');
 				}
 			} else {
-				toOneAA.put(threelet,onelet);
+				toOneAA.put(threeLet,oneLet);
 			}
 			
-			// System.err.println("Notice: aminoacid "+threelet+" is "+onelet);
+			// System.err.println("Notice: aminoacid "+threeLet+" is "+oneLet);
 		}
 		
 		// Last, setting up the hashes!

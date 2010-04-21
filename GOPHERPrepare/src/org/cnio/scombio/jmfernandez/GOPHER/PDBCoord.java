@@ -1,6 +1,8 @@
 package org.cnio.scombio.jmfernandez.GOPHER;
 
 public class PDBCoord implements Comparable<PDBCoord> {
+	public final static PDBCoord LEAST_RESIDUE=new PDBCoord();
+	
 	protected int coord;
 	protected char coord_ins;
 	protected boolean comparisonMode;
@@ -32,6 +34,27 @@ public class PDBCoord implements Comparable<PDBCoord> {
 	
 	public String toString() {
 		return Integer.toString(coord)+coord_ins;
+	}
+	
+	/**
+	 * Equality comparisons are useful to avoid code replications
+	 */
+	public boolean equals(Object other) {
+		boolean retval=false;
+		if(other!=null && other instanceof PDBCoord) {
+			PDBCoord cOther = (PDBCoord)other;
+			retval=cOther.coord==coord && cOther.coord_ins==coord_ins;
+		}
+		
+		return retval;
+	}
+	
+	/**
+	 * I did not want to implement this one, but the contract is the contract.
+	 * At least, it has been easy :-)
+	 */
+	public int hashCode() {
+		return coord;
 	}
 	
 	public PDBCoord inc() {
