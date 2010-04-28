@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 
 /**
  * 
@@ -11,16 +12,19 @@ import java.util.List;
  *
  */
 public class PDBChains {
-	protected String pdbcode;
-	protected boolean ignoreReason;
+	protected final String pdbcode;
+	protected final boolean ignoreReason;
+	protected boolean isSharedMissingList;
+	
+	protected final CIFDict dict;
+	protected final HashMap<String, Character> toOneAA;
+	protected final HashSet<String> notAA;
+	
 	protected int currModel;
 	
-	protected CIFDict dict;
-	protected HashMap<String, Character> toOneAA;
-	protected HashSet<String> notAA;
+	protected Map<String,PDBChain> chains;
+	protected List<Map<String,PDBChain>> lchains;
 	
-	protected HashMap<String,PDBChain> chains;
-	protected List<HashMap<String,PDBChain>> lchains;
 	public PDBChains(String pdbcode, boolean ignoreReason,CIFDict dict) {
 		this.pdbcode=pdbcode;
 		this.ignoreReason=ignoreReason;
@@ -28,9 +32,11 @@ public class PDBChains {
 		toOneAA = dict.getMapping();
 		notAA = dict.getNotMapping();
 		currModel = 1;
-		lchains = new ArrayList<HashMap<String,PDBChain>>();
+		lchains = new ArrayList<Map<String,PDBChain>>();
 		chains = new HashMap<String,PDBChain>();
 		lchains.add(chains);
+		
+		isSharedMissingList=true;
 	}
 	
 	public void setNumModels(int numModel) {
@@ -47,22 +53,43 @@ public class PDBChains {
 	}
 	
 	public void setCurrentModel(int modelNo) {
-		if(modelNo>=lchains.size())
-			setNumModels(modelNo);
-
 		currModel = modelNo;
-		chains = lchains.get(modelNo-1);
+		chains = getModel(modelNo);
 	}
 	
-	private List<List<PDBAmino>> getMissingList(String chainName) {
-		HashMap<String,PDBChain> tmpchains = lchains.get(0);
+	private Map<String,PDBChain> getModel(int modelNo) {
+		if(modelNo>=lchains.size()) 
+			setNumModels(modelNo);
+		
+		return lchains.get(modelNo-1);
+	}
+	
+	private List<LabelledSegment<PDBAmino>> getMissingList(int modelNo, String chainName) {
+		Map<String,PDBChain> tmpchains = getModel(isSharedMissingList?1:modelNo);
 		return (tmpchains.containsKey(chainName))?tmpchains.get(chainName).getMissingList():null; 
+	}
+	
+	private List<LabelledSegment<PDBAmino>> getMissingList(String chainName) {
+		return getMissingList(1,chainName);
 	}
 	
 	protected PDBChain getChain(String chainName) {
 		PDBChain chain = null;
 		if(!chains.containsKey(chainName)) {
-			chain=new PDBChain(pdbcode,chainName,toOneAA,notAA,ignoreReason,getMissingList(chainName));
+			chain=new PDBChain(pdbcode,currModel,chainName,toOneAA,notAA,ignoreReason,getMissingList(chainName));
+			chains.put(chainName, chain);
+		} else {
+			chain = chains.get(chainName);
+		}
+		
+		return chain;
+	}
+	
+	protected PDBChain getModelChain(int modelNo, String chainName) {
+		PDBChain chain = null;
+		Map<String,PDBChain> chains=getModel(modelNo);
+		if(!chains.containsKey(chainName)) {
+			chain=new PDBChain(pdbcode,modelNo,chainName,toOneAA,notAA,ignoreReason,getMissingList(modelNo,chainName));
 			chains.put(chainName, chain);
 		} else {
 			chain = chains.get(chainName);
@@ -85,7 +112,7 @@ public class PDBChains {
 		chain.setDescription(description);
 	}
 	
-	public PDBChain.Mapping addMapping(String chainName, String db, String id, PDBCoord start, PDBCoord stop) {
+	public Mapping addMapping(String chainName, String db, String id, PDBCoord start, PDBCoord stop) {
 		PDBChain chain = getChain(chainName);
 		return chain.addMapping(db, id, start, stop);
 	}
@@ -96,18 +123,19 @@ public class PDBChains {
 		chain.appendToArtifact(db, id, reason, residue);
 	}
 	
-	public List<PDBChain.Mapping> getMappingList(String chainName) {
-		PDBChain chain = getChain(chainName);
-		return chain.getMappingList();
-	}
-	
 	public boolean hasMissingResidues(String chainName) {
 		PDBChain chain = getChain(chainName);
 		return chain.hasMissingResidues();
 	}
 	
-	public boolean storeMissingResidue(String chainName, PDBRes residue) {
-		PDBChain chain = getChain(chainName);
+	public boolean storeMissingResidue(int modelNo, String chainName, PDBRes residue) {
+		if(modelNo>0) {
+			isSharedMissingList=false;
+		} else {
+			isSharedMissingList=true;
+			modelNo=1;
+		}
+		PDBChain chain = getModelChain(modelNo,chainName);
 		return chain.storeMissingResidue(residue);
 	}
 	
@@ -118,7 +146,7 @@ public class PDBChains {
 	
 	public boolean appendToAtomChain(String chainName, PDBRes residue, PDBCoord prev_coord) {
 		PDBChain chain = getChain(chainName);
-		return chain.appendToChain(residue,prev_coord);
+		return chain.appendToResChain(residue,prev_coord);
 	}
 	
 	public boolean isOpenAtomChain(String chainName) {
@@ -128,7 +156,7 @@ public class PDBChains {
 	
 	public boolean padAtomBoth(String chainName) {
 		PDBChain chain = getChain(chainName);
-		return chain.padBoth();
+		return chain.doTER();
 	}
 	
 	public StringBuilder getSeqChain(String chainName) {

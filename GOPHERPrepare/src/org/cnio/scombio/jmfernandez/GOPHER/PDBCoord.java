@@ -1,6 +1,8 @@
 package org.cnio.scombio.jmfernandez.GOPHER;
 
 public class PDBCoord implements Comparable<PDBCoord> {
+	protected final static double INS_STEP=1.0/(double)('Z'-'A'+2);
+	
 	public final static PDBCoord LEAST_RESIDUE=new PDBCoord();
 	
 	protected int coord;
@@ -132,8 +134,16 @@ public class PDBCoord implements Comparable<PDBCoord> {
 		return 0;
 	}
 	
-	public int sub(PDBCoord other) {
-		return (comparisonMode || other.comparisonMode)?(ToNumber(coord_ins)-ToNumber(other.coord_ins))*('Z'-'A'+1)*10000 +coord-other.coord:(coord!=other.coord)?(coord-other.coord):(coord_ins-other.coord_ins);
+	private double toNumber() {
+		double retval=(double)coord;
+		if(coord_ins!=' ') {
+			retval+=(double)(coord_ins-'A'+1)*INS_STEP;
+		}
+		return retval;
+	}
+	
+	public double sub(PDBCoord other) {
+		return (comparisonMode || other.comparisonMode)?(toNumber()-other.toNumber()):(coord!=other.coord)?(coord-other.coord):(coord_ins-other.coord_ins);
 		//return (ToNumber(coord_ins)-ToNumber(other.coord_ins))*('Z'-'A'+1) +coord-other.coord;
 	}
 }

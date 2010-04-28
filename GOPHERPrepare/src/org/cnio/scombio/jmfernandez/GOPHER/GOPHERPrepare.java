@@ -187,7 +187,7 @@ public class GOPHERPrepare {
 						if(line==null || (line.length()>0 && line.charAt(0)==PDBParser.FASTA_HEADER_PREFIX)) {
 							// We have a candidate sequence!
 							if(description!=null) {
-								String cutseq=PDBChain.PruneSequence(sequence.toString().toUpperCase());
+								CharSequence cutseq=PDBChain.PruneSequence(sequence.toString().toUpperCase());
 	
 								// Has passed the filters?
 								if(cutseq!=null) {

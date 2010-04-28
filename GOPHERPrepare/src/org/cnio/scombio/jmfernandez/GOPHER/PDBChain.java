@@ -3,11 +3,12 @@ package org.cnio.scombio.jmfernandez.GOPHER;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
-import java.util.Map.Entry;
+// import java.util.Map.Entry;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -54,56 +55,58 @@ public class PDBChain {
 	/**
 		This static method takes a one-line sequence, and it removes
 		cloning artifacts from N and C terminal.
-		@param cutseq The sequence to be pruned of cloning artifacts
+		@param curCharSeq The sequence to be pruned of cloning artifacts
 		@return The pruned sequence
 	*/
-	protected static String PruneSequence(String cutseq) {
-		if(cutseq.length()>=MINSEQLENGTH) {
+	protected static CharSequence PruneSequence(CharSequence curCharSeq) {
+		if(curCharSeq==null)  return null;
+		
+		if(curCharSeq.length()>=MINSEQLENGTH) {
 			boolean foundPat;
 		
 			// Let's prune those cloning artifacts!!!
 			do {
 				foundPat=false;
-				int cutlen=cutseq.length();
+				int cutlen=curCharSeq.length();
 				int firstPos=cutlen-C_TERM_HAREA;
-				String tail = cutseq.substring(firstPos,cutlen);
+				CharSequence tail = curCharSeq.subSequence(firstPos,cutlen);
 				for(Pattern pat: C_TERM_PAT) {
 					Matcher m=pat.matcher(tail);
 					if(m.find()) {
-						cutseq=cutseq.substring(0,firstPos+m.start());
+						curCharSeq=curCharSeq.subSequence(0,firstPos+m.start());
 						
 						foundPat=true;
 						break;
 					}
 				}
-			} while(foundPat && cutseq.length()>=MINSEQLENGTH);
+			} while(foundPat && curCharSeq.length()>=MINSEQLENGTH);
 			
 			// On both sides!
-			if(cutseq.length()>=MINSEQLENGTH) {
+			if(curCharSeq.length()>=MINSEQLENGTH) {
 				do {
 					foundPat=false;
-					String head = cutseq.substring(0,N_TERM_HAREA);
+					CharSequence head = curCharSeq.subSequence(0,N_TERM_HAREA);
 					for(Pattern pat: N_TERM_PAT) {
 						Matcher m=pat.matcher(head);
 						if(m.find()) {
-							cutseq=cutseq.substring(m.end());
+							curCharSeq=curCharSeq.subSequence(m.end(),curCharSeq.length());
 							
 							foundPat=true;
 							break;
 						}
 					}
-				} while(foundPat && cutseq.length()>=MINSEQLENGTH);
+				} while(foundPat && curCharSeq.length()>=MINSEQLENGTH);
 				
 				// Final check
-				if(cutseq.length()<MINSEQLENGTH) {
-					cutseq=null;
+				if(curCharSeq.length()<MINSEQLENGTH) {
+					curCharSeq=null;
 				}
 			}
 		} else {
-			cutseq=null;
+			curCharSeq=null;
 		}
 	
-		return cutseq;
+		return curCharSeq;
 	}
 
 	/**
@@ -112,111 +115,49 @@ public class PDBChain {
 	 * @param seq A StringBuilder object which contains the aminoacid sequence
 	 * @return The possibly clipped sequence
 	 */
-	protected static String ClipSequence(StringBuilder seq) {
+	protected static CharSequence ClipSequence(final CharSequence seq) {
+		return ClipSequence(seq,null);
+	}
+	
+	/**
+	 * This method removes from an aminoacid sequence the unknown aminoacids from
+	 * the beginning and end
+	 * @param seq A StringBuilder object which contains the aminoacid sequence
+	 * @param hiLo A list where to store the low and high marks
+	 * @return The possibly clipped sequence
+	 */
+	protected static CharSequence ClipSequence(final CharSequence seq,final List<Integer> hiLo) {
+		if(seq==null)  return null;
+		
 		int minSub=0;
 		int maxSub=seq.length();
 		
 		for(int cbi=0;cbi<maxSub;cbi++) {
-			if(seq.charAt(cbi)!='X') {
+			if(seq.charAt(cbi)!=PDBAmino.UnknownAmino) {
 				break;
 			}
 			minSub++;
 		}
 
 		for(int cbi=maxSub-1;cbi>=minSub;cbi--) {
-			if(seq.charAt(cbi)!='X') {
+			if(seq.charAt(cbi)!=PDBAmino.UnknownAmino) {
 				maxSub=cbi+1;
 				break;
 			}
 		}
 		
-		return (minSub<maxSub)?seq.substring(minSub,maxSub):"";
+		// This information is needed on clipping comparisons
+		if(hiLo!=null) {
+			hiLo.clear();
+			hiLo.add(minSub);
+			hiLo.add(maxSub);
+		}
+		
+		return (minSub<maxSub)?seq.subSequence(minSub,maxSub):"";
 	}
 	
-	class Fragment {
-		public String reason;
-		public final PDBCoord start;
-		public final PDBCoord end;
-		protected StringBuilder seq;
-		
-		Fragment(String reason,PDBAmino residue) {
-			// This is needed, because we are 
-			start = new PDBCoord(residue);
-			end = new PDBCoord(residue);
-			this.reason = reason;
-			seq=new StringBuilder().append(residue.amino);
-		}
-		
-		public PDBCoord add(char residue) {
-			seq.append(residue);
-			return end.contextInc();
-		}
-		
-		public StringBuilder getSequence() {
-			return seq;
-		}
-	};
-	
-	class Mapping {
-		public final String chain;
-		public final String db;
-		public final String id;
-		public PDBCoord start;
-		public PDBCoord end;
-		
-		protected ArrayList<Fragment> fraglist;
-		protected HashMap<PDBCoord,Fragment> fraghash;
-		
-		Mapping(String chain, String db, String id, PDBCoord start, PDBCoord stop) {
-			this.chain = chain;
-			this.db = db;
-			this.id = id;
-			this.start = start;
-			this.end = stop;
-			
-			fraglist = new ArrayList<Fragment>();
-			fraghash = new HashMap<PDBCoord,Fragment>();
-		}
-		
-		public ArrayList<Fragment> getFragmentList() {
-			return fraglist;
-		}
-		
-		public boolean containsPos(PDBCoord pos) {
-			return fraghash.containsKey(pos);
-		}
-		
-		public Fragment getFragment(PDBCoord pos) {
-			return fraghash.get(pos);
-		}
-		
-		public void followFragment(String reason, PDBAmino residue) {
-			boolean followFragment=false;
-			if(containsPos(residue)) {
-				Fragment frag = getFragment(residue);
-				followFragment = ignoreReason || reason.equals(frag.reason);
-			}
-
-			if(followFragment) {
-				// An extension of an existing artifact
-				Fragment frag = getFragment(residue);
-				PDBCoord futureEnd = new PDBCoord(frag.add(residue.amino)).contextInc();
-				
-				// Updating the hash
-				fraghash.put(futureEnd, frag);
-				fraghash.remove(residue);
-			} else {
-				// A new artifact!!!
-				Fragment newfrag = new Fragment(reason,residue);
-				PDBCoord futureEnd = new PDBCoord(residue.amino).contextInc();
-				
-				fraglist.add(newfrag);
-				fraghash.put(futureEnd, newfrag);
-			}
-		}
-	};
-	
 	protected final String pdbcode;
+	protected final int modelNo;
 	protected final String chainName;
 	protected final Map<String, Character> toOneAA;
 	protected final Set<String> notAA;
@@ -225,52 +166,59 @@ public class PDBChain {
 	protected StringBuilder[] chainseqs;
 	protected List<PDBAmino> chainAminos;
 	// Segments of missing residues
-	protected List<List<PDBAmino>> missingList;
+	protected List<LabelledSegment<PDBAmino>> missingList;
 	// Leftmost residues of the segment, ordered
 	protected TreeMap<PDBCoord,Integer> missingLeft;
 	// Rightmost residues of the segment, ordered
 	protected TreeMap<PDBCoord,Integer> missingRight;
-	protected PDBAmino prevMissingAmino;
 	
 	protected PDBCoord missingBeforeFirst;
-	protected int missingBeforeFirstDistance;
+	protected double missingBeforeFirstDistance;
 	protected boolean[] isJammeds;
 	protected boolean isTERChain;
 	protected ArrayList<Mapping> artifactMapping;
 	protected HashMap<String,Mapping> artifactHash;
+	protected HashSet<PDBCoord> artifactSet;
 	
-	public PDBChain(final String pdbcode, final String chainName, final Map<String, Character> toOneAA, final Set<String> notAA, final boolean ignoreReason) {
-		this(pdbcode, chainName, toOneAA, notAA, ignoreReason,null);
+	protected boolean useMaskingHeuristics;
+	
+	public PDBChain(final String pdbcode,final String chainName, final Map<String, Character> toOneAA, final Set<String> notAA, final boolean ignoreReason) {
+		this(pdbcode, chainName, toOneAA, notAA, ignoreReason, null);
 	}
 	
-	public PDBChain(final String pdbcode, final String chainName, final Map<String, Character> toOneAA, final Set<String> notAA, boolean ignoreReason, List<List<PDBAmino>> missingList) {
+	public PDBChain(final String pdbcode, final String chainName, final Map<String, Character> toOneAA, final Set<String> notAA, final boolean ignoreReason, List<LabelledSegment<PDBAmino>> missingList) {
+		this(pdbcode, 1, chainName, toOneAA, notAA, ignoreReason, missingList);
+	}
+	
+	public PDBChain(final String pdbcode,final int modelNo, final String chainName, final Map<String, Character> toOneAA, final Set<String> notAA, final boolean ignoreReason) {
+		this(pdbcode, modelNo, chainName, toOneAA, notAA, ignoreReason,null);
+	}
+	
+	public PDBChain(final String pdbcode, final int modelNo, final String chainName, final Map<String, Character> toOneAA, final Set<String> notAA, final boolean ignoreReason, List<LabelledSegment<PDBAmino>> missingList) {
 		this.pdbcode = pdbcode;
+		this.modelNo = modelNo;
 		this.chainName = chainName;
 		this.toOneAA = toOneAA;
 		this.notAA = notAA;
 		this.ignoreReason=ignoreReason;
-		chainseqs = new StringBuilder[] { null, null };
+		chainseqs = new StringBuilder[] { null, null, null };
 		chainAminos=new ArrayList<PDBAmino>();
 		initMissing(missingList);
 		artifactMapping=new ArrayList<Mapping>();
 		artifactHash=new HashMap<String,Mapping>();
+		artifactSet = new HashSet<PDBCoord>();
 		isTERChain=false;
-		isJammeds = new boolean[] { false, false };
+		isJammeds = new boolean[] { false, false, false };
 		description = null;
+		useMaskingHeuristics=false;
 	}
 	
-	private void initMissing(List<List<PDBAmino>> missingList) {
-		this.missingList = missingList; 
-		prevMissingAmino=null;
-		if(missingList!=null) {
-			missingLeft = new TreeMap<PDBCoord,Integer>();
-			missingRight = new TreeMap<PDBCoord,Integer>();
-			missingBeforeFirst = null;
-			missingBeforeFirstDistance = -1;
-		} else {
-			missingLeft = null;
-			missingRight = null;
-		}
+	private void initMissing(List<LabelledSegment<PDBAmino>> missingList) {
+		this.missingList = missingList!=null?missingList:new ArrayList<LabelledSegment<PDBAmino>>();
+		missingLeft = new TreeMap<PDBCoord,Integer>();
+		missingRight = new TreeMap<PDBCoord,Integer>();
+		missingBeforeFirst = null;
+		missingBeforeFirstDistance = -1.0;
 	}
 	
 	private void populateMissing() {
@@ -278,31 +226,9 @@ public class PDBChain {
 		missingLeft.clear();
 		missingRight.clear();
 		
-		// Detecting missing mode for the chain
 		int segmentPos=0;
-		
-		// Each segment could have an independent missing mode
-		// but they should be more or less consistent
-		boolean missingMode=false;
-		
-		for(List<PDBAmino> missingSegment: missingList) {
-			if(missingSegment.size()>1) {
-				PDBCoord firstMissing = missingSegment.get(0);
-				PDBCoord secondMissing = missingSegment.get(1);
-				missingMode=!(firstMissing.coord==secondMissing.coord && firstMissing.coord_ins!=secondMissing.coord_ins);
-				if(missingMode==true)  break;
-			}
-		}
-		
-		for(List<PDBAmino> missingSegment: missingList) {
-			// Now, applying to the coordinates of the segment
-			PDBAmino left=missingSegment.get(0);
-			PDBAmino right=missingSegment.get(missingSegment.size()-1);
-			PDBCoord leftCoord = new PDBCoord(missingMode,left);
-			PDBCoord rightCoord = new PDBCoord(missingMode,right);
-			missingLeft.put(leftCoord, segmentPos);
-			missingRight.put(rightCoord, segmentPos);
-			
+		for(LabelledSegment<PDBAmino> missingSegment: missingList) {
+			LabelledSegment.TreeSegmentPopulation(missingSegment,segmentPos,missingLeft,missingRight);
 			segmentPos++;
 		}
 	}
@@ -323,23 +249,15 @@ public class PDBChain {
 		return pdbcode+CHAIN_SEP+chainName;
 	}
 	
-	public List<List<PDBAmino>> getMissingList() {
+	public List<LabelledSegment<PDBAmino>> getMissingList() {
 		return missingList;
 	}
 	
-	public boolean appendToChain(PDBRes... residues) {
-		return appendToChain(false, residues);
-	}
-	
 	public boolean appendToSeqChain(String... residues) {
-		return appendToChain(true, residues);
-	}
-	
-	protected boolean appendToChain(boolean isSeq, String... residues) {
 		if(isTERChain)
 			return false;
 		
-		int chainIdx=isSeq?1:0;
+		int chainIdx=1;
 		
 		if(!isJammeds[chainIdx] && chainseqs[chainIdx] == null)
 			chainseqs[chainIdx] = new StringBuilder();
@@ -357,13 +275,13 @@ public class PDBChain {
 					} else if(notAA.contains(ires)) {
 						//if(length($localseq)>0 || (defined($prev_chain) && defined($prev_seq) && $localchain eq $prev_chain && length($prev_seq)>0)) {
 							System.err.println("WARNING: Jammed chain: '"+ires+"' in "+getName());
-							piece.append('X');
+							piece.append(PDBAmino.UnknownAmino);
 						//} else {
 						//	$localseq=undef;
 						//	last;
 						//}
 					} else {
-						piece.append('X');
+						piece.append(PDBAmino.UnknownAmino);
 						System.err.println("WARNING: Unknown aminoacid '"+ires+"' in "+getName()+"!!!");
 					}
 				//} else if(length($ires)==1) {
@@ -385,11 +303,11 @@ public class PDBChain {
 		return retval;
 	}
 
-	protected boolean appendToChain(boolean isSeq, PDBRes... residues) {
+	public boolean appendToResChain(PDBRes... residues) {
 		if(isTERChain)
 			return false;
 		
-		int chainIdx=isSeq?1:0;
+		int chainIdx=0;
 		
 		if(!isJammeds[chainIdx] && chainseqs[chainIdx] == null)
 			chainseqs[chainIdx] = new StringBuilder();
@@ -409,7 +327,7 @@ public class PDBChain {
 						oneAmino=toOneAA.get(ires);
 					} else if(notAA.contains(ires)) {
 						//if(length($localseq)>0 || (defined($prev_chain) && defined($prev_seq) && $localchain eq $prev_chain && length($prev_seq)>0)) {
-							System.err.println("WARNING: Jammed chain: '"+ires+"' at "+pres.coord+pres.coord_ins+" in "+getName());
+							System.err.println("WARNING: Jammed chain: '"+ires+"' at position "+pres.coord+pres.coord_ins+" in "+getName());
 							oneAmino=PDBAmino.UnknownAmino;
 						//} else {
 						//	$localseq=undef;
@@ -468,7 +386,7 @@ public class PDBChain {
 	}
 
 	// Just before appending, looking for missing...
-	public boolean appendToChain(PDBRes residue,PDBCoord prev_coord) {
+	public boolean appendToResChain(PDBRes residue,PDBCoord prev_coord) {
 		if(isTERChain)
 			return false;
 		
@@ -483,7 +401,7 @@ public class PDBChain {
 					// Time to populate the other structures
 					populateMissing();
 				}
-				Entry<PDBCoord,Integer> highMark=missingRight.lowerEntry(residue);
+/*				Entry<PDBCoord,Integer> highMark=missingRight.lowerEntry(residue);
 				if(highMark!=null) {
 					// Need this one for checks
 					if(prev_coord==null) {
@@ -498,11 +416,11 @@ public class PDBChain {
 					int lowPos=highPos+1;
 					boolean newFirstMissing=false;
 					if(prev_coord!=null) {
-						/*
+						
 						//lowPos=0;
 						System.err.println("DEBUG PDB "+getName()+" HIGH "+highPos+" RES "+residue+new PDBCoord(residue));
 					} else {
-					*/
+					
 						Entry<PDBCoord, Integer> lowMark=missingLeft.higherEntry(prev_coord);
 						if(lowMark!=null) {
 							int tmpLowPos=lowMark.getValue();
@@ -540,10 +458,10 @@ public class PDBChain {
 						}
 					}
 				}
-			}
+*/			}
 			
-			if(retval)
-				retval = appendToChain(false,residue);
+			// if(retval)
+				retval = appendToResChain(residue);
 		}
 		
 		return retval;
@@ -604,7 +522,7 @@ public class PDBChain {
 		if(retval) {
 			char[] piece=new char[numres];
 			for(int counter=0; counter<numres; counter++) {
-				piece[counter]='X';
+				piece[counter]=PDBAmino.UnknownAmino;
 			}
 			chainseqs[chainIdx].append(piece);
 		}
@@ -634,7 +552,7 @@ public class PDBChain {
 		if(retval) {
 			char[] piece=new char[numres];
 			for(int counter=0; counter<numres; counter++) {
-				piece[counter]='X';
+				piece[counter]=PDBAmino.UnknownAmino;
 			}
 			chainseqs[chainIdx].insert(0, piece);
 		}
@@ -643,7 +561,7 @@ public class PDBChain {
 	}
 	
 	public boolean hasMissingResidues() {
-		return missingList!=null;
+		return missingList!=null && missingList.size()>0;
 		//return missingList!=null && (missing==null || missing.size()>0);
 	}
 	
@@ -655,7 +573,7 @@ public class PDBChain {
 		return !isTERChain;
 	}
 	
-	public void putTER() {
+	protected void putTER() {
 		isTERChain=true;
 	}
 	
@@ -665,7 +583,7 @@ public class PDBChain {
 	}
 	
 	public String toString() {
-		return (chainseqs[0]!=null)?chainseqs[0].toString():(chainseqs[1]!=null?chainseqs[1].toString():null);
+		return chainseqs[2]!=null?chainseqs[2].toString():(chainseqs[0]!=null?chainseqs[0].toString():(chainseqs[1]!=null?chainseqs[1].toString():null));
 	}
 	
 	public boolean storeMissingResidue(PDBRes residue) {
@@ -674,13 +592,10 @@ public class PDBChain {
 		String res = residue.res;
 		if(res.length()==3) {
 			if(!hasMissingResidues()) {
-				missingList = new ArrayList<List<PDBAmino>>();
-				missingLeft = new TreeMap<PDBCoord,Integer>();
-				missingRight = new TreeMap<PDBCoord,Integer>();
-				prevMissingAmino = null;
+				missingList.add(new LabelledSegment<PDBAmino>('m'));
 			}
 			
-			char aminochar='X';
+			char aminochar=PDBAmino.UnknownAmino;
 		// Por definición en PDB, los aminoácidos se expresan
 		// en códigos de 3 letras
 			if(toOneAA.containsKey(res)) {
@@ -695,23 +610,13 @@ public class PDBChain {
 			} else {
 				System.err.println("WARNING: Unknown remark aminoacid '"+res+"' at "+residue.coord+residue.coord_ins+" in "+getName()+"!!!");
 			}
-			PDBAmino amino=new PDBAmino(aminochar,residue.coord,residue.coord_ins);
+			PDBAmino amino=new PDBAmino(aminochar,residue);
 			// Order of these sentences is very important!
-			boolean createNewMissingSegment=true;
-			if(prevMissingAmino!=null) {
-				if((prevMissingAmino.coord+1)==residue.coord && prevMissingAmino.coord_ins == residue.coord_ins) {
-					createNewMissingSegment=false;
-				} else if(prevMissingAmino.coord==residue.coord) {
-					createNewMissingSegment=false;
-				}
+			LabelledSegment<PDBAmino> result = missingList.get(missingList.size()-1).add(amino);
+			if(result!=null) {
+				// At last, save it here
+				missingList.add(result);
 			}
-			
-			if(createNewMissingSegment) {
-				missingList.add(new ArrayList<PDBAmino>());
-			}
-			// At last, save it here
-			missingList.get(missingList.size()-1).add(amino);
-			prevMissingAmino = amino;
 			
 			good=true;
 		//} else if(length($ires)==1) {
@@ -723,190 +628,368 @@ public class PDBChain {
 		return good;
 	}
 	
-	/*
-	public boolean padFirst(PDBCoord firstKnownCoordRes) {
-		if(isTERChain)
-			return false;
-		
-		boolean retval=hasMissingResidues();
-		if(retval) {
-			int maxMissing=-1;
-			if(missing.containsKey(missingList.get(0))) {
-				maxMissing=1;
-				int missingSize=missingList.size();
-				for(;maxMissing<missingSize && missing.containsKey(missingList.get(maxMissing));maxMissing++) {
-				}
-				
-			} else {
-				Entry<PDBCoord,PDBAmino> entry=missing.lowerEntry(firstKnownCoordRes);
-
-				if(entry!=null) {
-					maxMissing = missingHash.get(entry.getValue()) + 1;
-					//PDBCoord newKnownCoordRes=entry.getKey();
-					//int numUnknown=firstKnownCoordRes.sub(newKnownCoordRes)-1;
-					//if(numUnknown>0)
-					//	prepadChain(false,numUnknown);
-					//prependToChain(false,entry.getValue());
-					//firstKnownCoordRes=newKnownCoordRes;
-				}
-			}
-			
-			if(maxMissing>0) {
-				PDBAmino[] toPrepend = missingList.subList(0, maxMissing).toArray(new PDBAmino[0]);
-				retval = prependToChain(false,toPrepend);
-				if(retval) {
-					// Removing already used missing aminoacids from TreeMap
-					for(PDBAmino amino: toPrepend) {
-						missing.remove(amino);
-					}
-				}
-			}
-		}
-		return retval;
-	}
-	
-	protected boolean padLast(PDBCoord lastKnownCoordRes) {
-		if(isTERChain)
-			return false;
-		
-		boolean retval=hasMissingResidues();
-		if(retval) {
-			Entry<PDBCoord, PDBAmino> entry=missing.higherEntry(lastKnownCoordRes);
-			
-			if(entry!=null) {
-				int pos = missingHash.get(entry.getValue());
-				PDBAmino[] toAppend = missingList.subList(pos,missingList.size()).toArray(new PDBAmino[0]);
-				retval = appendToChain(false,toAppend);
-				if(retval) {
-					// Removing already used missing aminoacids from TreeMap
-					for(PDBAmino amino: toAppend) {
-						missing.remove(amino);
-					}
-				}	
-				
-				//PDBCoord newKnownCoordRes=entry.getKey();
-				//int numUnknown=newKnownCoordRes.sub(lastKnownCoordRes)-1;
-				//System.err.println("DEBUG: "+getName()+" old: "+lastKnownCoordRes.coord+lastKnownCoordRes.coord_ins+" new: "+newKnownCoordRes.coord+newKnownCoordRes.coord_ins+" diff: "+numUnknown);
-				//if(numUnknown>0)
-				//	padChain(false,numUnknown);
-				//appendToChain(false,entry.getValue());
-				//lastKnownCoordRes=newKnownCoordRes;
-			}
-			
-			if(missing.size()>0) {
-				System.err.println("DEBUGWARNING: "+getName()+" has "+missing.size()+" unplaced missing residues");
-			}
-		}
-		
-		// No more atoms for this chain
-		putTER();
-		
-		return retval;
-	}
-	*/
-	
-	public boolean padBoth() {
+	/**
+	 * Atom chain is terminated, so processing related to missing aminoacids and clone artifact masking can be done
+	 */
+	public boolean doTER() {
 		if(isTERChain)
 			return false;
 		
 		boolean retval = false;
-		if(chainAminos.size()>0 && hasMissingResidues()) {
-			Integer[] missingSurvivors = missingLeft.values().toArray(new Integer[0]);
-			Arrays.sort(missingSurvivors);
-			boolean checkFirst=true;
-			retval=true;
-			for(Integer iMissing: missingSurvivors) {
-				PDBAmino[] toPrepend = missingList.get(iMissing).toArray(new PDBAmino[0]);
-				if(checkFirst) {
-					PDBCoord firstKnownCoordRes=chainAminos.get(0);
-					checkFirst=toPrepend[toPrepend.length-1].compareTo(firstKnownCoordRes)<0;
-				}
-				if(checkFirst) {
-					retval &= prependToChain(false,toPrepend);
-					checkFirst=false;
-				} else {
-					retval &= appendToChain(false,toPrepend);
-				}
-			}
-		/*
-			PDBCoord firstKnownCoordRes=chaincoords.get(0);
-			PDBCoord lastKnownCoordRes=chaincoords.get(chaincoords.size()-1);
-			Entry<PDBCoord, Integer> higherEntry=missingLeft.higherEntry(lastKnownCoordRes);
-			
-			
-			
-			if(missing.containsKey(missingList.get(0).get(0))) {
-				int maxMissing=1;
-				int missingSize=missingList.size();
-				for(;maxMissing<missingSize && missing.containsKey(missingList.get(maxMissing));maxMissing++) {
+		
+		// Masking is only needed when there is any known cloning artifact
+		if(artifactSet.size()>0 && chainAminos.size()>0) {
+			List<LabelledSegment<PDBAmino>> aminoSegments=null;
+			if(hasMissingResidues()) {
+				// First, segment detection in sequence
+				TreeMap<PDBCoord,Integer> atomLeftCoord = new TreeMap<PDBCoord,Integer>();
+				TreeMap<PDBCoord,Integer> atomRightCoord = new TreeMap<PDBCoord,Integer>();
+				List<LabelledSegment<PDBAmino>> newAminoSegments=LabelledSegment.SegmentsDetection(chainAminos,atomLeftCoord,atomRightCoord);
+				aminoSegments=new ArrayList<LabelledSegment<PDBAmino>>(newAminoSegments);
+				
+				// 2A, missing segments positioning just before known sequence segments
+				List<Integer> missingLost=new ArrayList<Integer>();
+				int missingSeenIdx=0;
+				int missingInsertedIdx=-1;
+				
+				// Missing segments location is an iterative process
+				while(missingSeenIdx<missingList.size()) {
+					int aminoIdx=missingInsertedIdx+1;
+					// Go away when we are out of range
+					if(aminoIdx>=aminoSegments.size())
+						break;
+					
+					LabelledSegment<PDBAmino> missingSeen=missingList.get(missingSeenIdx);
+					PDBAmino missingSeenFirst=missingSeen.firstCoord();
+					PDBAmino missingSeenLast=missingSeen.lastCoord();
+					
+					// Missing segments must be placed in the same order as they appear
+					// in the REMARK 465 sections inside PDB files
+					for(;aminoIdx<aminoSegments.size();) {
+						LabelledSegment<PDBAmino> aminoSegment=aminoSegments.get(aminoIdx);
+						
+						// Checking assembly compatibility conditions is tedious
+						boolean doInsertion=false;
+						boolean before=true;
+						if(missingSeen!=null) {
+							char segmentTypeSelector=LabelledSegment.INS_TREND_UNKNOWN;
+							// Same known kind, no increasing or decreasing 
+							if(aminoSegment.kindINS==missingSeen.kindINS) {
+								segmentTypeSelector=aminoSegment.kindINS;
+							} else if(missingSeen.prevINS==LabelledSegment.INS_TREND_UNKNOWN && aminoSegment.prevINS!=LabelledSegment.INS_TREND_UNKNOWN) {
+								segmentTypeSelector=aminoSegment.prevINS;
+							} else if(aminoSegment.prevINS==LabelledSegment.INS_TREND_UNKNOWN && missingSeen.prevINS!=LabelledSegment.INS_TREND_UNKNOWN) {
+								segmentTypeSelector=missingSeen.prevINS;
+							} else if(aminoSegment.kindINS==LabelledSegment.INS_FORWARD_START && missingSeen.prevINS==LabelledSegment.INS_TREND_INCREASING) {
+								segmentTypeSelector=LabelledSegment.INS_TREND_SLOPE;
+							}
+							switch(segmentTypeSelector) {
+								case LabelledSegment.INS_TREND_UNKNOWN:
+									// We did not know how to handle this situation, so we give up :-(
+									break;
+								case LabelledSegment.INS_TREND_SLOPE:
+									if(
+										missingSeenFirst.coord_ins==LabelledSegment.INS_TREND_START &&
+										missingSeenFirst.coord==aminoSegment.lastCoord().coord
+									) {
+										doInsertion=true;
+										before=false;
+									}
+									break;
+								case LabelledSegment.INS_TREND_INCREASING:
+									if(
+										(
+											missingSeenLast.coord==aminoSegment.firstCoord().coord &&
+											(missingSeenLast.coord_ins+1)==aminoSegment.firstCoord().coord_ins
+										) || (
+											(missingSeenLast.coord+1)==aminoSegment.firstCoord().coord &&
+											missingSeenLast.coord_ins==LabelledSegment.INS_TREND_END &&
+											aminoSegment.firstCoord().coord_ins==LabelledSegment.INS_TREND_START
+										)
+									) {
+										doInsertion=true;
+										before=true;
+									} else if(
+										(
+											missingSeenFirst.coord==aminoSegment.lastCoord().coord &&
+											(aminoSegment.lastCoord().coord_ins+1)==missingSeenFirst.coord_ins
+										) || (
+											missingSeenFirst.coord==(aminoSegment.lastCoord().coord+1) &&
+											aminoSegment.lastCoord().coord_ins==LabelledSegment.INS_TREND_END &&
+											missingSeenFirst.coord_ins==LabelledSegment.INS_TREND_START
+										)
+									) {
+										doInsertion=true;
+										before=false;
+									}
+									break;
+								case LabelledSegment.INS_TREND_DECREASING:
+									if(
+										(
+											missingSeenLast.coord==aminoSegment.firstCoord().coord &&
+											missingSeenLast.coord_ins==(aminoSegment.firstCoord().coord_ins+1)
+										) || (
+											missingSeenLast.coord==(aminoSegment.firstCoord().coord+1) &&
+											missingSeenLast.coord_ins==LabelledSegment.INS_TREND_START &&
+											aminoSegment.firstCoord().coord_ins==LabelledSegment.INS_TREND_END
+										)
+									) {
+										doInsertion=true;
+										before=true;
+									} else if(
+										(
+											missingSeenFirst.coord==aminoSegment.lastCoord().coord &&
+											aminoSegment.lastCoord().coord_ins==(missingSeenFirst.coord_ins+1)
+										) || (
+											(missingSeenFirst.coord+1)==aminoSegment.lastCoord().coord &&
+											aminoSegment.lastCoord().coord_ins==LabelledSegment.INS_TREND_START &&
+											missingSeenFirst.coord_ins==LabelledSegment.INS_TREND_END
+										)
+									) {
+										doInsertion=true;
+										before=false;
+									}
+									break;
+								default:
+									boolean isBackwards=LabelledSegment.IsBackwards(segmentTypeSelector);
+									if(isBackwards) {
+										if(missingSeenLast.coord==(aminoSegment.firstCoord().coord+1) ||
+												aminoSegment.lastCoord().coord==(missingSeenFirst.coord+1)
+											) {
+												doInsertion=true;
+												before=missingSeenLast.coord==(aminoSegment.firstCoord().coord+1);
+											}
+									} else {
+										if((missingSeenLast.coord+1)==aminoSegment.firstCoord().coord ||
+												(aminoSegment.lastCoord().coord+1)==missingSeenFirst.coord
+											) {
+												doInsertion=true;
+												before=(missingSeenLast.coord+1)==aminoSegment.firstCoord().coord;
+											}
+									}
+									break;
+							}
+						}
+						
+						// At last, we are allowed to add the segment, nice!
+						if(doInsertion) {
+							// Store missingSegment
+							missingInsertedIdx=aminoIdx+(before?0:1);
+							aminoSegments.add(missingInsertedIdx, missingSeen);
+	
+							// Next segment index
+							aminoIdx+=2;
+							
+							// Get a new missing segment
+							missingSeenIdx++;
+							if(missingSeenIdx<missingList.size()) {
+								missingSeen=missingList.get(missingSeenIdx);
+								missingSeenFirst=missingSeen.firstCoord();
+	
+								// It is very ugly checking AGAIN here, but so
+								// we can surely discard the segment
+								doInsertion=false;
+								if(before) {
+									char segmentTypeSelector=LabelledSegment.INS_TREND_UNKNOWN;
+									
+									// Same known kind, no increasing or decreasing 
+									if(aminoSegment.kindINS==missingSeen.kindINS) {
+										segmentTypeSelector=aminoSegment.kindINS;
+									} else if(missingSeen.prevINS==LabelledSegment.INS_TREND_UNKNOWN && aminoSegment.prevINS!=LabelledSegment.INS_TREND_UNKNOWN) {
+										segmentTypeSelector=aminoSegment.prevINS;
+									} else if(aminoSegment.prevINS==LabelledSegment.INS_TREND_UNKNOWN && missingSeen.prevINS!=LabelledSegment.INS_TREND_UNKNOWN) {
+										segmentTypeSelector=missingSeen.prevINS;
+									} else if(aminoSegment.kindINS==LabelledSegment.INS_FORWARD_START && missingSeen.prevINS==LabelledSegment.INS_TREND_INCREASING) {
+										segmentTypeSelector=LabelledSegment.INS_TREND_SLOPE;
+									}
+									switch(segmentTypeSelector) {
+										case LabelledSegment.INS_TREND_UNKNOWN:
+											// We did not know how to handle this situation, so we give up :-(
+											break;
+										case LabelledSegment.INS_TREND_SLOPE:
+											if(
+												missingSeenFirst.coord_ins==LabelledSegment.INS_TREND_START &&
+												missingSeenFirst.coord==aminoSegment.lastCoord().coord
+											) {
+												doInsertion=true;
+												before=false;
+											}
+											break;
+										case LabelledSegment.INS_TREND_INCREASING:
+											if(
+												(
+													missingSeenFirst.coord==aminoSegment.lastCoord().coord &&
+													(aminoSegment.lastCoord().coord_ins+1)==missingSeenFirst.coord_ins
+												) || (
+													missingSeenFirst.coord==(aminoSegment.lastCoord().coord+1) &&
+													aminoSegment.lastCoord().coord_ins==LabelledSegment.INS_TREND_END &&
+													missingSeenFirst.coord_ins==LabelledSegment.INS_TREND_START
+												)
+											) {
+												doInsertion=true;
+												before=false;
+											}
+											break;
+										case LabelledSegment.INS_TREND_DECREASING:
+											if(
+												(
+													missingSeenFirst.coord==aminoSegment.lastCoord().coord &&
+													aminoSegment.lastCoord().coord_ins==(missingSeenFirst.coord_ins+1)
+												) || (
+													(missingSeenFirst.coord+1)==aminoSegment.lastCoord().coord &&
+													aminoSegment.lastCoord().coord_ins==LabelledSegment.INS_TREND_START &&
+													missingSeenFirst.coord_ins==LabelledSegment.INS_TREND_END
+												)
+											) {
+												doInsertion=true;
+												before=false;
+											}
+											break;
+										default:
+											boolean isBackwards=LabelledSegment.IsBackwards(segmentTypeSelector);
+											if(isBackwards) {
+												if(aminoSegment.lastCoord().coord==(missingSeenFirst.coord+1)) {
+													doInsertion=true;
+													before=false;
+												}
+											} else {
+												if((aminoSegment.lastCoord().coord+1)==missingSeenFirst.coord) {
+													doInsertion=true;
+													before=false;
+												}
+											}
+											break;
+									}
+								}
+								
+								// Two missing segments have been placed in a row, wow!
+								if(doInsertion) {
+									missingInsertedIdx=aminoIdx;
+									aminoSegments.add(aminoIdx,missingSeen);
+									aminoIdx++;
+									missingSeenIdx++;
+									if(missingSeenIdx<missingList.size()) {
+										missingSeen=missingList.get(missingSeenIdx);
+										missingSeenFirst=missingSeen.firstCoord();
+										missingSeenLast=missingSeen.lastCoord();
+									} else {
+										missingSeen=null;
+									}
+								} else {
+									missingSeenLast=missingSeen.lastCoord();
+								}
+							} else {
+								// No more entries 8-)
+								missingSeen=null;
+							}
+						} else {
+							// And the segment is just here
+							aminoIdx++;
+						}
+					}
+					
+					// We were not able to put it in its right place
+					// so we have to register the missing segment and skip it
+					if(missingSeenIdx<missingList.size()) {
+						missingLost.add(missingSeenIdx);
+						missingSeenIdx++;
+					}
 				}
 				
-				int endDistance = missingList.get(0).sub(lastKnownCoordRes);
-				int beginDistance = firstKnownCoordRes.sub(missingList.get(maxMissing-1));
-
-				PDBAmino[] toPrepend = missingList.subList(0, maxMissing).toArray(new PDBAmino[0]);
-				if((beginDistance<endDistance && beginDistance>0) || endDistance<=0) {
-					retval = prependToChain(false,toPrepend);
-				} else {
-					retval = appendToChain(false,toPrepend);
-				}
-				if(retval) {
-					// Removing already used missing aminoacids from TreeMap
-					for(PDBAmino amino: toPrepend) {
-						missing.remove(amino);
+				if(missingLost.size()>0) {
+/*					// 2B, missing segments positioning INSIDE known sequence segments
+					// It is a very bad idea, but it is desperation
+					for(LabelledSegment<PDBAmino> aminoSegment: aminoSegments) {
+						if(missingSeen!=null &&
+							aminoSegment.segmentKind!= missingSeen.segmentKind &&
+							aminoSegment.prevINS==LabelledSegment.INS_FORWARD_START && missingSeen.prevINS==LabelledSegment.INS_TREND_INCREASING &&
+							aminoSegment.isInside(missingSeenLast)
+						) {
+							aminoSegment.insertSegment(missingSeen);
+							
+							// Get a new missing segment
+							missingSeenIdx++;
+							if(missingSeenIdx<missingList.size()) {
+								missingSeen=missingList.get(missingSeenIdx);
+								missingSeenLast=missingSeen.segment.get(missingSeen.segment.size()-1);
+							} else {
+								// No more entries 8-)
+								missingSeen=null;
+							}
+						} else {
+							// And the segment is just here
+							aminoSegments.add(aminoSegment);
+						}
+					}
+*/
+					// 2C, missing segments, to the beginning or to the end, depending on what happened
+					// They are most of times misplaced, because they should be in order
+					int iMis=0;
+					for(;iMis<missingLost.size() && missingLost.get(iMis)==iMis;iMis++) {
+					}
+					if(iMis>0) {
+						// All the consecutive unknown segments from the beginning, can be first (just guessing)
+						aminoSegments.addAll(0,missingList.subList(0, iMis));
+					}
+					if(iMis<missingLost.size()) {
+						// Other segments should go to the end, but they are most of times misplaced
+						for(Integer missingElemIdx: missingLost.subList(iMis, missingLost.size())) {
+							aminoSegments.add(missingList.get(missingElemIdx));
+						}
 					}
 				}
 			} else {
-				// padFirst
-				int maxMissing=-1;
-				Entry<PDBCoord,PDBAmino> lowerEntry=missing.lowerEntry(firstKnownCoordRes);
-				if(lowerEntry!=null) {
-					maxMissing = missingHash.get(lowerEntry.getValue()) + 1;
-					//PDBCoord newKnownCoordRes=entry.getKey();
-					//int numUnknown=firstKnownCoordRes.sub(newKnownCoordRes)-1;
-					//if(numUnknown>0)
-					//	prepadChain(false,numUnknown);
-					//prependToChain(false,entry.getValue());
-					//firstKnownCoordRes=newKnownCoordRes;
-				}
-
-				if(maxMissing>0) {
-					PDBAmino[] toPrepend = missingList.subList(0, maxMissing).toArray(new PDBAmino[0]);
-					retval = prependToChain(false,toPrepend);
-					if(retval) {
-						// Removing already used missing aminoacids from TreeMap
-						for(PDBAmino amino: toPrepend) {
-							missing.remove(amino);
-						}
-					}
-				}
-
-				// padLast
-				if(higherEntry!=null) {
-					int pos = missingHash.get(higherEntry.getValue());
-					PDBAmino[] toAppend = missingList.subList(pos,missingList.size()).toArray(new PDBAmino[0]);
-					retval &= appendToChain(false,toAppend);
-					if(retval) {
-						// Removing already used missing aminoacids from TreeMap
-						for(PDBAmino amino: toAppend) {
-							missing.remove(amino);
-						}
-					}	
-
-					//PDBCoord newKnownCoordRes=higherEntry.getKey();
-					//int numUnknown=newKnownCoordRes.sub(lastKnownCoordRes)-1;
-					//System.err.println("DEBUG: "+getName()+" old: "+lastKnownCoordRes.coord+lastKnownCoordRes.coord_ins+" new: "+newKnownCoordRes.coord+newKnownCoordRes.coord_ins+" diff: "+numUnknown);
-					//if(numUnknown>0)
-					//	padChain(false,numUnknown);
-					//appendToChain(false,higherEntry.getValue());
-					//lastKnownCoordRes=newKnownCoordRes;
-				}
+				aminoSegments=new ArrayList<LabelledSegment<PDBAmino>>();
+				aminoSegments.add(new LabelledSegment<PDBAmino>(chainAminos));
 			}
 			
-			if(missing.size()>0) {
-				System.err.println("DEBUGWARNING: "+getName()+" has "+missing.size()+" unplaced missing residues");
+			// Last, Building the sequence, just masked and unmasked
+			StringBuilder rebuiltSequence=new StringBuilder();
+			StringBuilder rebuiltPatchedSequence=new StringBuilder();
+			for(LabelledSegment<PDBAmino> anAminoSegment: aminoSegments) {
+				for(PDBAmino anAmino: anAminoSegment.segment) {
+					rebuiltSequence.append(anAmino.amino);
+					rebuiltPatchedSequence.append(artifactSet.contains(anAmino)?PDBAmino.UnknownAmino:anAmino.amino);
+				}
 			}
-		*/
+			chainseqs[0]=rebuiltSequence;
+			
+			// Can we use artifact-masked sequence or will we have to use heuristics?
+			CharSequence clippedSequence = ClipSequence(new StringBuilder(chainseqs[1]));
+			List<Integer> hiLo = new ArrayList<Integer>();
+			CharSequence clippedRebuiltSequence = ClipSequence(new StringBuilder(rebuiltSequence), hiLo);
+			CharSequence clippedRebuiltPatchedSequence = ClipSequence(new StringBuilder(rebuiltPatchedSequence));
+			
+			if(clippedSequence!=null && rebuiltSequence.toString().equals(chainseqs[1].toString())) {
+				// It is redundant, but it servers as a marker
+				useMaskingHeuristics=false;
+				// Used sequence patched with SEQADV info
+				chainseqs[2]=rebuiltPatchedSequence;
+			} else if(clippedSequence!=null && clippedRebuiltSequence.toString().equals(clippedSequence.toString())) {
+				// It is redundant, but it servers as a marker
+				useMaskingHeuristics=false;
+				// Clipping on sequence patched with SEQADV info based on previous clipping info
+				chainseqs[2]=new StringBuilder(rebuiltPatchedSequence.substring(hiLo.get(0), hiLo.get(1)));
+			} else if(clippedSequence!=null && clippedRebuiltPatchedSequence.toString().equals(clippedSequence.toString())) {
+				// It is redundant, but it servers as a marker
+				useMaskingHeuristics=false;
+				chainseqs[2]=new StringBuilder(clippedRebuiltPatchedSequence);
+			} else {
+				if(clippedSequence!=null) {
+					System.err.println("MISMATCHES "+getName());
+					System.err.println("\tMissing List Size: "+missingList.size());
+					System.err.println("\tS: "+chainseqs[1]);
+					System.err.println("\tA: "+rebuiltSequence);
+					System.err.println("\tR: "+rebuiltPatchedSequence);
+					System.err.println("\tC: "+clippedRebuiltPatchedSequence);
+				}
+				useMaskingHeuristics=true;
+				chainseqs[2]=chainseqs[1];
+			}
+		} else {
+			// In this case is better reusing the same object, because it contains the information we trust
+			useMaskingHeuristics=true;
+			chainseqs[0]=chainseqs[2]=chainseqs[1];
 		}
 		
 		putTER();
@@ -915,7 +998,7 @@ public class PDBChain {
 	}
 	
 	public Mapping addMapping(String db, String id, PDBCoord start, PDBCoord stop) {
-		Mapping m = new Mapping(chainName, db, id, start, stop);
+		Mapping m = new Mapping(this, chainName, db, id, start, stop);
 		artifactMapping.add(m);
 		artifactHash.put(db+":"+id,m);
 		
@@ -924,6 +1007,11 @@ public class PDBChain {
 	
 	
 	public void appendToArtifact(String db, String id, String reason,PDBAmino residue) {
+		// New approach
+		artifactSet.add(residue);
+		
+		// Old approach!
+		
 		// System.err.println("FOUND ARTIFACT FOR CHAIN '"+chain+"'");
 		Mapping map = artifactHash.get(db+":"+id);
 		//	addMapping(db,id,Integer.MIN_VALUE,Integer.MIN_VALUE)
@@ -959,8 +1047,16 @@ public class PDBChain {
 		return getAminos(false);
 	}
 	
+	public StringBuilder getMaskedAminos() {
+		return chainseqs[2];
+	}
+	
 	public StringBuilder getAminos(boolean isSeq) {
 		int chainIdx=isSeq?1:0;
+		return getAminos(chainIdx);
+	}
+	
+	public StringBuilder getAminos(int chainIdx) {
 		return (chainseqs[chainIdx]!=null)?chainseqs[chainIdx]:null;
 	}
 	
@@ -973,15 +1069,18 @@ public class PDBChain {
 	public PDBSeq getPrunedSequence() {
 		PDBSeq retval=null;
 		
-		String aminoSeq = ClipSequence(getSeqAminos());
-		String chainSeq = ClipSequence(getAminos());
-		if(aminoSeq.equals(chainSeq) && artifactMapping.size()>0) {
-			// TODO: pruning is done here using the info gathered from SEQADV fields
-		} else  {
-			CharSequence prunedSeq = PruneSequence(aminoSeq);
-			if(prunedSeq!=null) {
-				retval = new PDBSeq(getName(),description,prunedSeq);
-			}
+		StringBuilder tmpSeq=getMaskedAminos();
+		if(tmpSeq!=null)
+			tmpSeq=new StringBuilder(tmpSeq);
+		CharSequence prunedSeq = ClipSequence(tmpSeq);
+		
+		// Do we need cloning artifacts heuristics?
+		if(useMaskingHeuristics && prunedSeq!=null && prunedSeq.length()>=MINSEQLENGTH) {
+			prunedSeq=ClipSequence(PruneSequence(prunedSeq));
+		}
+		
+		if(prunedSeq!=null && prunedSeq.length()>=MINSEQLENGTH) {
+			retval = new PDBSeq(getName(),description,prunedSeq);
 		}
 		return retval;
 	}

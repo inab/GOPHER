@@ -14,6 +14,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.zip.GZIPInputStream;
 
@@ -70,9 +71,11 @@ public class PDBParser {
 		// Let's process the origHeaders, so we get the PDB Ids in a set
 		// And we are going to ban at whole entry level, not at individual chains one,
 		HashSet<String> origPDBIds=new HashSet<String>();
-		for(String header: origHeaders) {
-			if(header.indexOf(FASTA_PDB_HEADER_PREFIX)==0) {
-				origPDBIds.add(header.substring(FASTA_PDB_HEADER_PREFIX.length(), header.indexOf(PDBChain.CHAIN_SEP)));
+		if(origHeaders!=null) {
+			for(String header: origHeaders) {
+				if(header.indexOf(FASTA_PDB_HEADER_PREFIX)==0) {
+					origPDBIds.add(header.substring(FASTA_PDB_HEADER_PREFIX.length(), header.indexOf(PDBChain.CHAIN_SEP)));
+				}
 			}
 		}
 		
@@ -179,7 +182,7 @@ public class PDBParser {
 	 * @param inputQueue The array with the input files/directories
 	 * @param origHeaders The headers in FASTA format from the survivors of a previous run
 	 * @param sequencesFile The file where aminoacid sequences found in the different PDB files are dumped, unfiltered
-	 * @param clippedSelFile File where all new aminoacid sequences from the parsed PDBs, with unknown aminoacids clipped from both sides, are written
+	 * @param clippedSelFile File where all the aminoacid sequences from the parsed PDBs, which fulfill the requisites, with artifacts removed, are written
 	 * @param prunedSelFile File where all new aminoacid sequences from the parsed PDBs which fulfill the requisites, with artifacts removed, are dumped
 	 * @param propagateErrors Propagate exception when an error is found
 	 * @return The list with only the new PDBSeq sequences, pruned and clipped
@@ -350,10 +353,10 @@ public class PDBParser {
 		return parsePDBFile(entry, prevPDBIds, null, null, null);
 	}
 
-	protected List<PDBSeq> parsePDBFile(File entry, PrintStream OUT, PrintStream FOUT, PrintStream AFILE)
+	protected List<PDBSeq> parsePDBFile(File entry, PrintStream UOUT, PrintStream OUT, PrintStream FOUT)
 		throws IOException
 	{
-		return parsePDBFile(entry, null, OUT, FOUT, AFILE);
+		return parsePDBFile(entry, null, UOUT, OUT, FOUT);
 	}
 	
 	/**
@@ -361,8 +364,8 @@ public class PDBParser {
 	 * @param dirEntry The File object pointing to a PDB file, which could (or could not) be compressed
 	 * @param prevPDBIds The set of previously found PDB ids, so we can completely skip the parse task
 	 * @param UOUT The PrintStream where we can print all the found sequences, unfiltered
-	 * @param OUT The PrintStream where we can print all the found sequences, filtered
-	 * @param FOUT The PrintStream where we can print only new sequences, filtered
+	 * @param OUT The PrintStream where we can print all the found sequences, pruned
+	 * @param FOUT The PrintStream where we can print only new sequences, pruned
 	 * @return
 	 * @throws IOException
 	 */
@@ -405,7 +408,7 @@ public class PDBParser {
 			boolean badchain=false;
 			HashSet<String> ignoreChain=new HashSet<String>();
 			int numModels=1;
-			boolean doRemark465=false;
+			char doRemark465=0;
 			
 			String line;
 			int readingState=0;
@@ -520,7 +523,7 @@ public class PDBParser {
 								compline.append(';');
 							
 							// ERR.println("PROCE "+compline);
-							String[] procres = PROCCOMP(compline.toString(),current_desc,chains);
+							String[] procres = processCompoundStrings(compline.toString(),current_desc,chains);
 							if(procres!=null) {
 								if(procres[0]!=null)
 									prev_subcomp=procres[0];
@@ -537,20 +540,33 @@ public class PDBParser {
 					} else if(line.startsWith("REMARK 465") && line.length()>=26) {
 						if(AFILE!=null)
 							AFILE.println(line);
-						if(doRemark465) {
+						if(doRemark465>0) {
 							// Let's store these missing residues for further reconstruction
+							int modelNo=0;
+							
+							// Is per model lost residues?
+							if(doRemark465>1) {
+								try {
+									modelNo = Integer.parseInt(line.substring(11,14).trim());
+								} catch(NumberFormatException nfe) {
+									// Not really per model, so downgrading to model-wide
+									doRemark465=1;
+								}
+							}
 							String res = line.substring(15,18).trim();
 							String chain = line.substring(19,20).trim();
 							try {
 								int pos = Integer.parseInt(line.substring(21, 26).trim());
 								char pos_ins = line.charAt(26);
-								chains.storeMissingResidue(chain, new PDBRes(res, pos, pos_ins));
+								chains.storeMissingResidue(modelNo, chain, new PDBRes(res, pos, pos_ins));
 							} catch(NumberFormatException nfe) {
 								// NaN or NaE!?!
 								ERR.println("MAYBEERROR["+pdbcode+"]R: "+line);
 							}
 						} else if(line.contains("M RES C SSSEQI")) {
-							doRemark465=true;
+							doRemark465=2;
+						} else if(line.contains("RES C SSSEQI")) {
+							doRemark465=1;
 						} 
 					} else if(line.startsWith("DBREF ")) {
 						String localchain = line.substring(12,13).trim();
@@ -582,21 +598,15 @@ public class PDBParser {
 								String lposition = line.substring(18, 22).trim();
 								if(lposition.length()==0)
 									ERR.println("MAYBEERROR["+pdbcode+"]S: "+line);
-								else {
-									PDBAmino amino = new PDBAmino(toOneAA.get(ires),Integer.parseInt(lposition),line.charAt(22));
-									// Is it an insertion?
-									// line.substring(22, 23);
-									String db=line.substring(24, 28).trim();
-									String id=line.substring(29, 38).trim();
-									
-									// String sres = line.substring(39,42).trim();
-									// String sposition = line.substring(43,48).trim();
-									
-									if(toOneAA.containsKey(ires)) {
+								else if(toOneAA.containsKey(ires)) {
+										// String sres = line.substring(39,42).trim();
+										// String sposition = line.substring(43,48).trim();
+										String db=line.substring(24, 28).trim();
+										String id=line.substring(29, 38).trim();
+										PDBAmino amino = new PDBAmino(toOneAA.get(ires),Integer.parseInt(lposition),line.charAt(22));
 										chains.appendToArtifact(localchain, db, id, artifact, amino);
 										
 										// ERR.println("IRES "+ires+"("+((ireschar!=null)?ireschar:'?')+")"+" LC "+localchain+" POS "+position+" SReS "+sres+" SPOS "+sposition);
-									}
 								}
 								
 								break;
@@ -625,19 +635,19 @@ public class PDBParser {
 					}
 					// At last, let's save the fragment of chain's sequence
 					if(prev_chain==null || localchain==null || !localchain.equals(prev_chain)) {
-						boolean anotherChain = PRINTCMD(pdbcode,prev_chain,chains,badchain);
-						if(anotherChain) {
+						boolean anotherChain = seqCheck(pdbcode,prev_chain,chains,badchain);
+/*						if(anotherChain) {
 							// Mapping stuff will disappear from here because it must be applied from inside
-							List<PDBChain.Mapping> maplist = chains.getMappingList(prev_chain);
+							List<Mapping> maplist = chains.getMappingList(prev_chain);
 							if(maplist!=null) {
 								// int seqLength=anotherChain.sequence.length();
-								int mappedLength=0;
-								int artifactsLength=0;
-								for(PDBChain.Mapping map: maplist) {
+								double mappedLength=0;
+								double artifactsLength=0;
+								for(Mapping map: maplist) {
 									mappedLength += map.end.sub(map.start)+1;
-									List<PDBChain.Fragment> chainArtifacts = map.getFragmentList();
+									List<Fragment> chainArtifacts = map.getFragmentList();
 									if(chainArtifacts!=null) {
-										for(PDBChain.Fragment artifact: chainArtifacts) {
+										for(Fragment artifact: chainArtifacts) {
 											artifactsLength+=artifact.end.sub(artifact.start)+1;
 											// ERR.println("PDB "+pdbcode+" CHAIN "+prev_chain+" START "+artifact.start+" END "+artifact.end+" REASON "+artifact.reason);
 										}
@@ -653,6 +663,7 @@ public class PDBParser {
 //								}
 //							}
 						}
+*/
 						badchain=false;
 						
 						prev_chain = localchain;
@@ -712,35 +723,36 @@ public class PDBParser {
 						prevCoord = null;
 					} else if(line.startsWith("END")) {
 						// The right moment to compare, jarl!
-						List<HashMap<String,PDBChain>> lchains=chains.lchains;
+						List<Map<String,PDBChain>> lchains=chains.lchains;
 						
 						ERR.println("REPORT "+chains.pdbcode);
 						int modelpos=(lchains.size()>1)?1:0;
-						for(HashMap<String,PDBChain> chainatoms: lchains) {
+						for(Map<String,PDBChain> chainatoms: lchains) {
 							ERR.println("Chains by   ATOM"+(modelpos==0?"":" (model "+modelpos+")")+": "+MiscHelper.join(chainatoms.keySet(), ", "));
 							modelpos++;
 						}
 						
-						HashMap<String,PDBChain> chainSeqs = lchains.get(0);
+						Map<String,PDBChain> chainSeqs = lchains.get(0);
 						for(PDBChain entry: chainSeqs.values()) {
 							StringBuilder aminoSeqBuilder = entry.getSeqAminos();
 							
 							if(aminoSeqBuilder!=null) {
-								String aminoSeq = PDBChain.ClipSequence(aminoSeqBuilder);
+								CharSequence aminoSeq = PDBChain.ClipSequence(aminoSeqBuilder);
 								if(UOUT!=null)
 									WriteFASTASeq(UOUT,entry.getName()+" mol:protein length:"+aminoSeq.length()+"  "+entry.getDescription(),aminoSeq,SegSize);
 								
 								// Has passed the filters?
 								PDBSeq pruned = entry.getPrunedSequence();
+								String prunedLabel = (entry.artifactSet.size()>0)?(entry.useMaskingHeuristics?"prunedN":"prunedP"):"prunedH";
 								if(pruned!=null) {
 									CharSequence prunedSeq = pruned.sequence;
 									if(OUT!=null)
-										WriteFASTASeq(OUT,pruned.id+" mol:protein(pruned) length:"+prunedSeq.length()+"  "+pruned.iddesc,prunedSeq);
+										WriteFASTASeq(OUT,pruned.id+" mol:protein("+prunedLabel+") length:"+prunedSeq.length()+"  "+pruned.iddesc,prunedSeq);
 									
 									// Is it a new sequence?
 									if(parsed!=null) {
 										if(FOUT!=null) {
-											WriteFASTASeq(FOUT,pruned.id+" mol:protein(pruned) length:"+prunedSeq.length()+"  "+pruned.iddesc,prunedSeq);
+											WriteFASTASeq(FOUT,pruned.id+" mol:protein("+prunedLabel+") length:"+prunedSeq.length()+"  "+pruned.iddesc,prunedSeq);
 										}
 										PDBSeq pdbSeq = new PDBSeq(pruned.id,pruned.iddesc,prunedSeq);
 										pdbSeq.features.put(PDBSeq.ORIGIN_KEY, PDB_LABEL);
@@ -816,7 +828,7 @@ public class PDBParser {
 		}
 	}
 	
-	protected boolean PRINTCMD(String pdbcode, String prev_chain, PDBChains chains, boolean badchain)
+	protected boolean seqCheck(String pdbcode, String prev_chain, PDBChains chains, boolean badchain)
 		throws IOException
 	{
 		boolean anotherChain = false;
@@ -839,7 +851,7 @@ public class PDBParser {
 		return anotherChain;
 	}
 	
-	protected String[] PROCCOMP(String compline,String current_desc,PDBChains chains)
+	protected String[] processCompoundStrings(String compline,String current_desc,PDBChains chains)
 	{
 		int ridx=compline.lastIndexOf(';');
 		if(ridx!=-1 && ridx==(compline.length()-1)) {
@@ -988,12 +1000,12 @@ public class PDBParser {
 		throws Throwable
 	{
 		if(args.length>4) {
-			File destfile=new File(args[0]);
-			File destUnfilteredFile=new File(args[1]);
-			File artifactsFile=new File(args[2]);
-			File cifdict=new File(args[3]);
+			File destUnfilteredFile=new File(args[0]);
+			File destfile=new File(args[1]);
+			File cifdict=new File(args[2]);
+			File artifactsFile=new File(args[3]);
 			ArrayList<File> dq=new ArrayList<File>();
-			for(String arg:MiscHelper.subList(args, 3)) {
+			for(String arg:MiscHelper.subList(args, 4)) {
 				dq.add(new File(arg));
 			}
 			File[] dirqueue=new File[] {};
@@ -1004,8 +1016,9 @@ public class PDBParser {
 			System.err.println(
 				"This program needs:\n"+
 				"	* A file where the PDB sequence chains are going to be saved in FASTA format.\n"+
-				"	* A file where the interesting artifacts are going to be saved in pseudo SEQADV format (like SEQADV line, without SEQADV particle).\n"+
+				"	* A file where the unfiltered PDB sequence chains are going to be saved in FASTA format.\n"+
 				"	* The CIF dictionary.\n"+
+				"	* A file where the interesting artifacts are going to be saved in pseudo SEQADV format (like SEQADV line, without SEQADV particle).\n"+
 				"	* and one or more directories populated with PDB entries"
 			);
 		}
