@@ -5,6 +5,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.logging.Logger;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
@@ -13,6 +14,11 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class PDBChain {
+	protected final static Logger LOG = Logger.getLogger(PDBChain.class.getName());
+	static {
+		LOG.setUseParentHandlers(false);
+	};
+	
 	protected final static char CHAIN_SEP='_';
 	
 	protected final static int MINSEQLENGTH=30;
@@ -274,7 +280,7 @@ public class PDBChain {
 						piece.append(toOneAA.get(ires));
 					} else if(notAA.contains(ires)) {
 						//if(length($localseq)>0 || (defined($prev_chain) && defined($prev_seq) && $localchain eq $prev_chain && length($prev_seq)>0)) {
-							System.err.println("WARNING: Jammed chain: '"+ires+"' in "+getName());
+							LOG.warning("Jammed chain: '"+ires+"' in "+getName());
 							piece.append(PDBAmino.UnknownAmino);
 						//} else {
 						//	$localseq=undef;
@@ -282,7 +288,7 @@ public class PDBChain {
 						//}
 					} else {
 						piece.append(PDBAmino.UnknownAmino);
-						System.err.println("WARNING: Unknown aminoacid '"+ires+"' in "+getName()+"!!!");
+						LOG.warning("Unknown aminoacid '"+ires+"' in "+getName()+"!!!");
 					}
 				//} else if(length($ires)==1) {
 				//	# Y los nucleótidos en códigos de una letra
@@ -327,14 +333,14 @@ public class PDBChain {
 						oneAmino=toOneAA.get(ires);
 					} else if(notAA.contains(ires)) {
 						//if(length($localseq)>0 || (defined($prev_chain) && defined($prev_seq) && $localchain eq $prev_chain && length($prev_seq)>0)) {
-							System.err.println("WARNING: Jammed chain: '"+ires+"' at position "+pres.coord+pres.coord_ins+" in "+getName());
+							LOG.warning("Jammed chain: '"+ires+"' at position "+pres.coord+pres.coord_ins+" in "+getName());
 							oneAmino=PDBAmino.UnknownAmino;
 						//} else {
 						//	$localseq=undef;
 						//	last;
 						//}
 					} else {
-						System.err.println("WARNING: Unknown aminoacid '"+ires+"' at "+pres.coord+pres.coord_ins+"' in "+getName()+"!!!");
+						LOG.warning("Unknown aminoacid '"+ires+"' at "+pres.coord+pres.coord_ins+"' in "+getName()+"!!!");
 						oneAmino=PDBAmino.UnknownAmino;
 					}
 					piece.append(oneAmino);
@@ -409,7 +415,7 @@ public class PDBChain {
 						missingBeforeFirstDistance = residue.sub(missingBeforeFirst);
 					}
 					
-					//System.err.println("DEBUG PDBCOORD:"+new PDBCoord(highMark.getKey())+" PDBAMINO: "+new PDBCoord(highMark.getValue())+" PDBSEARCH: "+new PDBCoord(residue));
+					//LOG.finest("DEBUG PDBCOORD:"+new PDBCoord(highMark.getKey())+" PDBAMINO: "+new PDBCoord(highMark.getValue())+" PDBSEARCH: "+new PDBCoord(residue));
 					PDBCoord highRef= highMark.getKey();
 					// Must be the value, otherwise it can give a NPE
 					int highPos=highMark.getValue();
@@ -418,7 +424,7 @@ public class PDBChain {
 					if(prev_coord!=null) {
 						
 						//lowPos=0;
-						System.err.println("DEBUG PDB "+getName()+" HIGH "+highPos+" RES "+residue+new PDBCoord(residue));
+						LOG.finest("DEBUG PDB "+getName()+" HIGH "+highPos+" RES "+residue+new PDBCoord(residue));
 					} else {
 					
 						Entry<PDBCoord, Integer> lowMark=missingLeft.higherEntry(prev_coord);
@@ -602,13 +608,13 @@ public class PDBChain {
 				aminochar = toOneAA.get(res);
 			} else if(notAA.contains(res)) {
 				//if(length($localseq)>0 || (defined($prev_chain) && defined($prev_seq) && $localchain eq $prev_chain && length($prev_seq)>0)) {
-				System.err.println("WARNING: Jammed remark chain: '"+res+"' at "+residue.coord+residue.coord_ins+" in "+getName());
+				LOG.warning("Jammed remark chain: '"+res+"' at "+residue.coord+residue.coord_ins+" in "+getName());
 				//} else {
 				//	$localseq=undef;
 				//	last;
 				//}
 			} else {
-				System.err.println("WARNING: Unknown remark aminoacid '"+res+"' at "+residue.coord+residue.coord_ins+" in "+getName()+"!!!");
+				LOG.warning("Unknown remark aminoacid '"+res+"' at "+residue.coord+residue.coord_ins+" in "+getName()+"!!!");
 			}
 			PDBAmino amino=new PDBAmino(aminochar,residue);
 			// Order of these sentences is very important!
@@ -976,12 +982,12 @@ public class PDBChain {
 				chainseqs[2]=new StringBuilder(clippedRebuiltPatchedSequence);
 			} else {
 				if(clippedSequence!=null) {
-					System.err.println("MISMATCHES "+getName());
-					System.err.println("\tMissing List Size: "+missingList.size());
-					System.err.println("\tS: "+chainseqs[1]);
-					System.err.println("\tA: "+rebuiltSequence);
-					System.err.println("\tR: "+rebuiltPatchedSequence);
-					System.err.println("\tC: "+clippedRebuiltPatchedSequence);
+					LOG.finest("MISMATCHES "+getName());
+					LOG.finest("\tMissing List Size: "+missingList.size());
+					LOG.finest("\tS: "+chainseqs[1]);
+					LOG.finest("\tA: "+rebuiltSequence);
+					LOG.finest("\tR: "+rebuiltPatchedSequence);
+					LOG.finest("\tC: "+clippedRebuiltPatchedSequence);
 				}
 				useMaskingHeuristics=true;
 				chainseqs[2]=chainseqs[1];
@@ -1012,7 +1018,7 @@ public class PDBChain {
 		
 		// Old approach!
 		
-		// System.err.println("FOUND ARTIFACT FOR CHAIN '"+chain+"'");
+		// LOG.fine("FOUND ARTIFACT FOR CHAIN '"+chain+"'");
 		Mapping map = artifactHash.get(db+":"+id);
 		//	addMapping(db,id,Integer.MIN_VALUE,Integer.MIN_VALUE)
 		
@@ -1029,7 +1035,7 @@ public class PDBChain {
 				// new entry...
 				map = addMapping(db,id,new PDBCoord(),new PDBCoord());
 			}
-			System.err.println("JARL! "+pdbcode);
+			LOG.fine("JARL! "+pdbcode);
 		}
 		
 		map.followFragment(reason, residue);

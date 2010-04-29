@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.logging.Logger;
 import java.util.Map;
 import java.util.zip.GZIPInputStream;
 
@@ -16,6 +17,7 @@ import java.util.zip.GZIPInputStream;
  *
  */
 public class CIFDict {
+	protected final static Logger LOG=Logger.getLogger(CIFDict.class.getName());
 	protected HashMap<String, Character> toOneAA;
 	protected HashSet<String> notAA;
 	
@@ -53,7 +55,7 @@ public class CIFDict {
 					if(isPep && threeLet!=null) {
 						// Let's save it!
 						// if(isAmb) {
-						//	System.err.println("Warning: aminoacid "+threeLet+" is ambiguous (one letter "+oneLet+", parents "+parents.toString()+")");
+						//	LOG.warning("aminoacid "+threeLet+" is ambiguous (one letter "+oneLet+", parents "+parents.toString()+")");
 						// }
 						
 						// toOneAA.put(threeLet, (oneLet!=null && oneLet.equals('?'))?((parents.length>0)?parents:'X'):oneLet);
@@ -68,7 +70,7 @@ public class CIFDict {
 							toOneAA.put(threeLet,oneLet);
 						}
 						
-						// System.err.println("Notice: aminoacid "+threeLet+" is "+oneLet");
+						// LOG.fine("aminoacid "+threeLet+" is "+oneLet");
 					}
 					
 					String[] tokens=line.split("[ \t]+",2);
@@ -151,7 +153,7 @@ public class CIFDict {
 		if(isPep && threeLet!=null) {
 			// Let's save it!
 			// if(isAmb) {
-			//	System.err.println("Warning: aminoacid $threeLet is ambiguous (one letter "+oneLet+" parents "+parents.toString()+")");
+			//	LOG.warning("aminoacid $threeLet is ambiguous (one letter "+oneLet+" parents "+parents.toString()+")");
 			// }
 			
 			// toOneAA.put(threeLet, (oneLet!=null && oneLet.equals('?'))?((parents.length>0)?parents:'X'):oneLet);
@@ -166,7 +168,7 @@ public class CIFDict {
 				toOneAA.put(threeLet,oneLet);
 			}
 			
-			// System.err.println("Notice: aminoacid "+threeLet+" is "+oneLet);
+			// LOG.fine("aminoacid "+threeLet+" is "+oneLet);
 		}
 		
 		// Last, setting up the hashes!
@@ -186,11 +188,11 @@ public class CIFDict {
 				}
 			} while(tval.getClass().isArray());
 			
-			//	System.err.println(kv.getKey()+" interpreted as "+alt);
+			//	LOG.fine(kv.getKey()+" interpreted as "+alt);
 			//	one=(Character)tval;
 			// } else {
 			//	one=(Character)val;
-			// System.err.println(kv.getKey()+" is "+one);
+			// LOG.fine(kv.getKey()+" is "+one);
 		}
 	}
 	

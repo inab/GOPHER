@@ -18,12 +18,20 @@ import java.nio.channels.FileChannel;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
+import java.util.logging.Logger;
+import java.util.logging.StreamHandler;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.cnio.scombio.jmfernandez.GOPHER.PDBSeq;
+import org.cnio.scombio.jmfernandez.misc.LogFormatter;
 
 public class GOPHERPrepare {
+	protected final static Logger LOG = Logger.getLogger(GOPHERPrepare.class.getName());
+	static {
+		LOG.setUseParentHandlers(false);
+	};
+
 	protected final static double CDHIT_IDENTITY=0.97;
 	protected final static int CDHIT_WORD_SIZE=5;
 	protected final static String BLAST_PATH="dc_blastall";
@@ -73,7 +81,8 @@ public class GOPHERPrepare {
 				int readed;
 				
 				while((readed=is.read(buffer,0,buffer.length))!=-1) {
-					os.write(buffer,0,readed);
+					if(os!=null)
+						os.write(buffer,0,readed);
 				}
 			} catch (IOException ioe) {
 				if(err!=null)
@@ -84,35 +93,39 @@ public class GOPHERPrepare {
 	
 	protected static Pattern PDBHEADERPAT=Pattern.compile("PDB:([^ :]+)[ :]");
 	protected static Pattern blhitspat=Pattern.compile("\\([0-9]+ letters?\\)");
-	protected PrintStream logStream;
 	
 	File leadersdb;
 	File leadersReport;
 	Map<String,String> envp;
 	Map<String,String> conf;
+	PrintStream logStream;
 	
-	public GOPHERPrepare(PrintStream logStream,Map<String,String> envp)
+	public GOPHERPrepare(Map<String,String> envp)
+	{
+		this(null,envp);
+	}
+	
+	public GOPHERPrepare(PrintStream logStream, Map<String,String> envp)
 	{
 		this(logStream,envp,null);
 	}
 	
-	public GOPHERPrepare(PrintStream logStream,Map<String,String> envp,Map<String,String> conf)
+	public GOPHERPrepare(PrintStream logStream, Map<String,String> envp,Map<String,String> conf)
 	{
-		this.logStream=logStream;
 		this.envp=envp;
 		this.conf=conf;
 		leadersdb=null;
 		leadersReport=null;
-	}
-	
-	public GOPHERPrepare(PrintStream logStream)
-	{
-		this(logStream,null);
+		
+		// Set logging info just when needed
+		this.logStream = logStream;
+		if(logStream!=null)
+			LOG.addHandler(new StreamHandler(logStream, new LogFormatter()));
 	}
 	
 	public GOPHERPrepare()
 	{
-		this(System.err);
+		this(null);
 	}
 	
 	protected boolean filterUsingFASTAFile(File origFile,File newFile,File filtFile,File analFile)
@@ -371,7 +384,7 @@ public class GOPHERPrepare {
 			"-M",Integer.toString(cdmem)
 		};
 		
-		logStream.println("NOTICE: Launching @CDHIT2Dparams");
+		LOG.info("NOTICE: Launching @CDHIT2Dparams");
 		Process p = launchProgram(CDHIT2Dparams,envp,workdir,true);
 		// No need to redirect error, because it is already redirected!
 		StreamRedirector sro=new StreamRedirector(p.getInputStream(),logStream,logStream);
@@ -379,7 +392,7 @@ public class GOPHERPrepare {
 		
 		try {
 			int retval = p.waitFor();
-			// System.err.println("RETVALS "+retval+" vs "+p.exitValue());
+			// LOG.notice("RETVALS "+retval+" vs "+p.exitValue());
 			if(retval!=0)
 				throw new IOException("ERROR: system @CDHIT2Dparams failed: "+retval);
 		} catch(InterruptedException ie) {
@@ -395,13 +408,13 @@ public class GOPHERPrepare {
 			"-M",Integer.toString(cdmem)
 		};
 		
-		logStream.println("NOTICE: Launching @CDHITparams");
+		LOG.info("NOTICE: Launching @CDHITparams");
 		p = launchProgram(CDHITparams,envp,workdir,true);
 		sro=new StreamRedirector(p.getInputStream(),logStream,logStream);
 		sro.start();
 		try {
 			int retval = p.waitFor();
-			// System.err.println("RETVALS "+retval+" vs "+p.exitValue());
+			// LOG.notice("RETVALS "+retval+" vs "+p.exitValue());
 			if(retval!=0)
 				throw new IOException("ERROR: system @CDHITparams failed: "+retval);
 		} catch(InterruptedException ie) {
@@ -422,7 +435,7 @@ public class GOPHERPrepare {
 			"-b",Integer.toString(BLAST_HITS)
 		};
 
-		logStream.println("NOTICE: Launching @BLASTparams");
+		LOG.info("NOTICE: Launching @BLASTparams");
 		BufferedOutputStream lrs=null;
 		try {
 			lrs=new BufferedOutputStream(new FileOutputStream(leadersReport));
@@ -437,7 +450,7 @@ public class GOPHERPrepare {
 			sre.start();
 			try {
 				int retval = p.waitFor();
-				// System.err.println("RETVALS "+retval+" vs "+p.exitValue());
+				// LOG.notice("RETVALS "+retval+" vs "+p.exitValue());
 				if(retval!=0)
 					throw new IOException("ERROR: system @BLASTparams failed: "+retval);
 			} catch(InterruptedException ie) {
@@ -474,11 +487,11 @@ public class GOPHERPrepare {
 						query+=" "+line.substring(queryParticle.length());
 					}
 				} else if(line.indexOf("***** No hits found ******")!=-1) {
-					logStream.println("This one is really difficult! "+query);
+					LOG.fine("This one is really difficult! "+query);
 					// We need to save here the information to generate the XML report
 					query=null;
 				} else if(line.indexOf("Sequences producing significant")==0) {
-					logStream.println("An easy one: "+query);
+					LOG.fine("An easy one: "+query);
 					// We need to save here the information to generate the XML report
 					query=null;
 				}

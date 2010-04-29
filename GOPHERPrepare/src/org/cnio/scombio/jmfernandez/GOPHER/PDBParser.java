@@ -14,9 +14,14 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import java.util.logging.ConsoleHandler;
 import java.util.Map;
 import java.util.Set;
 import java.util.zip.GZIPInputStream;
+
+import org.cnio.scombio.jmfernandez.misc.LogFormatter;
 
 /**
  * 
@@ -31,6 +36,12 @@ public class PDBParser {
 	protected final static String PREF_SEP_STRING=new String(new char[] {PREF_SEP});
 	protected final static String FASTA_PDB_HEADER_PREFIX=FASTA_HEADER_PREFIX+"PDB"+PREF_SEP;
 	protected final static int SegSize=60;
+	
+	// Class logger
+	protected final static Logger LOG=Logger.getLogger(PDBParser.class.getName());
+	static {
+		LOG.setUseParentHandlers(false);
+	};
 
 	// Global variables and constants, mainly used by static methods
 	protected final static String[] ARTIFACTS={
@@ -112,7 +123,6 @@ public class PDBParser {
 	// The artifacts file
 	protected PrintStream AFILE;
 	// The error messages file
-	protected PrintStream ERR;
 	protected final static String PDBPRE_LABEL="pdbpre";
 	protected final static String PDB_LABEL="pdb";
 	
@@ -128,12 +138,6 @@ public class PDBParser {
 		this(cifdict,new PrintStream(new BufferedOutputStream(new FileOutputStream(artifactsFile))));
 	}
 	
-	public PDBParser(File cifdict, PrintStream AFILE)
-		throws IOException
-	{
-		this(cifdict,AFILE,System.err);
-	}
-
 	/**
 	 * PDB parser object has all the methods needed to parse PDB files and get
 	 * the aminoacid sequences, either filtered or unfiltered.
@@ -141,7 +145,7 @@ public class PDBParser {
 	 * @param cifdict The file pointing to the CIFDict dictionary
 	 * @throws IOException
 	 */
-	public PDBParser(File cifdict, PrintStream AFILE, PrintStream ERR)
+	public PDBParser(File cifdict, PrintStream AFILE)
 		throws IOException
 	{
 		// Let's read CIF dictionary
@@ -149,7 +153,6 @@ public class PDBParser {
 		toOneAA = dict.getMapping();
 		notAA = dict.getNotMapping();
 		this.AFILE = AFILE;
-		this.ERR = ERR;
 	}
 	
 	/**
@@ -238,11 +241,10 @@ public class PDBParser {
 						newDynDirQueue.addAll(moreDirQueue);
 					} catch(IOException ioe) {
 						if(propagateErrors) {
-							ERR.println("ERROR: Unable to process directory "+dirname.getAbsolutePath());
+							LOG.log(Level.SEVERE,"Unable to process directory "+dirname.getAbsolutePath(),ioe);
 							throw ioe;
 						} else {
-							ERR.println("WARNING: Unable to process directory "+dirname.getAbsolutePath());
-							ioe.printStackTrace();
+							LOG.log(Level.WARNING,"Unable to process directory "+dirname.getAbsolutePath(),ioe);
 						}
 					}
 				}
@@ -327,14 +329,13 @@ public class PDBParser {
 					if(propagateErrors) {
 						throw ioe;
 					} else {
-						ERR.println("WARNING: Unable to process file "+entry.getAbsolutePath());
-						ioe.printStackTrace();
+						LOG.log(Level.WARNING,"Unable to process file "+entry.getAbsolutePath(),ioe);
 					}
 				}
 			} else if(propagateErrors) {
 				throw new IOException(entry.getAbsolutePath()+" is neither a directory nor a PDB file!");
 			} else {
-				ERR.println("WARNING: "+entry.getAbsolutePath()+" is neither a directory nor a PDB file!");
+				LOG.warning(entry.getAbsolutePath()+" is neither a directory nor a PDB file!");
 			}
 		}
 		
@@ -453,7 +454,7 @@ public class PDBParser {
 								} else {
 									if(!compline.toString().endsWith(";"))
 										compline.append(';');
-									ERR.println("JOM "+compline);
+									LOG.finest("JOM "+compline);
 									String[] procres = PROCCOMP(compline.toString(),current_desc,chaindescs);
 									if(procres!=null) {
 										if(procres[0]!=null)
@@ -487,7 +488,7 @@ public class PDBParser {
 								}
 								//$prev_subcomp=undef;
 							} else {
-								ERR.println("BLAMEPDB: "+pdbcode+" "+compline);
+								LOG.finest("BLAMEPDB: "+pdbcode+" "+compline);
 							}
 						} else {
 							prev_subcomp=null;
@@ -514,7 +515,7 @@ public class PDBParser {
 								tb.append(' ');
 							tb.append(compchunk);
 						} else {
-							ERR.println("Jammed case!!!! "+pdbcode);
+							LOG.fine("Jammed case!!!! "+pdbcode);
 							break;
 						}
 					} else if(line.startsWith("SOURCE")) {
@@ -522,7 +523,7 @@ public class PDBParser {
 							if(!compline.toString().endsWith(";"))
 								compline.append(';');
 							
-							// ERR.println("PROCE "+compline);
+							// LOG.finest("PROCE "+compline);
 							String[] procres = processCompoundStrings(compline.toString(),current_desc,chains);
 							if(procres!=null) {
 								if(procres[0]!=null)
@@ -561,7 +562,7 @@ public class PDBParser {
 								chains.storeMissingResidue(modelNo, chain, new PDBRes(res, pos, pos_ins));
 							} catch(NumberFormatException nfe) {
 								// NaN or NaE!?!
-								ERR.println("MAYBEERROR["+pdbcode+"]R: "+line);
+								LOG.fine("MAYBEERROR["+pdbcode+"]R: "+line);
 							}
 						} else if(line.contains("M RES C SSSEQI")) {
 							doRemark465=2;
@@ -597,7 +598,7 @@ public class PDBParser {
 								String localchain = line.substring(16,17).trim();
 								String lposition = line.substring(18, 22).trim();
 								if(lposition.length()==0)
-									ERR.println("MAYBEERROR["+pdbcode+"]S: "+line);
+									LOG.fine("MAYBEERROR["+pdbcode+"]S: "+line);
 								else if(toOneAA.containsKey(ires)) {
 										// String sres = line.substring(39,42).trim();
 										// String sposition = line.substring(43,48).trim();
@@ -606,7 +607,7 @@ public class PDBParser {
 										PDBAmino amino = new PDBAmino(toOneAA.get(ires),Integer.parseInt(lposition),line.charAt(22));
 										chains.appendToArtifact(localchain, db, id, artifact, amino);
 										
-										// ERR.println("IRES "+ires+"("+((ireschar!=null)?ireschar:'?')+")"+" LC "+localchain+" POS "+position+" SReS "+sres+" SPOS "+sposition);
+										// LOG.finest("IRES "+ires+"("+((ireschar!=null)?ireschar:'?')+")"+" LC "+localchain+" POS "+position+" SReS "+sres+" SPOS "+sposition);
 								}
 								
 								break;
@@ -649,17 +650,17 @@ public class PDBParser {
 									if(chainArtifacts!=null) {
 										for(Fragment artifact: chainArtifacts) {
 											artifactsLength+=artifact.end.sub(artifact.start)+1;
-											// ERR.println("PDB "+pdbcode+" CHAIN "+prev_chain+" START "+artifact.start+" END "+artifact.end+" REASON "+artifact.reason);
+											// LOG.finest("PDB "+pdbcode+" CHAIN "+prev_chain+" START "+artifact.start+" END "+artifact.end+" REASON "+artifact.reason);
 										}
 									}
 								}
 								// if((mappedLength+artifactsLength)!=seqLength)
-								//	ERR.println("KUACK!!!! "+pdbcode+CHAIN_SEP+prev_chain+" length is "+seqLength+" but coordinates map "+mappedLength+" and artifacts map "+artifactsLength);
+								//	LOG.finest("KUACK!!!! "+pdbcode+CHAIN_SEP+prev_chain+" length is "+seqLength+" but coordinates map "+mappedLength+" and artifacts map "+artifactsLength);
 							}
 //							List<PDBArtifact.Fragment> chainArtifacts = map.getFragmentList();
 //							if(chainArtifacts!=null) {
 //								for(PDBArtifact.Fragment artifact: chainArtifacts) {
-//									ERR.println("PDB "+pdbcode+" CHAIN "+prev_chain+" START "+artifact.start+" END "+artifact.end+" REASON "+artifact.reason);
+//									LOG.finest("PDB "+pdbcode+" CHAIN "+prev_chain+" START "+artifact.start+" END "+artifact.end+" REASON "+artifact.reason);
 //								}
 //							}
 						}
@@ -692,9 +693,9 @@ public class PDBParser {
 									artifacts.padFirst(chain,new PDBCoord(coord, coord_ins));
 								} else if((prev_coord+1)!=coord && !(prev_coord==coord && prev_coord_ins!=coord_ins)) {
 									if(artifacts.hasMissingResidues(chain)) { 
-										ERR.println("ERROR: Residue coordinate mismatch! Prev: "+prev_coord+" New: "+coord);
+										LOG.info("ERROR: Residue coordinate mismatch! Prev: "+prev_coord+" New: "+coord);
 										if(coord<prev_coord) {
-											ERR.println("ERRORDEBUG["+pdbcode+"]A: "+line);
+											LOG.info("ERRORDEBUG["+pdbcode+"]A: "+line);
 											return null;
 										}
 										artifacts.padAtomChain(chain, new PDBCoord(prev_coord,prev_coord_ins).contextInc(), new PDBCoord(coord,coord_ins).contextDec());
@@ -716,7 +717,7 @@ public class PDBParser {
 						String chain = line.substring(21,22).trim();
 						if(chains.hasChain(chain)) {
 							chains.padAtomBoth(chain);
-							//ERR.println("DEBUG: "+pdbcode+" Chain "+chain+" TER");
+							//LOG.fine("DEBUG: "+pdbcode+" Chain "+chain+" TER");
 						}
 					} else if(line.startsWith("ENDMDL")) {
 						prev_chain=null;
@@ -725,10 +726,10 @@ public class PDBParser {
 						// The right moment to compare, jarl!
 						List<Map<String,PDBChain>> lchains=chains.lchains;
 						
-						ERR.println("REPORT "+chains.pdbcode);
+						LOG.info("REPORT "+chains.pdbcode);
 						int modelpos=(lchains.size()>1)?1:0;
 						for(Map<String,PDBChain> chainatoms: lchains) {
-							ERR.println("Chains by   ATOM"+(modelpos==0?"":" (model "+modelpos+")")+": "+MiscHelper.join(chainatoms.keySet(), ", "));
+							LOG.info("Chains by   ATOM"+(modelpos==0?"":" (model "+modelpos+")")+": "+MiscHelper.join(chainatoms.keySet(), ", "));
 							modelpos++;
 						}
 						
@@ -771,17 +772,17 @@ public class PDBParser {
 									if(chainSeqBuilder!=null) {
 										String chainSeq=PDBChain.ClipSequence(chainSeqBuilder);
 										boolean equalchain=chainSeq.equals(aminoSeq);
-										ERR.println("\tCHAIN "+chainName+(modelpos==0?"":" (model "+modelpos+")")+" does"+(equalchain?" not":"")+" differ");
+										LOG.info("\tCHAIN "+chainName+(modelpos==0?"":" (model "+modelpos+")")+" does"+(equalchain?" not":"")+" differ");
 										if(!equalchain) {
-											ERR.println("\t\tSEQRES => "+aminoSeq);
-											ERR.println("\t\tATOM   => "+chainSeq);
+											LOG.info("\t\tSEQRES => "+aminoSeq);
+											LOG.info("\t\tATOM   => "+chainSeq);
 										}
 									}
 									modelpos++;
 								}
 								*/
 							} else {
-								ERR.println("No protein sequence at "+entry.getName());
+								LOG.info("No protein sequence at "+entry.getName());
 							}
 						}
 					}
@@ -838,12 +839,12 @@ public class PDBParser {
 			String chaincode = pdbcode+PDBChain.CHAIN_SEP+prev_chain;
 			if(prev_seq!=null && !badchain && !prev_seq.matches("^X+$")) {
 				if(!chains.hasChain(prev_chain))
-					ERR.println("BLAMEPDB: "+pdbcode);
+					LOG.fine("BLAMEPDB: "+pdbcode);
 				
 				// First, internal storage
 				anotherChain = chainadvs!=null;
 			} else {
-				ERR.println("NOTICE: "+chaincode+" is not a protein sequence");
+				LOG.info("NOTICE: "+chaincode+" is not a protein sequence");
 			}
 		}
 		// $badchain=undef;
@@ -863,7 +864,7 @@ public class PDBParser {
 			String[] comps=compline.split("[ \t]*:[ \t]*",2);
 			prev_subcomp=comps[0];
 			if(comps.length==1)
-				ERR.println("JORL "+compline);
+				LOG.fine("JORL "+compline);
 			String compdata=comps[1];
 			if("MOL_ID".equals(prev_subcomp)) {
 				current_molid=compdata;
@@ -930,8 +931,7 @@ public class PDBParser {
 					List<File> moreDirQueue = filterByPDBHeaders(dirname,origPDBIds,survivors);
 					newDynDirQueue.addAll(moreDirQueue);
 				} catch(IOException ioe) {
-					ERR.println("WARNING: Unable to process directory "+dirname.getAbsolutePath());
-					ioe.printStackTrace();
+					LOG.log(Level.WARNING,"Unable to process directory "+dirname.getAbsolutePath(),ioe);
 				}
 			}
 			dynDirQueue=newDynDirQueue;
@@ -960,8 +960,7 @@ public class PDBParser {
 				try {
 					survivors.addAll(parsePDBFile(direntry,prevPDBIds));
 				} catch(IOException ioe) {
-					ERR.println("WARNING: Unable to process file "+direntry.getAbsolutePath());
-					ioe.printStackTrace();
+					LOG.log(Level.WARNING,"Unable to process file "+direntry.getAbsolutePath(),ioe);
 				}
 			}
 		}
@@ -981,10 +980,6 @@ public class PDBParser {
 		if(AFILE!=null && AFILE!=System.out && AFILE!=System.err) {
 			AFILE.close();
 			AFILE=null;
-		}
-		if(ERR!=null && ERR!=System.out && ERR!=System.err) {
-			ERR.close();
-			ERR=null;
 		}
 	}
 	
@@ -1010,7 +1005,14 @@ public class PDBParser {
 			}
 			File[] dirqueue=new File[] {};
 			dirqueue=dq.toArray(dirqueue);
-			PDBParser p = new PDBParser(cifdict, artifactsFile);
+			Logger logger = Logger.getLogger(PDBParser.class.getName());
+			// We want to see every message in this demo
+			logger.setLevel(Level.WARNING);
+			ConsoleHandler c = new ConsoleHandler();
+			c.setFormatter(new LogFormatter());
+			logger.addHandler(c);
+			// PDBParser p = new PDBParser(cifdict, artifactsFile);
+			PDBParser p = new PDBParser(cifdict);
 			p.parsePDBs(dirqueue, null, destUnfilteredFile, destfile, null, false);
 		} else {
 			System.err.println(
