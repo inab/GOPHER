@@ -6,14 +6,13 @@ xquery version "1.0";
 module namespace casp="http://www.cnio.es/scombio/gopher/1.0/xquery/jobManagement/GOPHERCASP";
 
 declare namespace xcesc="http://www.cnio.es/scombio/xcesc/1.0";
-declare namespace job="http://www.cnio.es/scombio/xcesc/1.0/xquery/jobManagement";
 
 import module namespace gmod="http://www.cnio.es/scombio/gopher/1.0/xquery/javaModule" at "java:org.cnio.scombio.jmfernandez.GOPHER.GOPHERModule";
 import module namespace httpclient="http://exist-db.org/xquery/httpclient";
-import module namespace mgmt="http://www.cnio.es/scombio/xcesc/1.0/xquery/systemManagement" at "xmldb:exist:///db/XCESC-logic/systemManagement.xqm";
 import module namespace util="http://exist-db.org/xquery/util";
 import module namespace xmldb="http://exist-db.org/xquery/xmldb";
 
+import module namespace job="http://www.cnio.es/scombio/xcesc/1.0/xquery/jobManagement" at "xmldb:exist:///db/XCESC-logic/jobManagement.xqm";
 
 (: Binary FASTA files :)
 declare variable $casp:pdbfile as xs:string := 'filtered-pdb.fas';
@@ -42,7 +41,7 @@ declare function casp:doSeed($physicalScratch as xs:string)
 		$casp:pdbprefile,
 		$casp:pdbfile,
 		$physicalScratch,
-		collection($mgmt:configColURI)//job:jobManagement[1]/job:custom[@key='ENV'][1]/env
+		collection($job:configRoot/job:custom[@key='ENV'][1]/env
 	)
 };
 
@@ -67,6 +66,6 @@ declare function casp:doQueriesComputation($lastCol as xs:string,$newCol as xs:s
 			$casp:PREPDBURI,
 			$casp:PDB,
 			$physicalScratch,
-			collection($mgmt:configColURI)//job:jobManagement[1]/job:custom[@key='ENV'][1]/env
+			collection($job:configRoot/job:custom[@key='ENV'][1]/env
 		)
 };

@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+	javaMail properties needed to send e-mails
+-->
+
+<mailcore:mailCore
+	xmlns:mailcore="http://www.cnio.es/scombio/xcesc/1.0/xquery/mailCore"
+>
+	<properties>
+		<property name="mail.debug" value="false"/>
+		<property name="mail.smtp.starttls.enable" value="true"/>
+		<property name="mail.smtp.auth" value="true"/>
+		<property name="mail.smtp.port" value="25"/>
+		<property name="mail.smtp.host" value="webmail.cnio.es"/>
+		<property name="mail.smtp.user" value="biodb"/>
+		<property name="mail.smtp.password"  value="cnio-98"/>
+	</properties>
+	<mail>
+		<from>GOPHER &lt;gopher_support@cnio.es&gt;</from>
+	</mail>
+</mailcore:mailCore>

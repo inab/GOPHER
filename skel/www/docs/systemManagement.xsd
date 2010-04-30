@@ -36,6 +36,12 @@
                 </xs:element>
             </xs:sequence>
             
+            <xs:attribute name="projectName" use="required" type="xs:string">
+                <xs:annotation>
+                    <xs:documentation><![CDATA[The project name for this XCESC instance]]></xs:documentation>
+                </xs:annotation>
+            </xs:attribute>
+            
             <xs:attribute name="collection" use="required" type="xs:string">
                 <xs:annotation>
                     <xs:documentation><![CDATA[The collection where the management data (users, groups, registered servers) is going to be stored]]></xs:documentation>
@@ -68,6 +74,11 @@
         			<xs:documentation><![CDATA[The public base query path for this XCESC installation.]]></xs:documentation>
         		</xs:annotation>
         	</xs:attribute>
+            <xs:attribute name="publicLogicRelURI" use="required" type="xs:string">
+                <xs:annotation>
+                    <xs:documentation><![CDATA[The name of the relative URI used for callable external logic in this XCESC installation.]]></xs:documentation>
+                </xs:annotation>
+            </xs:attribute>
         </xs:complexType>
     </xs:element>
 </xs:schema>

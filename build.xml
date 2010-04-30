@@ -353,6 +353,7 @@
 		<filter token="XCESCConfig" value="${xcesc.config.col}"/>
 		<filter token="AtomicLogic" value="${guiManagement(AtomicWiki-logic)}"/>
 		<filter token="AtomicVirtual" value="${guiManagement(AtomicWiki-VirtualRoot)}"/>
+		<filter token="PublicLogic" value="${systemManagement(publicLogicRelURI)}"/>
 		<filter token="XForms.dir" value="${guiManagement(XForms-root)}"/>
 		<copy
 			file="${GOPHER.patches.dir}/controller-config.xml"

@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema
+    xmlns:xs="http://www.w3.org/2001/XMLSchema"
+    xmlns:gui="http://www.cnio.es/scombio/xcesc/1.0/xquery/mailCore"
+    elementFormDefault="qualified"
+    targetNamespace="http://www.cnio.es/scombio/xcesc/1.0/xquery/mailCore"
+>
+    <xs:annotation>
+        <xs:documentation><![CDATA[XCESC mail core configuration schema]]></xs:documentation>
+    </xs:annotation>
+    
+    <xs:import schemaLocation="mailPatterns.xsd"/>
+    
+    <xs:element name="mailCore">
+        <xs:annotation>
+            <xs:documentation><![CDATA[XCESC mail core configuration file]]></xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element ref="properties" minOccurs="1" maxOccurs="1"/>
+                <xs:element ref="mail" minOccurs="1" maxOccurs="1"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+</xs:schema>

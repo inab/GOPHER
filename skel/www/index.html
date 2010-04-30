@@ -1,7 +1,8 @@
 <html>
 <head>
 	<title>GOPHER Website</title>
-        <link rel="shortcut icon" href="style/GOPHER-favicon.ico" type="image/vnd.microsoft.icon">
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+	<link rel="shortcut icon" href="style/GOPHER-favicon.ico" type="image/vnd.microsoft.icon">
         <link rel="icon" href="style/GOPHER-favicon.ico" type="image/vnd.microsoft.icon">
 	<link rel="stylesheet" type="text/css" href="style/default-style.css">
 
@@ -34,12 +35,11 @@ if(BrowserDetect.browser=='Explorer') {
 </head>
 <body onload="InitXCESC()" onunload="DisposeXCESC()">
 <div style="float:left;margin-right:24px;">
-	<a href="http://gopher.bioinfo.cnio.es/" target="_blank"><img src="style/GOPHER.png"
-	style="float:left;clear:both;"></a>
-	<a href="http://atomic.exist-db.org/" target="_blank"><img src="style/AtomicWiki.png" style="float:left;clear:left;"></a>
+	<a class="imgLink" href="http://gopher.bioinfo.cnio.es/" target="_blank"><img src="style/GOPHER.png" alt="GOPHER logo" style="float:left;clear:both;"></a>
+	<a class="imgLink" href="http://atomic.exist-db.org/" target="_blank"><img src="style/AtomicWiki.png" alt="AtomicWiki logo" style="float:left;clear:left;"></a>
 	<div style="float:left;clear:right;">
-	<a href="http://www.exist-db.org/" target="_blank"><img src="style/powered.gif"></a><br>
-	<a href="http://www.agencexml.com/xsltforms" target="_blank"><img src="forms/xsltforms/poweredbyXSLTForms.png"></a>
+	<a class="imgLink" href="http://www.exist-db.org/" target="_blank"><img src="style/powered.gif" alt="eXistDB logo"></a><br>
+	<a class="imgLink" href="http://www.agencexml.com/xsltforms" target="_blank"><img src="forms/xsltforms/poweredbyXSLTForms.png" alt="Powered by XSLTForms logo"></a>
 	</div>
 </div>
 
@@ -60,7 +60,7 @@ like to participate in the server assessment send an e-mail to
 <a href="mailto:gopher_support@cnio.es"><b><tt>gopher_support@cnio.es</tt></b></a></p>
 <p>A graphical description of the way GOPHER works <a href="docs/gophers-flow-landscape-new-2.svg"
 target="_blank">is available here as an SVG graph</a></p>
-<div align="center"><a href="docs/gophers-flow-landscape-new-2.svg" target="_blank"><img
+<div align="center"><a class="imgLink" href="docs/gophers-flow-landscape-new-2.svg" target="_blank"><img
 src="docs/gophers-flow-landscape-new-2.png"></a></div>
 <p>GOPHER is being built on top of an XCESC (XML Continuous Evaluation System Core)
 modular platform, so most of the work can be reused in further assessments.</p>
@@ -69,6 +69,9 @@ assessments as any future bioinformatic assessment system based on XCESC.</p>
 <p>While we are tying up the loose ends of the GOPHER server you can start preparing
 your server for the assessment looking at <a href="docs/index.html">the technical documentation</a>.</p>
 </div>
+		<div id="bottom" style="float:left;border: 1px dashed black;">
+			José María Fernández, (C) 2009-2010 <a class="imgLink" href="http://www.inab.org/"><img src="style/INB-minilogo.png" alt="INB"></a>
+		</div>
 
 </body>
 </html>

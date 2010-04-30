@@ -4,5 +4,6 @@
     AtomicWiki-logic="Atomic-logic"
     AtomicWiki-VirtualRoot="Atomic"
     XForms-root="forms"
+    template-id="leftlogos"
 >
 </guiManagement>

@@ -11,9 +11,11 @@ declare namespace xs="http://www.w3.org/2001/XMLSchema";
 import module namespace httpclient="http://exist-db.org/xquery/httpclient";
 import module namespace util="http://exist-db.org/xquery/util";
 import module namespace xmldb="http://exist-db.org/xquery/xmldb";
+
+import module namespace core = 'http://www.cnio.es/scombio/xcesc/1.0/xquery/core' at 'xmldb:exist:///db/XCESC-logic/core.xqm';
 import module namespace mgmt="http://www.cnio.es/scombio/xcesc/1.0/xquery/systemManagement" at "xmldb:exist:///db/XCESC-logic/systemManagement.xqm";
 
-declare variable $job:configRoot as element(job:jobManagement) := collection($mgmt:configColURI)//job:jobManagement[1];
+declare variable $job:configRoot as element(job:jobManagement) := collection($core:configColURI)//job:jobManagement[1];
 
 (: Deadlines :)
 declare variable $job:intervalBeforeAssessment as xs:dayTimeDuration := xs:dayTimeDuration($job:configRoot/@intervalBeforeAssessment/string());
@@ -42,11 +44,10 @@ declare variable $job:assessPrefix as xs:string := 'assess-';
 declare variable $job:assessPostfix as xs:string := '.xml';
 
 (: BaseURL :)
-declare variable $job:logicCol as xs:string := 'XCESC-logic';
 declare variable $job:pobox as xs:string := 'pobox.xq';
-declare variable $job:poboxURI as xs:string := string-join(($mgmt:publicBaseURI,$job:logicCol,$job:pobox),'/');
+declare variable $job:poboxURI as xs:string := string-join(($mgmt:publicBaseURI,$core:relLogicCol,$job:pobox),'/');
 declare variable $job:evapobox as xs:string := 'evapobox.xql';
-declare variable $job:evaURI as xs:string := string-join(($mgmt:publicBaseURI,$job:logicCol,$job:evapobox),'/');
+declare variable $job:evaURI as xs:string := string-join(($mgmt:publicBaseURI,$core:relLogicCol,$job:evapobox),'/');
 
 (:::::::::::::::::::::::)
 (: Last Round Document :)
@@ -84,7 +85,7 @@ declare function job:plantSeed()
 		let $physicalScratch:=string-join(($job:physicalScratch,$currentDateStr),'/')
 		let $newCol:=xmldb:create-collection($job:resultsColURI,xmldb:encode($currentDateStr))
 		
-		let $queriesComputation := collection($mgmt:configColURI)//job:jobManagement[1]/job:queriesComputation
+		let $queriesComputation := collection($core:configColURI)//job:jobManagement[1]/job:queriesComputation
 		let $imod := util:import-module($queriesComputation/@namespace,'dyn',$queriesComputation/@module)
 		(: Sixth, let's compute the unique entries :)
 		let $queriesDoc := util:eval(concat("dyn:",xmldb:encode($queriesComputation/@seedEntryPoint),"($physicalScratch)"))
@@ -122,7 +123,7 @@ declare function job:doQueriesComputation($currentDateTime as xs:dateTime)
 		let $physicalScratch:=string-join(($job:physicalScratch,$currentDateStr),'/')
 		let $newCol:=xmldb:create-collection($job:resultsColURI,xmldb:encode($currentDateStr))
 		
-		let $queriesComputation := collection($mgmt:configColURI)//job:jobManagement[1]/job:queriesComputation
+		let $queriesComputation := collection($core:configColURI)//job:jobManagement[1]/job:queriesComputation
 		let $imod := util:import-module($queriesComputation/@namespace,'dyn',$queriesComputation/@module)
 		(: Sixth, let's compute the unique entries :)
 		let $queriesDoc := util:eval(concat("dyn:",xmldb:encode($queriesComputation/@queryEntryPoint),"($lastCol,$newCol,$physicalScratch)"))

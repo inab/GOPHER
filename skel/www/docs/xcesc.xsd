@@ -6,6 +6,7 @@
 	xmlns:job="http://www.cnio.es/scombio/xcesc/1.0/xquery/jobManagement"
 	xmlns:gui="http://www.cnio.es/scombio/xcesc/1.0/xquery/guiManagement"
 	xmlns:meta="http://www.cnio.es/scombio/xcesc/1.0/xquery/metaManagement"
+	xmlns:mailcore="http://www.cnio.es/scombio/xcesc/1.0/xquery/mailCore"
 	targetNamespace="http://www.cnio.es/scombio/xcesc/1.0"
 	elementFormDefault="qualified">
 
@@ -34,6 +35,12 @@
 	<xsd:import namespace="http://www.cnio.es/scombio/xcesc/1.0/xquery/metaManagement" schemaLocation="metaManagement.xsd">
 		<xsd:annotation>
 			<xsd:documentation><![CDATA[GUI management configuration schema]]></xsd:documentation>
+		</xsd:annotation>
+	</xsd:import>
+	
+	<xsd:import namespace="http://www.cnio.es/scombio/xcesc/1.0/xquery/mailCore" schemaLocation="mailCore.xsd">
+		<xsd:annotation>
+			<xsd:documentation><![CDATA[Mail core configuration schema]]></xsd:documentation>
 		</xsd:annotation>
 	</xsd:import>
 	
@@ -185,6 +192,37 @@
 		</xsd:complexType>
 	</xsd:element>
 	
+	<xsd:attributeGroup name="idStatusAttributeGroup">
+		<xsd:attribute name="id" type="xsd:string" use="required">
+			<xsd:annotation>
+				<xsd:documentation><![CDATA[The unique id of the user in the system]]></xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="status" use="required">
+			<xsd:annotation>
+				<xsd:documentation><![CDATA[The user/e-mail status: enabled, disabled or unconfirmed.
+When an user is disabled, all the servers owned by him/her are disabled.
+When an e-mail is disabled, it is not used to send the user notifications]]></xsd:documentation>
+			</xsd:annotation>
+			<xsd:simpleType>
+				<xsd:restriction base="xsd:string">
+					<xsd:enumeration value="disabled"/>
+					<xsd:enumeration value="enabled"/>
+					<xsd:enumeration value="unconfirmed">
+						<xsd:annotation>
+							<xsd:documentation><![CDATA[User/e-mail is almost created, but it is not yet confirmed]]></xsd:documentation>
+						</xsd:annotation>
+					</xsd:enumeration>
+					<xsd:enumeration value="deleted">
+						<xsd:annotation>
+							<xsd:documentation><![CDATA[User/e-mail has been deleted, but it is kept]]></xsd:documentation>
+						</xsd:annotation>
+					</xsd:enumeration>
+				</xsd:restriction>
+			</xsd:simpleType>
+		</xsd:attribute>
+	</xsd:attributeGroup>
+	
 	<xsd:element name="managementData">
 		<xsd:complexType>
 			<xsd:sequence minOccurs="1" maxOccurs="1">
@@ -200,10 +238,17 @@
 								</xsd:annotation>
 								<xsd:complexType>
 									<xsd:sequence minOccurs="1" maxOccurs="1">
-										<xsd:element name="eMail" minOccurs="1" maxOccurs="unbounded" type="xsd:string">
+										<xsd:element name="eMail" minOccurs="1" maxOccurs="unbounded">
 											<xsd:annotation>
 												<xsd:documentation><![CDATA[The e-mail address(es). They must be valid ones]]></xsd:documentation>
 											</xsd:annotation>
+											<xsd:complexType>
+												<xsd:simpleContent>
+													<xsd:extension base="xsd:string">
+														<xsd:attributeGroup ref="xcesc:idStatusAttributeGroup"/>
+													</xsd:extension>
+												</xsd:simpleContent>
+											</xsd:complexType>
 										</xsd:element>
 										<xsd:element ref="xcesc:reference" minOccurs="0" maxOccurs="unbounded">
 											<xsd:annotation>
@@ -211,11 +256,6 @@
 											</xsd:annotation>
 										</xsd:element>
 									</xsd:sequence>
-									<xsd:attribute name="id" type="xsd:string" use="required">
-										<xsd:annotation>
-											<xsd:documentation><![CDATA[The unique id of the user in the system]]></xsd:documentation>
-										</xsd:annotation>
-									</xsd:attribute>
 									<xsd:attribute name="nickname" type="xsd:string" use="required">
 										<xsd:annotation>
 											<xsd:documentation><![CDATA[The unique nickname of the user in the system]]></xsd:documentation>
@@ -226,22 +266,7 @@
 											<xsd:documentation><![CDATA[The pasword associated to the user in the system. This attribute is only used in XForms]]></xsd:documentation>
 										</xsd:annotation>
 									</xsd:attribute>
-									<xsd:attribute name="status" use="required">
-										<xsd:annotation>
-											<xsd:documentation><![CDATA[The user status: enabled or disabled. When an user is disabled, all the servers owned by him/her are disabled]]></xsd:documentation>
-										</xsd:annotation>
-										<xsd:simpleType>
-											<xsd:restriction base="xsd:string">
-												<xsd:enumeration value="disabled"/>
-												<xsd:enumeration value="enabled"/>
-												<xsd:enumeration value="unconfirmed">
-													<xsd:annotation>
-														<xsd:documentation><![CDATA[User is almost created, but it is not yet confirmed]]></xsd:documentation>
-													</xsd:annotation>
-												</xsd:enumeration>
-											</xsd:restriction>
-										</xsd:simpleType>
-									</xsd:attribute>
+									<xsd:attributeGroup ref="xcesc:idStatusAttributeGroup"/>
 									<xsd:attribute name="firstName" type="xsd:string" use="required">
 										<xsd:annotation>
 											<xsd:documentation><![CDATA[The first name(s) of the user (e.g. José María)]]></xsd:documentation>
@@ -967,7 +992,7 @@ ab initio, then the origin of the match must be identified]]></xsd:documentation
 	
 	<xsd:element name="configuration">
 		<xsd:annotation>
-			<xsd:documentation><![CDATA[The configuration of a XCESC system, usually stored at /db/XCESC-config/configuration.xml]]></xsd:documentation>
+			<xsd:documentation><![CDATA[The configuration of a XCESC system, probably stored at /db/XCESC-config/configuration.xml]]></xsd:documentation>
 		</xsd:annotation>
 		<xsd:complexType>
 			<xsd:sequence>
@@ -975,6 +1000,7 @@ ab initio, then the origin of the match must be identified]]></xsd:documentation
 				<xsd:element ref="job:jobManagement"/>
 				<xsd:element ref="gui:guiManagement"/>
 				<xsd:element ref="meta:metaManagement"/>
+				<xsd:element ref="mailcore:mailCore"/>
 			</xsd:sequence>
 		</xsd:complexType>
 	</xsd:element>

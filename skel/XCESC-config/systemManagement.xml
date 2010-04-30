@@ -1,12 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <systemManagement
 	xmlns="http://www.cnio.es/scombio/xcesc/1.0/xquery/systemManagement"
+	projectName="GOPHER"
 	collection="/db/GOPHER-config"
 	group="gopher"
 	managementDoc="managementData.xml"
 	publicServerName="gopher.bioinfo.cnio.es"
 	publicServerPort="80"
 	publicBasePath=""
+	publicLogicRelURI="XCESC-logic"
 >
     <admin user="gopher" password="!Ese:PotR0Kloro" group="gopher" mail="gopher_support@cnio.es"/>
 </systemManagement>

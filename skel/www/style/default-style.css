@@ -35,6 +35,11 @@ ul li, ol li {
     line-height: 1.5em;
 }
 
+a.imgLink:hover {
+    text-decoration: none;
+    border-bottom: none;
+}
+
 a:hover {
     border-bottom: 1px solid gray;
 }
@@ -42,8 +47,18 @@ a:hover {
 a, a:visited {
     color: #0000AA;
     font-weight: bold;
-    text-decoration: none;
 }
+
+@media screen {
+	a, a:visited {
+	    text-decoration: none;
+	}
+}
+
+a.imgLink img {
+	vertical-align: middle;
+}
+
 #notes {
     border-top: solid 1px #DEDEDE;
 }

@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+
+    <xs:element name="properties">
+        <xs:annotation>
+            <xs:documentation><![CDATA[This element describes the properties used by eXist for JavaMail]]></xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="property" minOccurs="1" maxOccurs="unbounded">
+                    <xs:annotation>
+                        <xs:documentation><![CDATA[A single property]]></xs:documentation>
+                    </xs:annotation>
+                    <xs:complexType>
+                        <xs:attribute name="name" type="xs:string" use="required"/>
+                        <xs:attribute name="value" type="xs:string" use="required"/>
+                    </xs:complexType>
+                </xs:element>
+            </xs:sequence>
+        </xs:complexType>
+        <xs:unique name="unique_properties">
+            <xs:annotation>
+                <xs:documentation><![CDATA[Two properties should not have the same name]]></xs:documentation>
+            </xs:annotation>
+            
+            <xs:selector xpath="property"></xs:selector>
+            <xs:field xpath="@name"></xs:field>
+        </xs:unique>
+    </xs:element>
+    <xs:element name="mail">
+        <xs:annotation>
+            <xs:documentation><![CDATA[The mail template used to send automatic e-mails to users]]></xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="from" minOccurs="1" maxOccurs="unbounded" type="xs:string"/>
+                <xs:element name="reply-to" minOccurs="0" maxOccurs="unbounded" type="xs:string"/>
+                <xs:element name="bcc" minOccurs="0" maxOccurs="unbounded" type="xs:string"/>
+                <xs:element name="attachment" minOccurs="0" maxOccurs="unbounded"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+</xs:schema>
