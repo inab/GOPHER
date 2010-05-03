@@ -25,7 +25,15 @@ weeklyGOPHER-eXist-module glue classes by jmfernandez Ant script</description>
 	<property name="eXist.jar.rel" value="exist.jar"/>
 	<property name="eXist.jar" location="${eXist.dir}/${eXist.jar.rel}"/>
 	
-	<available file="${eXist.jar}" property="eXist.archive.present"/>
+	<uptodate
+		property="eXist.archive.present"
+		targetfile="${eXist.jar}"
+	>
+		<srcfiles file="${eXist.dir}/build.xml"/>
+		<srcfiles file="${eXist.dir}/conf.xml.tmpl"/>
+		<srcfiles dir="${eXist.dir}/build/scripts" includes="**/*.x[ms]l"/>
+		<srcfiles dir="${eXist.dir}/src" includes="**/*.java"/>
+	</uptodate>
 	
 	<path id="org.cnio.scombio.jmfernandez.weeklyGOPHER.javalibs">
 		<fileset dir="${eXist.dir}">
