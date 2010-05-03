@@ -58,13 +58,13 @@ public class CIFDict {
 						//	LOG.warning("aminoacid "+threeLet+" is ambiguous (one letter "+oneLet+", parents "+parents.toString()+")");
 						// }
 						
-						// toOneAA.put(threeLet, (oneLet!=null && oneLet.equals('?'))?((parents.length>0)?parents:'X'):oneLet);
+						// toOneAA.put(threeLet, (oneLet!=null && oneLet.equals('?'))?((parents.length>0)?parents:PDBAmino.UnknownAmino):oneLet);
 						
 						if(oneLet!=null && oneLet.equals('?')) {
 							if(parents.length>0) {
 								toOneAADeriv.put(threeLet, parents);
 							} else {
-								toOneAA.put(threeLet, 'X');
+								toOneAA.put(threeLet, PDBAmino.UnknownAmino);
 							}
 						} else {
 							toOneAA.put(threeLet,oneLet);
@@ -156,13 +156,13 @@ public class CIFDict {
 			//	LOG.warning("aminoacid $threeLet is ambiguous (one letter "+oneLet+" parents "+parents.toString()+")");
 			// }
 			
-			// toOneAA.put(threeLet, (oneLet!=null && oneLet.equals('?'))?((parents.length>0)?parents:'X'):oneLet);
+			// toOneAA.put(threeLet, (oneLet!=null && oneLet.equals('?'))?((parents.length>0)?parents:PDBAmino.UnknownAmino):oneLet);
 			
 			if(oneLet!=null && oneLet.equals('?')) {
 				if(parents.length>0) {
 					toOneAADeriv.put(threeLet, parents);
 				} else {
-					toOneAA.put(threeLet, 'X');
+					toOneAA.put(threeLet, PDBAmino.UnknownAmino);
 				}
 			} else {
 				toOneAA.put(threeLet,oneLet);
@@ -183,7 +183,7 @@ public class CIFDict {
 				} else if(toOneAADeriv.containsKey(alt)) {
 					tval = toOneAADeriv.get(alt);
 				} else {
-					toOneAA.put(kv.getKey(), 'X');
+					toOneAA.put(kv.getKey(), PDBAmino.UnknownAmino);
 					break;
 				}
 			} while(tval.getClass().isArray());
@@ -194,6 +194,52 @@ public class CIFDict {
 			//	one=(Character)val;
 			// LOG.fine(kv.getKey()+" is "+one);
 		}
+	}
+	
+	/**
+	 * Some PDBPre sequences contain surrounded in parentheses non-standard aminoacids
+	 * in their three-code representation. So this function 'purifies' the sequence 
+	 * @param seq The sequence
+	 * @return The purified sequence
+	 */
+	public StringBuilder purifySequence(final String seq) {
+		StringBuilder result=new StringBuilder();
+		for(int base=0;base<seq.length();) {
+			int leftPar=seq.indexOf("(",base);
+			if(leftPar!=-1) {
+				// Do we append?
+				if(base<leftPar)
+					result.append(seq.subSequence(base, leftPar));
+				
+				int rightPar=seq.indexOf(")",leftPar+1);
+				
+				if(rightPar!=-1) {
+					String amino=seq.substring(leftPar+1,rightPar);
+					// Although by definition aminoacids in PDB are expressed as 3-letter codes,
+					// we are bypassing that fact here.
+					if(toOneAA.containsKey(amino)) {
+						result.append(toOneAA.get(amino));
+					} else if(notAA.contains(amino)) {
+						LOG.warning("Jammed chain: '"+amino+"' in "+seq);
+						result.append(PDBAmino.UnknownAmino);
+					} else {
+						result.append(PDBAmino.UnknownAmino);
+						LOG.warning("Unknown aminoacid '"+amino+"' in "+seq+"!!!");
+					}
+					// Skipping to right parentheses
+					base=rightPar+1;
+				} else {
+					// Jammed content, collapsed to an unknown amino
+					result.append(PDBAmino.UnknownAmino);
+					break;
+				}
+			} else {
+				result.append(seq.subSequence(base,seq.length()));
+				break;
+			}
+		}
+		
+		return result;
 	}
 	
 	public HashMap<String,Character> getMapping()

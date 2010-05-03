@@ -142,19 +142,31 @@ public class PDBParser {
 	 * PDB parser object has all the methods needed to parse PDB files and get
 	 * the aminoacid sequences, either filtered or unfiltered.
 	 * 
-	 * @param cifdict The file pointing to the CIFDict dictionary
+	 * @param cifdictFile The file pointing to the CIFDict dictionary
+	 * @param AFILE Stream where artifacts are dumped (when available)
 	 * @throws IOException
 	 */
-	public PDBParser(File cifdict, PrintStream AFILE)
+	public PDBParser(File cifdictFile, PrintStream AFILE)
 		throws IOException
 	{
+		this(new CIFDict(cifdictFile),AFILE);
+	}
+	
+	/**
+	 * 
+	 * @param cifdict The CIFDict dictionary
+	 * @param AFILE Stream where artifacts are dumped (when available)
+	 * @throws IOException
+	 */
+	public PDBParser(CIFDict cifdict, PrintStream AFILE)
+	{
 		// Let's read CIF dictionary
-		dict= new CIFDict(cifdict);
+		dict= cifdict;
 		toOneAA = dict.getMapping();
 		notAA = dict.getNotMapping();
 		this.AFILE = AFILE;
 	}
-	
+
 	/**
 	 * This method takes as input a PDB file or a directory which has as descendants
 	 * PDB files, and it will return the parsed, filtered result. Those files which are not PDB

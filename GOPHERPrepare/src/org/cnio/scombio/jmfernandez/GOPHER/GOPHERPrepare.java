@@ -18,6 +18,7 @@ import java.nio.channels.FileChannel;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.logging.Logger;
 import java.util.logging.StreamHandler;
 import java.util.Map;
@@ -98,6 +99,7 @@ public class GOPHERPrepare {
 	File leadersReport;
 	Map<String,String> envp;
 	Map<String,String> conf;
+	CIFDict cifdict;
 	PrintStream logStream;
 	
 	public GOPHERPrepare(Map<String,String> envp)
@@ -114,6 +116,7 @@ public class GOPHERPrepare {
 	{
 		this.envp=envp;
 		this.conf=conf;
+		cifdict=null;
 		leadersdb=null;
 		leadersReport=null;
 		
@@ -144,8 +147,8 @@ public class GOPHERPrepare {
 			ORIG.close();
 		}
 		
-		if(newFile.isDirectory() && conf!=null && conf.containsKey(CIFDICT_LABEL)) {
-			PDBParser pdbParser = new PDBParser(new File(conf.get(CIFDICT_LABEL)));
+		if(newFile.isDirectory()) {
+			PDBParser pdbParser = new PDBParser(cifdict,null);
 			pdbParser.parsePDBs(newFile, origHeaders,null,filtFile,analFile,false);
 		} else {
 			List<String> newheaders=null;
@@ -200,7 +203,7 @@ public class GOPHERPrepare {
 						if(line==null || (line.length()>0 && line.charAt(0)==PDBParser.FASTA_HEADER_PREFIX)) {
 							// We have a candidate sequence!
 							if(description!=null) {
-								CharSequence cutseq=PDBChain.PruneSequence(sequence.toString().toUpperCase());
+								CharSequence cutseq=PDBChain.PruneSequence(cifdict.purifySequence(sequence.toString().toUpperCase(Locale.ROOT)));
 	
 								// Has passed the filters?
 								if(cutseq!=null) {
@@ -653,6 +656,12 @@ public class GOPHERPrepare {
 			throw new IOException("FATAL ERROR: Unable to create directory "+workdir.getAbsolutePath()+"!!!");
 		}
 
+		// Now, the CIFDict object
+		if(conf!=null && conf.containsKey(CIFDICT_LABEL))
+			cifdict = new CIFDict(new File(conf.get(CIFDICT_LABEL)));
+		else
+			throw new FileNotFoundException("Unable to find/parse CIFDict file, needed to parse inputs for the analysis");
+		
 		// Second, let's copy the original and new files there
 		File Worigprepdb=new File(workdir,ORIG_PDBPREFILE);
 		try {
@@ -874,7 +883,7 @@ public class GOPHERPrepare {
 +"*	The filtered, current week, PDBPre database file in FASTA format (to be generated).\n"
 +"*	The unfiltered, current week, wwPDB directory filled with (compressed) PDB files.\n"
 +"*	The filtered, current week, PDB database file in FASTA format (to be generated).\n"
-+"* The path to the CIF dictionary.\n"
++"*	The path to the CIF dictionary.\n"
 +"*	The working directory where to store all the intermediate files.");
 			DoExit(1);
 		}
