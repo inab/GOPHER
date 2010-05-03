@@ -19,6 +19,8 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.logging.ConsoleHandler;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.logging.StreamHandler;
 import java.util.Map;
@@ -845,8 +847,20 @@ public class GOPHERPrepare {
 			File workdir=new File(args[5]);
 			
 			try {
+				// We want to see every message in this demo
+				// from GOPHERPrepare and CIFDict 
+				Logger logger = Logger.getLogger(GOPHERPrepare.class.getName());
+				logger.setLevel(Level.WARNING);
+				ConsoleHandler c = new ConsoleHandler();
+				c.setFormatter(new LogFormatter());
+				logger.addHandler(c);
+				
+				logger = Logger.getLogger(CIFDict.class.getName());
+				logger.addHandler(c);
+				
 				Map<String,String> config=new HashMap<String,String>();
 				config.put(CIFDICT_LABEL, args[4]);
+				
 				GOPHERPrepare gp=new GOPHERPrepare(null,null,config);
 				
 				String prepath=args[first?0:1];

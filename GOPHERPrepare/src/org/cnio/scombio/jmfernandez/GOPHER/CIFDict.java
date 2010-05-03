@@ -18,6 +18,10 @@ import java.util.zip.GZIPInputStream;
  */
 public class CIFDict {
 	protected final static Logger LOG=Logger.getLogger(CIFDict.class.getName());
+	static {
+		LOG.setUseParentHandlers(false);
+	};
+	
 	protected HashMap<String, Character> toOneAA;
 	protected HashSet<String> notAA;
 	
