@@ -64,6 +64,7 @@ public class CronGOPHERFunction
 		new SequenceType(Type.STRING, Cardinality.ONE),			// New unfiltered PDB in database
 		new SequenceType(Type.STRING, Cardinality.ONE),			// Filesystem Directory Scratch area
 		new SequenceType(Type.ELEMENT, Cardinality.ZERO_OR_MORE),		// Environment variables to use
+		new SequenceType(Type.ELEMENT, Cardinality.ZERO_OR_MORE),		// Environment variables to use
 	};
 	
 	private final static SequenceType[] FUNC_SIGNATURE_SEED=new SequenceType[] {
@@ -74,6 +75,7 @@ public class CronGOPHERFunction
 		new SequenceType(Type.STRING, Cardinality.ONE),			// New filtered PrePDB in database
 		new SequenceType(Type.STRING, Cardinality.ONE),			// New filtered PDB in database
 		new SequenceType(Type.STRING, Cardinality.ONE),			// Filesystem Directory Scratch area
+		new SequenceType(Type.ELEMENT, Cardinality.ZERO_OR_MORE),		// Environment variables to use
 		new SequenceType(Type.ELEMENT, Cardinality.ZERO_OR_MORE),		// Environment variables to use
 	};
 	
@@ -195,6 +197,7 @@ public class CronGOPHERFunction
 			GOPHERClassLoader gcl = null;
 			try {
 				Map<String,String> envl=genEnvP(args[7]);
+				Map<String,String> config=genConfigP(args[8]);
 				
 				gcl = new GOPHERClassLoader(new URL[] {new URL(dynCoreJar)},PDBSeq.class.getClassLoader());
 				
@@ -210,7 +213,8 @@ public class CronGOPHERFunction
 							File.class,
 							boolean.class,
 							File.class,
-							envl.getClass()
+							envl.getClass(),
+							config.getClass()
 						},
 						genSeed?PREPDB_URI:origPrePDBFile,
 						genSeed?prePDBFile:PREPDB_URI,
@@ -218,8 +222,9 @@ public class CronGOPHERFunction
 						PDBFile,
 						scratchDir,
 						genSeed,
-						null,
-						envl
+						(File)null,
+						envl,
+						config
 					);
 				
 				//And now, let's create the in memory document!!!
@@ -299,11 +304,31 @@ public class CronGOPHERFunction
 	protected Map<String,String> genEnvP(Sequence addedEnv) {
 		// First, let's gather the variables, classifying them
 		// onto new or already
+		
+		return genKeyVal("env",addedEnv);
+	}
+	
+	protected Map<String,String> genConfigP(Sequence addedEnv) {
+		// First, let's gather the variables, classifying them
+		// onto new or already
+		
+		return genKeyVal("config",addedEnv);
+	}
+	
+	/**
+	 * Key/value parser
+	 * @param parent The name of the parent element which contains the key/value pairs
+	 * @param added The parent element to validate and then process
+	 * @return
+	 */
+	protected Map<String,String> genKeyVal(final String parent,Sequence added) {
+		// First, let's gather the variables, classifying them
+		// onto new or already
 		HashMap<String,String> newVars=new HashMap<String,String>();
 		
-		for(int envi=0;envi<addedEnv.getItemCount();envi++) {
-			Node node = ((NodeValue)addedEnv.itemAt(envi)).getNode();
-			if(node.getNodeType()==Node.ELEMENT_NODE && "env".equals(node.getLocalName())) {
+		for(int envi=0;envi<added.getItemCount();envi++) {
+			Node node = ((NodeValue)added.itemAt(envi)).getNode();
+			if(node.getNodeType()==Node.ELEMENT_NODE && parent.equals(node.getLocalName())) {
 				Element elem=(Element)node;
 				String key=elem.getAttribute("key");
 				String value=elem.getAttribute("value");

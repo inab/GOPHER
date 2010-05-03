@@ -748,12 +748,12 @@ public class GOPHERPrepare {
 		}
 	}
 	
-	public static HashMap<String,PDBSeq> StaticDoGOPHERPrepare(File origprepdb,File newprepdb,File origpdb,File newpdb,File workdir,boolean first,File logfile,Map<String,String> envp)
+	public static HashMap<String,PDBSeq> StaticDoGOPHERPrepare(File origprepdb,File newprepdb,File origpdb,File newpdb,File workdir,boolean first,File logfile,Map<String,String> envp,Map<String,String> config)
 		throws IOException
 	{
 		PrintStream lps = (logfile!=null)?new PrintStream(logfile):System.err;
 		try {
-			GOPHERPrepare gp=new GOPHERPrepare(lps,envp);
+			GOPHERPrepare gp=new GOPHERPrepare(lps,envp,config);
 			return gp.doGOPHERPrepare(origprepdb,newprepdb,origpdb,newpdb,workdir,first);
 		} finally {
 			if(logfile!=null)
@@ -773,7 +773,7 @@ public class GOPHERPrepare {
 	 * @return
 	 * @throws IOException
 	 */
-	public static HashMap<String,PDBSeq> StaticDoGOPHERPrepare(File origprepdb,URL newprepdbURL,File origpdb,File newpdb,File workdir,File logfile,Map<String,String> envp)
+	public static HashMap<String,PDBSeq> StaticDoGOPHERPrepare(File origprepdb,URL newprepdbURL,File origpdb,File newpdb,File workdir,File logfile,Map<String,String> envp,Map<String,String> config)
 		throws IOException
 	{
 		PrintStream lps = (logfile!=null)?new PrintStream(logfile):System.err;
@@ -781,7 +781,7 @@ public class GOPHERPrepare {
 		try {
 			newprepdb = File.createTempFile("prepdb", ".fas");
 			fetchURL(newprepdbURL, newprepdb, false);
-			GOPHERPrepare gp=new GOPHERPrepare(lps,envp);
+			GOPHERPrepare gp=new GOPHERPrepare(lps,envp,config);
 			return gp.doGOPHERPrepare(origprepdb,newprepdb,origpdb,newpdb,workdir,false);
 		} finally {
 			if(logfile!=null)
@@ -803,7 +803,7 @@ public class GOPHERPrepare {
 	 * @return
 	 * @throws IOException
 	 */
-	public static HashMap<String,PDBSeq> StaticDoGOPHERPrepareSeed(URL origprepdbURL,File newprepdb,File origpdb,File newpdb,File workdir,File logfile,Map<String,String> envp)
+	public static HashMap<String,PDBSeq> StaticDoGOPHERPrepareSeed(URL origprepdbURL,File newprepdb,File origpdb,File newpdb,File workdir,File logfile,Map<String,String> envp,Map<String,String> config)
 		throws IOException
 	{
 		PrintStream lps = (logfile!=null)?new PrintStream(logfile):System.err;
@@ -812,7 +812,7 @@ public class GOPHERPrepare {
 			origprepdb = File.createTempFile("prepdb", ".fas");
 			origprepdb.deleteOnExit();
 			fetchURL(origprepdbURL, origprepdb, false);
-			GOPHERPrepare gp=new GOPHERPrepare(lps,envp);
+			GOPHERPrepare gp=new GOPHERPrepare(lps,envp,config);
 			return gp.doGOPHERPrepare(origprepdb,newprepdb,origpdb,newpdb,workdir,true);
 		} finally {
 			if(logfile!=null)
@@ -823,8 +823,8 @@ public class GOPHERPrepare {
 	}
 
 	public final static void main(String[] args) {
-		if(args.length==5 || (args.length>=6 && "-s".equals(args[0]))) {
-			boolean first=args.length>5;
+		if(args.length==6 || (args.length>=7 && "-s".equals(args[0]))) {
+			boolean first=args.length>6;
 			// Shifting the array, so '-s' flag is not taken into account
 			if(first) {
 				System.arraycopy(args, 1, args, 0, args.length-1);
@@ -833,10 +833,12 @@ public class GOPHERPrepare {
 			File origpdb=new File(args[2]);
 			File newpdb=new File(args[3]);
 
-			File workdir=new File(args[4]);
+			File workdir=new File(args[5]);
 			
 			try {
-				GOPHERPrepare gp=new GOPHERPrepare();
+				Map<String,String> config=new HashMap<String,String>();
+				config.put(CIFDICT_LABEL, args[4]);
+				GOPHERPrepare gp=new GOPHERPrepare(null,null,config);
 				
 				String prepath=args[first?0:1];
 				File tempfile=null;
@@ -858,11 +860,12 @@ public class GOPHERPrepare {
 				DoExit(1);
 			}
 		} else {
-			System.err.println("FATAL ERROR: This program needs at least 5 params, in order:\n"
+			System.err.println("FATAL ERROR: This program needs at least 6 params, in order:\n"
 +"*	The filtered, previous week, PDBPre database file in FASTA format.\n"
 +"*	The unfiltered, current week, PDBPre database file or URL in FASTA format.\n"
 +"*	The filtered, previous week, PDB database file in FASTA format.\n"
 +"*	The unfiltered, current week, wwPDB directory filled with (compressed) PDB files.\n"
++"*	The path to the CIF dictionary.\n"
 +"*	The working directory where to store all the results and intermediate files.\n"
 +"\n"
 +"	When the '-s' flag is used as first param, the meaning of the following ones change:\n"
@@ -871,6 +874,7 @@ public class GOPHERPrepare {
 +"*	The filtered, current week, PDBPre database file in FASTA format (to be generated).\n"
 +"*	The unfiltered, current week, wwPDB directory filled with (compressed) PDB files.\n"
 +"*	The filtered, current week, PDB database file in FASTA format (to be generated).\n"
++"* The path to the CIF dictionary.\n"
 +"*	The working directory where to store all the intermediate files.");
 			DoExit(1);
 		}

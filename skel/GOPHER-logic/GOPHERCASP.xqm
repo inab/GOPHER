@@ -41,7 +41,8 @@ declare function casp:doSeed($physicalScratch as xs:string)
 		$casp:pdbprefile,
 		$casp:pdbfile,
 		$physicalScratch,
-		collection($job:configRoot/job:custom[@key='ENV'][1]/env
+		collection($job:configRoot/job:custom[@key='ENV'][1]/env,
+		collection($job:configRoot/job:custom[@key='CONFIG'][1]/config
 	)
 };
 
@@ -66,6 +67,7 @@ declare function casp:doQueriesComputation($lastCol as xs:string,$newCol as xs:s
 			$casp:PREPDBURI,
 			$casp:PDB,
 			$physicalScratch,
-			collection($job:configRoot/job:custom[@key='ENV'][1]/env
+			collection($job:configRoot/job:custom[@key='ENV'][1]/env,
+			collection($job:configRoot/job:custom[@key='CONFIG'][1]/config
 		)
 };

@@ -20,11 +20,15 @@
     <job:custom key="PREPDB_PATH">/drives/databases/FastaDB/pdbpre</job:custom>
     <job:custom key="PDB_DIR">/drives/databases/wwPDB/divided</job:custom>
     <job:custom key="PREPDB_URI">http://www.rcsb.org/pdb/search/searchStatusDoSearch.do?newSearch=yes&amp;full=true&amp;format=SEQ</job:custom>
+    
     <job:custom key="dynCoreJar">xmldb:exist:///db/GOPHER-logic/GOPHERPrepare.jar</job:custom>
     <job:custom key="dynCoreSeedMethod">StaticDoGOPHERPrepareSeed</job:custom>
     <job:custom key="dynCoreQueryMethod">StaticDoGOPHERPrepare</job:custom>
     <job:custom key="ENV">
     	<env key="PATH" value="/databases/eXist/bin"/>
+    </job:custom>
+    <job:custom key="CONFIG">
+    	<config key="cifdict" value="/drives/databases/wwPDB/monomers/components.cif"/>
     </job:custom>
     
 </job:jobManagement>
