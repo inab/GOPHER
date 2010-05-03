@@ -169,7 +169,15 @@
 	</target>
 	
 	<target name="bootstrap.eXist.exists" depends="init,conditional.bootstrap.gopher.eXist.version">
-		<available file="${eXist.jar}" property="eXist.archive.present"/>
+		<uptodate
+			property="eXist.archive.present"
+			targetfile="${eXist.jar}"
+		>
+			<srcfiles file="${eXist.dir}/build.xml"/>
+			<srcfiles file="${eXist.dir}/conf.xml.tmpl"/>
+			<srcfiles dir="${eXist.dir}/build/scripts" includes="**/*.x[ms]l"/>
+			<srcfiles dir="${eXist.dir}/src" includes="**/*.java"/>
+		</uptodate>
 	</target>
 	
 	<target name="conditional.bootstrap.eXist" depends="bootstrap.eXist.exists" unless="eXist.archive.present">
