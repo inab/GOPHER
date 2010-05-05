@@ -5,7 +5,7 @@
 	but it is the caller's task to reach those privileges,
 	not ours!
 :)
-xquery version "1.0";
+xquery version "1.0" encoding "UTF-8";
 
 import module namespace request="http://exist-db.org/xquery/request";
 

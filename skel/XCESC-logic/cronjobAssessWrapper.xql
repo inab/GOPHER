@@ -4,7 +4,7 @@
 	This is the cron job wrapper, which elevates its privileges
 	in order to call the true cron job.
 :)
-xquery version "1.0";
+xquery version "1.0" encoding "UTF-8";
 
 import module namespace mgmt="http://www.cnio.es/scombio/xcesc/1.0/xquery/systemManagement" at "xmldb:exist:///db/XCESC-logic/systemManagement.xqm";
 import module namespace request="http://exist-db.org/xquery/request";

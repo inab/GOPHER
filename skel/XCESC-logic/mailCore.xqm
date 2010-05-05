@@ -1,7 +1,7 @@
 (:
 	mailCore.xqm
 :)
-xquery version "1.0";
+xquery version "1.0" encoding "UTF-8";
 
 module namespace mailcore = 'http://www.cnio.es/scombio/xcesc/1.0/xquery/mailCore';
 
@@ -20,7 +20,7 @@ declare variable $mailcore:mailTemplate as element(mail) := $mailcore:mailCoreRo
 	This method sends e-mails, ignoring from elements and adding default ones from configuration
 :)
 declare function mailcore:send-email($messages as element(mail)+)
-	as empty()
+	as empty-sequence()
 {
 	let $session := mail:get-mail-session($mailcore:mailConfiguration)
 	for $message in $messages

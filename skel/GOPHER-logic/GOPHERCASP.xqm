@@ -1,7 +1,7 @@
 (:
 	GOPHERCASP.xqm
 :)
-xquery version "1.0";
+xquery version "1.0" encoding "UTF-8";
 
 module namespace casp="http://www.cnio.es/scombio/gopher/1.0/xquery/jobManagement/GOPHERCASP";
 
@@ -41,8 +41,8 @@ declare function casp:doSeed($physicalScratch as xs:string)
 		$casp:pdbprefile,
 		$casp:pdbfile,
 		$physicalScratch,
-		collection($job:configRoot/job:custom[@key='ENV'][1]/env,
-		collection($job:configRoot/job:custom[@key='CONFIG'][1]/config
+		$job:configRoot/job:custom[@key='ENV'][1]/env,
+		$job:configRoot/job:custom[@key='CONFIG'][1]/config
 	)
 };
 
@@ -67,7 +67,7 @@ declare function casp:doQueriesComputation($lastCol as xs:string,$newCol as xs:s
 			$casp:PREPDBURI,
 			$casp:PDB,
 			$physicalScratch,
-			collection($job:configRoot/job:custom[@key='ENV'][1]/env,
-			collection($job:configRoot/job:custom[@key='CONFIG'][1]/config
+			$job:configRoot/job:custom[@key='ENV'][1]/env,
+			$job:configRoot/job:custom[@key='CONFIG'][1]/config
 		)
 };

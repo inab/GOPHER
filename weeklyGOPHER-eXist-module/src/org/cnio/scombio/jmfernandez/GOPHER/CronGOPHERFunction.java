@@ -9,7 +9,6 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.lang.reflect.InvocationTargetException;
 import java.net.MalformedURLException;
-import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.HashMap;
@@ -28,6 +27,8 @@ import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
+import org.exist.xquery.value.FunctionParameterSequenceType;
+import org.exist.xquery.value.FunctionReturnSequenceType;
 import org.exist.xquery.value.NodeValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
@@ -56,27 +57,27 @@ public class CronGOPHERFunction
 	private final static String XCESC_ID_ATTRIBUTE="queryId";
 	
 	private final static SequenceType[] FUNC_SIGNATURE=new SequenceType[] {
-		new SequenceType(Type.STRING, Cardinality.ONE),			// URI of the dynamic core (in a jar) to be called
-		new SequenceType(Type.STRING, Cardinality.ONE),			// name of the static method to call in the dynamic core
-		new SequenceType(Type.STRING, Cardinality.ONE),			// Original filtered PrePDB in database
-		new SequenceType(Type.STRING, Cardinality.ONE),			// Original filtered PDB in database
-		new SequenceType(Type.ANY_URI, Cardinality.ONE),			// New unfiltered PrePDB in database
-		new SequenceType(Type.STRING, Cardinality.ONE),			// New unfiltered PDB in database
-		new SequenceType(Type.STRING, Cardinality.ONE),			// Filesystem Directory Scratch area
-		new SequenceType(Type.ELEMENT, Cardinality.ZERO_OR_MORE),		// Environment variables to use
-		new SequenceType(Type.ELEMENT, Cardinality.ZERO_OR_MORE),		// Environment variables to use
+		new FunctionParameterSequenceType("dynCoreJar",Type.STRING, Cardinality.ONE,"URI of the dynamic core (in a jar) to be called"),			// URI of the dynamic core (in a jar) to be called
+		new FunctionParameterSequenceType("dynCoreMethod",Type.STRING, Cardinality.ONE,"Name of the static method to call in the dynamic core"),			// name of the static method to call in the dynamic core
+		new FunctionParameterSequenceType("prevFilteredPrePDB",Type.STRING, Cardinality.ONE,"Original filtered FASTA PrePDB in database"),			// Original filtered PrePDB in database
+		new FunctionParameterSequenceType("prevFilteredwwPDB",Type.STRING, Cardinality.ONE,"Original filtered FASTA wwPDB in database"),			// Original filtered PDB in database
+		new FunctionParameterSequenceType("prepdbURI",Type.ANY_URI, Cardinality.ONE,"New unfiltered PrePDB URI"),			// New unfiltered PrePDB in database
+		new FunctionParameterSequenceType("pdbPath", Type.STRING, Cardinality.ONE,"New unfiltered wwPDB directory in filesystem"),			// New unfiltered PDB in database
+		new FunctionParameterSequenceType("scratchDir",Type.STRING, Cardinality.ZERO_OR_ONE,"Filesystem Directory Scratch area (i.e. TEMP)"),			// Filesystem Directory Scratch area
+		new FunctionParameterSequenceType("env",Type.ELEMENT, Cardinality.ZERO_OR_MORE,"Environment variables to use, in the form <env key='' value=''/>"),		// Environment variables to use
+		new FunctionParameterSequenceType("config",Type.ELEMENT, Cardinality.ZERO_OR_MORE,"Configuration parameters to pass to the core, in the form <conf key='' value=''/>"),		// Environment variables to use
 	};
 	
 	private final static SequenceType[] FUNC_SIGNATURE_SEED=new SequenceType[] {
-		new SequenceType(Type.STRING, Cardinality.ONE),			// URI of the dynamic core (in a jar) to be called
-		new SequenceType(Type.STRING, Cardinality.ONE),			// name of the static method to call in the dynamic core
-		new SequenceType(Type.ANY_URI, Cardinality.ONE),			// Original unfiltered PrePDB in database
-		new SequenceType(Type.STRING, Cardinality.ONE),			// Original unfiltered PDB in database
-		new SequenceType(Type.STRING, Cardinality.ONE),			// New filtered PrePDB in database
-		new SequenceType(Type.STRING, Cardinality.ONE),			// New filtered PDB in database
-		new SequenceType(Type.STRING, Cardinality.ONE),			// Filesystem Directory Scratch area
-		new SequenceType(Type.ELEMENT, Cardinality.ZERO_OR_MORE),		// Environment variables to use
-		new SequenceType(Type.ELEMENT, Cardinality.ZERO_OR_MORE),		// Environment variables to use
+		new FunctionParameterSequenceType("dynCoreJar",Type.STRING, Cardinality.ONE,"URI of the dynamic core (in a jar) to be called"),			// URI of the dynamic core (in a jar) to be called
+		new FunctionParameterSequenceType("dynCoreMethod",Type.STRING, Cardinality.ONE,"Name of the static method to call in the dynamic core"),			// name of the static method to call in the dynamic core
+		new FunctionParameterSequenceType("prepdbURI",Type.ANY_URI, Cardinality.ONE,"New unfiltered PrePDB URI"),			// Original unfiltered PrePDB in database
+		new FunctionParameterSequenceType("pdbPath",Type.STRING, Cardinality.ONE,"New unfiltered wwPDB directory in filesystem"),			// Original unfiltered PDB in database
+		new FunctionParameterSequenceType("newFilteredPrePDBFile",Type.STRING, Cardinality.ONE,"New filtered FASTA PrePDB in filesystem"),			// New filtered PrePDB in database
+		new FunctionParameterSequenceType("newFilteredwwPDBFile",Type.STRING, Cardinality.ONE,"New filtered FASTA wwPDB in filesystem"),			// New filtered PDB in database
+		new FunctionParameterSequenceType("scratchDir",Type.STRING, Cardinality.ZERO_OR_ONE,"Filesystem Directory Scratch area (i.e. TEMP)"),			// Filesystem Directory Scratch area
+		new FunctionParameterSequenceType("env",Type.ELEMENT, Cardinality.ZERO_OR_MORE,"Environment variables to use, in the form <env key='' value=''/>"),		// Environment variables to use
+		new FunctionParameterSequenceType("config",Type.ELEMENT, Cardinality.ZERO_OR_MORE,"Configuration parameters to pass to the core, in the form <conf key='' value=''/>"),		// Environment variables to use
 	};
 	
 	public final static FunctionSignature signature[] = {
@@ -94,7 +95,7 @@ public class CronGOPHERFunction
 			"\n" +
 			"It returns xcesc:experiment elements (see xcesc.xsd for further details and descriptions).",
 			FUNC_SIGNATURE,
-			new SequenceType(Type.ELEMENT, Cardinality.ONE)
+			new FunctionReturnSequenceType(Type.ELEMENT, Cardinality.ONE,"xcesc:experiment element (see xcesc.xsd for further details and descriptions)")
 		),
 		new FunctionSignature(
 			new QName(GENERATESEED, GOPHERModule.NAMESPACE_URI, GOPHERModule.PREFIX),
@@ -110,7 +111,7 @@ public class CronGOPHERFunction
 			"\n" +
 			"It returns xcesc:experiment elements (see xcesc.xsd for further details and descriptions).",
 			FUNC_SIGNATURE_SEED,
-			new SequenceType(Type.ELEMENT, Cardinality.ONE)
+			new FunctionReturnSequenceType(Type.ELEMENT, Cardinality.ONE,"xcesc:experiment element (see xcesc.xsd for further details and descriptions).")
 		),
 	};
 	
@@ -168,7 +169,8 @@ public class CronGOPHERFunction
 			PDB_PATH=args[5].getStringValue();
 		}
 		
-		String scratchDirPath=args[6].getStringValue();
+		// The scratch area always must exist!!!! 
+		String scratchDirPath=args[6].getItemCount()>0?args[6].getStringValue():System.getProperty("java.io.tmpdir", "/tmp");
 		
 		File scratchDir=new File(scratchDirPath);
 		scratchDir.mkdirs();

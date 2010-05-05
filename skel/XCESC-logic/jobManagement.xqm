@@ -1,7 +1,7 @@
 (:
 	jobManagement.xqm
 :)
-xquery version "1.0";
+xquery version "1.0" encoding "UTF-8";
 
 module namespace job="http://www.cnio.es/scombio/xcesc/1.0/xquery/jobManagement";
 
@@ -13,7 +13,8 @@ import module namespace util="http://exist-db.org/xquery/util";
 import module namespace xmldb="http://exist-db.org/xquery/xmldb";
 
 import module namespace core = 'http://www.cnio.es/scombio/xcesc/1.0/xquery/core' at 'xmldb:exist:///db/XCESC-logic/core.xqm';
-import module namespace mgmt="http://www.cnio.es/scombio/xcesc/1.0/xquery/systemManagement" at "xmldb:exist:///db/XCESC-logic/systemManagement.xqm";
+import module namespace upd = 'http://www.cnio.es/scombio/xcesc/1.0/xquery/XQueryUpdatePrimitives' at 'xmldb:exist:///db/XCESC-logic/XQueryUpdatePrimitives.xqm';
+import module namespace mgmt = "http://www.cnio.es/scombio/xcesc/1.0/xquery/systemManagement" at "xmldb:exist:///db/XCESC-logic/systemManagement.xqm";
 
 declare variable $job:configRoot as element(job:jobManagement) := collection($core:configColURI)//job:jobManagement[1];
 
@@ -96,9 +97,9 @@ declare function job:plantSeed()
 		let $storedExperiment:=doc(xmldb:store($newCol,$job:queriesDocURI,$queriesDoc,'application/xml'))/element()
 		:)
 		return (
-			update value $lastDoc/@timeStamp with $currentDateTime,
+			upd:replaceValue($lastDoc/@timeStamp,$currentDateTime),
 			(:
-			update insert (attribute stamp { $currentDateTime }, attribute baseStamp { $lastDateTime }) into $storedExperiment,
+			upd:insertInto($storedExperiment,(attribute stamp { $currentDateTime }, attribute baseStamp { $lastDateTime })),
 			:)
 			$currentDateTime
 		)
@@ -132,22 +133,23 @@ declare function job:doQueriesComputation($currentDateTime as xs:dateTime)
 		let $stored := xmldb:store-files-from-pattern($newCol,$physicalScratch,$queriesComputation/@storagePattern)
 		let $storedExperiment := doc(xmldb:store($newCol,$job:queriesDocURI,$queriesDoc,'application/xml'))/element()
 		return (
-			update value $lastDoc/@timeStamp with $currentDateTime,
-			update insert (
-				attribute name { $currentDateTime },
-				attribute isAssessed { false },
-				attribute stamp { $currentDateTime },
-				attribute baseStamp { $lastDateTime },
-				attribute deadline { $currentDateTime + $job:participantDeadline }
-			) into $storedExperiment,
-			$storedExperiment
+			upd:replaceValue($lastDoc/@timeStamp,$currentDateTime)
+			,
+			upd:insertInto($storedExperiment, (
+					attribute name { $currentDateTime },
+					attribute isAssessed { false() },
+					attribute stamp { $currentDateTime },
+					attribute baseStamp { $lastDateTime },
+					attribute deadline { $currentDateTime + $job:participantDeadline }
+				)
+			)
 		)
 		
 	(: } :)
 };
 
 declare function job:doRound($currentRound as xs:string,$storedExperiment as element(xcesc:experiment),$onlineServers as element(xcesc:server)*)
-	as empty()
+	as empty-sequence()
 {
 	(: Fourth, get online servers based on currentDateTime :)
 	let $querySet:=$storedExperiment//xcesc:query
@@ -160,24 +162,25 @@ declare function job:doRound($currentRound as xs:string,$storedExperiment as ele
 		let $poboxURI := string-join(($basePobox,$ticketId),'/')
 		let $queries := <xcesc:queries callback="{$poboxURI}">{$querySet}</xcesc:queries>
 		let $sendDateTime:=current-dateTime()
-		let $ret:=httpclient:post($onlineServer/@uri,$queries,false,())
+		let $ret:=httpclient:post($onlineServer/@uri,$queries,false(),())
 	return (
 		(: (# exist:batch-transaction #) { :)
-			update insert <xcesc:participant ticket="{$ticketId}" startStamp="{$sendDateTime}">
-			{$onlineServer}
-			{
-				if($ret/@statusCode eq '200' or $ret/@statusCode eq '202') then
-					$jobs
-				else
-					<xcesc:errorMessage statusCode="$ret/@statusCode">{$ret/httpclient:body/*}</xcesc:errorMessage>
-			}
-			</xcesc:participant>  into $storedExperiment
-	)
+			upd:insertInto($storedExperiment,<xcesc:participant ticket="{$ticketId}" startStamp="{$sendDateTime}">
+				{$onlineServer}
+				{
+					if($ret/@statusCode eq '200' or $ret/@statusCode eq '202') then
+						$jobs
+					else
+						<xcesc:errorMessage statusCode="$ret/@statusCode">{$ret/httpclient:body/*}</xcesc:errorMessage>
+				}
+				</xcesc:participant>
+			) 
 		(: } :)
+	)
 };
 
 declare function job:doNextRound()
-	as empty()
+	as empty-sequence()
 {
 	(: Fourth, get online servers based on currentDateTime :)
 	let $currentDateTime:=current-dateTime()
@@ -222,16 +225,16 @@ declare function job:doTestRound($baseRound as xs:string,$newRound as xs:string,
 	let $newRoundsDoc := doc(xmldb:encode(string-join(($newCol,$job:queriesDoc),'/')))/element()
 	let $empty2 := (: (# exist:batch-transaction #) { :)
 	(
-		update value $newRoundsDoc/@name with $newRound,
-		update value $newRoundsDoc/@baseStamp with $newRoundsDoc/@stamp,
-		update value $newRoundsDoc/@stamp with current-dateTime(),
-		update value $newRoundsDoc/@deadline with current-dateTime() + $job:participantDeadline ,
+		upd:replaceValue($newRoundsDoc/@name , $newRound),
+		upd:replaceValue($newRoundsDoc/@baseStamp , $newRoundsDoc/@stamp),
+		upd:replaceValue($newRoundsDoc/@stamp , current-dateTime()),
+		upd:replaceValue($newRoundsDoc/@deadline , current-dateTime() + $job:participantDeadline) ,
 		if(empty($newRoundsDoc/@test)) then (
-			update insert attribute test { true } into $newRoundsDoc
+			upd:insertInto($newRoundsDoc,attribute test { true() }) 
 		) else
 			()
 		,
-		update value $newRoundsDoc/@isAssessed with false
+		upd:replaceValue($newRoundsDoc/@isAssessed , false())
 	)
 	(: } :)
 	let $empty3 := job:doRound($newRound,$newRoundsDoc,$servers) 
@@ -260,26 +263,26 @@ declare function job:joinResults($round as xs:string,$ticket as xs:string,$times
 							return
 								(
 									if(exists($job/@stopStamp)) then
-										update value $job/@stopStamp with $timestamp
+										upd:replaceValue($job/@stopStamp , $timestamp)
 									else
-										update insert attribute stopStamp { $timestamp } into $job
+										upd:insertInto($job, attribute stopStamp { $timestamp })
 									,
-									update value $job/@status with 'finished',
+									upd:replaceValue($job/@status , 'finished'),
 									if(exists($answer/@message)) then
-										update insert attribute lastMessage { $answer/@message } into $job
+										upd:insertInto($job , attribute lastMessage { $answer/@message }) 
 									else
 										()
 									,
 									if(exists($matches)) then
-										update insert $matches into $job
+										upd:insertInto($job , $matches)
 									else
 										()
 								)
 						),
 						if(exists($partElem/@lastStamp)) then
-							update value $partElem/@lastStamp with $timestamp
+							upd:replaceValue($partElem/@lastStamp , $timestamp)
 						else
-							update insert attribute lastStamp { $timestamp } into $partElem
+							upd:insertInto($partElem , attribute lastStamp { $timestamp })
 						,
 						200
 					) else (
@@ -313,26 +316,26 @@ declare function job:joinAssessments($round as xs:string,$assessmentTicket as xs
 							return
 								(
 									if(exists($job/@stopStamp)) then (
-										update value $job/@stopStamp with $timestamp
+										upd:replaceValue($job/@stopStamp , $timestamp)
 									) else (
-										update insert attribute stopStamp { $timestamp } into $job
+										upd:insertInto($job , attribute stopStamp { $timestamp })
 									),
-									update value $job/@status with 'finished',
+									upd:replaceValue($job/@status , 'finished'),
 									if(exists($answer/@message)) then (
-										update insert attribute lastMessage { $answer/@message } into $job
+										upd:insertInto($job , attribute lastMessage { $answer/@message })
 									) else
 										()
 									,
 									if(exists($matches)) then (
-										update insert $matches into $job
+										upd:insertInto($job , $matches) 
 									) else
 										()
 								)
 						),
 						if(exists($evalElem/@lastStamp)) then
-							update value $evalElem/@lastStamp with $timestamp
+							upd:replaceValue($evalElem/@lastStamp , $timestamp)
 						else
-							update insert attribute lastStamp { $timestamp } into $evalElem
+							upd:insertInto($evalElem , attribute lastStamp { $timestamp }) 
 						,
 						200
 					) else (
@@ -345,7 +348,7 @@ declare function job:joinAssessments($round as xs:string,$assessmentTicket as xs
 };
 
 declare function job:doAssessment($currentAssessment as xs:string,$round as xs:string,$onlineServers as element(xcesc:server)*,$dateTime as xs:dateTime,$isTest as xs:boolean)
-	as empty()
+	as empty-sequence()
 {
 	(: Assessment skeleton :)
 	let $storedAssessment := doc(
@@ -379,30 +382,31 @@ declare function job:doAssessment($currentAssessment as xs:string,$round as xs:s
 		let $poboxURI := string-join(($basePobox,$ticketId),'/')
 		let $queries := <xcesc:queries callback="{$poboxURI}">{$targetSet}</xcesc:queries>
 		let $sendDateTime:=current-dateTime()
-		let $ret:=httpclient:post($onlineServer/@uri,$queries,false,())
+		let $ret:=httpclient:post($onlineServer/@uri,$queries,false(),())
 	return (
 		(: (# exist:batch-transaction #) { :)
-			update insert <xcesc:evaluator ticket="{$ticketId}" startStamp="{$sendDateTime}">
-			{$onlineServer}
-			{
-				if($ret/@statusCode eq '200' or $ret/@statusCode eq '202') then
-					$jobs
-				else
-					<xcesc:errorMessage statusCode="$ret/@statusCode">{$ret/httpclient:body/*}</xcesc:errorMessage>
-			}
-			</xcesc:evaluator>  into $storedAssessment
+			upd:insertInto($storedAssessment , <xcesc:evaluator ticket="{$ticketId}" startStamp="{$sendDateTime}">
+				{$onlineServer}
+				{
+					if($ret/@statusCode eq '200' or $ret/@statusCode eq '202') then
+						$jobs
+					else
+						<xcesc:errorMessage statusCode="$ret/@statusCode">{$ret/httpclient:body/*}</xcesc:errorMessage>
+				}
+				</xcesc:evaluator>
+			)
 	)
 		(: } :)
 };
 
 declare function job:issueAssessments()
-	as empty()
+	as empty-sequence()
 {
 	let $currentDateTime:=current-dateTime()
 	for $unassessed in collection($job:resultsColURI)//xcesc:experiment[not(@test)][not(@isAssessed)][($currentDateTime - xs:dateTime(@stamp)) > $job:intervalBeforeAssessment]
 		let $rcol := tokenize(base-uri($unassessed),'/')[last()-1]
 		let $assessmentTicket:=util:uuid()
-		let $assess := job:doAssessment($assessmentTicket,$rcol,mgmt:getOnlineEvaluators($currentDateTime),$currentDateTime,false)
+		let $assess := job:doAssessment($assessmentTicket,$rcol,mgmt:getOnlineEvaluators($currentDateTime),$currentDateTime,false())
 	return
-		update value $unassessed/@isAssessed with true
+		upd:replaceValue($unassessed/@isAssessed , true())
 };

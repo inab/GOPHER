@@ -1,7 +1,7 @@
 (:
 	systemManagement.xqm
 :)
-xquery version "1.0";
+xquery version "1.0" encoding "UTF-8";
 
 module namespace mgmt="http://www.cnio.es/scombio/xcesc/1.0/xquery/systemManagement";
 
@@ -14,6 +14,8 @@ import module namespace xmldb="http://exist-db.org/xquery/xmldb";
 
 import module namespace core = 'http://www.cnio.es/scombio/xcesc/1.0/xquery/core' at 'xmldb:exist:///db/XCESC-logic/core.xqm';
 import module namespace mailcore = 'http://www.cnio.es/scombio/xcesc/1.0/xquery/mailCore' at 'xmldb:exist:///db/XCESC-logic/mailCore.xqm';
+
+import module namespace upd = 'http://www.cnio.es/scombio/xcesc/1.0/xquery/XQueryUpdatePrimitives' at 'xmldb:exist:///db/XCESC-logic/XQueryUpdatePrimitives.xqm';
 
 declare variable $mgmt:configRoot as element(mgmt:systemManagement) := collection($core:configColURI)//mgmt:systemManagement[1];
 
@@ -74,7 +76,7 @@ declare function mgmt:getManagementDoc()
 
 (: It requests changes on server's ownership :)
 declare function mgmt:requestChangeServerOwnership($oldOwnerId as xs:string,$serverId as xs:string,$newOwnerId as xs:string)
-	as empty()
+	as empty-sequence()
 {
 	(: (# exist:batch-transaction #) { :)
 	let $mgmtDoc:=mgmt:getManagementDoc()
@@ -82,14 +84,14 @@ declare function mgmt:requestChangeServerOwnership($oldOwnerId as xs:string,$ser
 	let $oldUserDoc:=mgmt:getActiveUserFromId($oldOwnerId)
 	return
 		if($newOwnerId ne '' and empty($userDoc)) then
-			error((),string-join(("On server ownership change, user",$newOwnerId,"was not available"),' '))
+			error( () ,string-join( ("On server ownership change, user",$newOwnerId,"was not available"),' '))
 		else (
 			let $serverDoc := $mgmtDoc//xcesc:server[@id eq $serverId][@managerId eq $oldOwnerId]
 			return
 				if(empty($serverDoc)) then
 					error((),string-join(("On server ownership change, server",$serverId,"is not owned by",$oldOwnerId),' '))
 				else (
-					update value $serverDoc/@futureManagerId with $newOwnerId
+					upd:replaceValue($serverDoc/@futureManagerId,$newOwnerId)
 					,
 					if(exists($userDoc)) then (
 						mgmt:send-mail-to-user($newOwnerId,<mail>
@@ -109,36 +111,39 @@ declare function mgmt:requestChangeServerOwnership($oldOwnerId as xs:string,$ser
 								</xhtml>
 							</message>
 						</mail>)
-					)
+					) else
+						()
 				)
 		)
 	(: } :)
 };
 
 declare function mgmt:changeServerOwnership($oldOwnerId as xs:string,$serverId as xs:string,$newOwnerId as xs:string)
-	as empty()
+	as empty-sequence()
 {
 	changeServerOwnership($oldOwnerId,$serverId,$newOwnerId,true())
 };
 
 declare function mgmt:changeServerOwnership($oldOwnerId as xs:string,$serverId as xs:string,$newOwnerId as xs:string,$answer as xs:boolean)
-	as empty()
+	as empty-sequence()
 {
 	(: (# exist:batch-transaction #) { :)
 	let $mgmtDoc:=mgmt:getManagementDoc()
 	let $userDoc:=mgmt:getActiveUserFromId($newOwnerId)
 	return
-		if(empty($userDoc)) then
+		if(empty($userDoc)) then (
 			error((),string-join(("On server ownership change, user",$newOwnerId,"was not available"),' '))
-		else (
+		) else (
 			let $serverDoc := $mgmtDoc//xcesc:server[@id eq $serverId][@managerId eq $oldOwnerId][@futureManagerId eq $newOwnerId]
 			return
 				if(empty($serverDoc)) then
-					error((),string-join(("On server ownership change, server",$serverId,"is not owned by",$oldOwnerId),' '))
+					error( () , string-join( ("On server ownership change, server",$serverId,"is not owned by",$oldOwnerId),' ') )
 				else (
-					update value $serverDoc/@futureManagerId with '',
+					upd:replaceValue($serverDoc/@futureManagerId,'')
+					,
 					if($answer) then (
-						update value $serverDoc/@managerId with $newOwnerId,
+						upd:replaceValue($serverDoc/@managerId,$newOwnerId)
+						,
 						mgmt:send-mail-to-user($oldOwnerId,<mail>
 							<subject>{$mgmt:projectName} notification: server ownership changed</subject>
 							<message>
@@ -174,7 +179,10 @@ declare function mgmt:changeServerOwnership($oldOwnerId as xs:string,$serverId a
 	(: } :)
 };
 
-(: It creates a server :)
+(:~
+ : It creates a server
+ :	@author José María Fernández
+ :)
 declare function mgmt:createServer($serverConfig as element(xcesc:server))
 	as xs:string?
 {
@@ -202,7 +210,7 @@ declare function mgmt:createServer($name as xs:string,$managerId as xs:string,$u
 					{$references}
 				</xcesc:server>
 				return (
-					update insert $newServer into $mgmtDoc//xcesc:servers,
+					upd:insertInto($mgmtDoc//xcesc:servers,$newServer),
 					mgmt:send-mail-to-user($managerId,<mail>
 						<subject>{$mgmt:projectName} notification: server registered</subject>
 						<message>
@@ -227,16 +235,15 @@ declare function mgmt:createServer($name as xs:string,$managerId as xs:string,$u
 
 (: It deletes a server :)
 declare function mgmt:deleteServer($managerId as xs:string,$id as xs:string)
-	as empty() 
+	as empty-sequence() 
 {
 	(: (# exist:batch-transaction #) { :)
 		let $serverDoc := mgmt:getManagementDoc()//xcesc:server[@id eq $id][@managerId eq $managerId]
 		return
 			if(empty($serverDoc)) then
 				 error((),string-join(("On server deletion",$id,"owned by",$managerId,"is unknown"),' '))
-			else (
-				update delete $serverDoc
-			)
+			else
+				upd:delete($serverDoc)
 	(: } :)
 };
 
@@ -314,7 +321,7 @@ declare function mgmt:getServersFromName($name as xs:string+)
 
 (: It updates most pieces of the server declaration :)
 declare function mgmt:updateServer($managerId as xs:string,$serverConfig as element(xcesc:server))
-	as empty() 
+	as empty-sequence() 
 {
 	(: (# exist:batch-transaction #) { :)
 		let $serverDoc:=mgmt:getServer($serverConfig/@id)[@managerId eq $managerId]
@@ -322,23 +329,23 @@ declare function mgmt:updateServer($managerId as xs:string,$serverConfig as elem
 			if($serverDoc) then (
 				for $server in $serverDoc[xcesc:description != $serverConfig/xcesc:description]
 				return
-					update replace $serverDoc/xcesc:description with $serverConfig/xcesc:description
+					upd:replaceNode($serverDoc/xcesc:description,$serverConfig/xcesc:description)
 				,
 				for $server in $serverDoc[@name ne $serverConfig/@name]
 				return
-					update value $serverDoc/@name with $serverConfig/@name
+					upd:replaceValue($serverDoc/@name,$serverConfig/@name)
 				,
 				for $server in $serverDoc[@uri ne $serverConfig/@uri]
 				return
-					update value $serverDoc/@uri with $serverConfig/@uri
+					upd:replaceValue($serverDoc/@uri,$serverConfig/@uri)
 				,
 				if(not(deep-equal($serverDoc/xcesc:otherParams,$serverConfig/xcesc:otherParams))) then
-					update replace $serverDoc/xcesc:otherParams with $serverConfig/xcesc:otherParams
+					upd:replaceNode($serverDoc/xcesc:otherParams,$serverConfig/xcesc:otherParams)
 				else
 					()
 				,
 				if(not(deep-equal($serverDoc/xcesc:reference,$serverConfig/xcesc:reference))) then
-					update replace $serverDoc/xcesc:reference with $serverConfig/xcesc:reference
+					upd:replaceNode($serverDoc/xcesc:reference,$serverConfig/xcesc:reference)
 				else
 					()
 				,
@@ -346,10 +353,10 @@ declare function mgmt:updateServer($managerId as xs:string,$serverConfig as elem
 				let $oldDown := $serverConfig/xcesc:downTime[@since eq $newDown/@since] 
 				return
 					if(empty($oldDown)) then
-						update insert $newDown into $serverDoc
+						upd:insertInto($serverDoc,$newDown)
 					else
 						if(empty($oldDown/@until) and exists($newDown/@until)) then
-							update insert $newDown/@until into $oldDown
+							upd:insertInto($oldDown,$newDown/@until) 
 						else
 							()
 			) else
@@ -383,7 +390,7 @@ declare function mgmt:confirmUser($id as xs:string,$answer as xs:boolean)
 						xmldb:create-user($userConfig/@nickname,$userConfig/@nickpass,($mgmt:xcescGroup),())
 					)
 					return (
-						update value $userConfig/@status with 'enabled',
+						upd:replaceValue($userConfig/@status,'enabled'),
 						mailcore:send-email(<mail>
 							<to>{$mgmt:configRoot/mgmt:admin[1]/@mail}</to>
 							<subject>{$mgmt:projectName} User Registration approval: {$userConfig/@nickname}</subject>
@@ -420,7 +427,7 @@ declare function mgmt:confirmEMail($id as xs:string,$eMailId as xs:string,$answe
 		let $mailConfig := $mgmtDoc//xcesc:user[@id eq $id]/xcesc:eMail[@id eq $eMailId][@status eq 'unconfirmed']
 		return
 			if($answer) then (
-				update value $mailConfig/@status with 'enabled',
+				upd:replaceValue($mailConfig/@status,'enabled'),
 				mailcore:send-email(<mail>
 					<to>{$mailConfig/text()}</to>
 					<bcc>{$mgmt:configRoot/mgmt:admin[1]/@mail}</bcc>
@@ -431,7 +438,7 @@ declare function mgmt:confirmEMail($id as xs:string,$eMailId as xs:string,$answe
 				</mail>),
 				$eMailId
 			) else (
-				update delete $emailConfig,
+				upd:delete($emailConfig),
 				mailcore:send-email(<mail>
 					<to>{$mailConfig/text()}</to>
 					<bcc>{$mgmt:configRoot/mgmt:admin[1]/@mail}</bcc>
@@ -445,7 +452,7 @@ declare function mgmt:confirmEMail($id as xs:string,$eMailId as xs:string,$answe
 };
 
 declare function mgmt:sendConfirmEMails($id as xs:string)
-	as empty()
+	as empty-sequence()
 {
 		let $mgmtDoc:=mgmt:getManagementDoc()
 		let $userConfig := $mgmtDoc//xcesc:user[@id eq $id][@status ne 'unconfirmed']
@@ -494,7 +501,7 @@ declare function mgmt:createUser($nickname as xs:string,$nickpass as xs:string,$
 					{$references}
 				</xcesc:user>
 				return (
-					update insert $newUser into $mgmtDoc//xcesc:users,
+					upd:insertInto($mgmtDoc//xcesc:users,$newUser),
 					mailcore:send-email(<mail>
 						<to>{$mgmt:configRoot/mgmt:admin[1]/@mail}</to>
 						<subject>XCESC User Registration request</subject>
@@ -542,7 +549,7 @@ declare function mgmt:createUser($userConfig as element(xcesc:user))
 
 (: User deletion :)
 declare function mgmt:deleteUser($id as xs:string,$nickname as xs:string)
-	as empty() 
+	as empty-sequence() 
 {
 	(: (# exist:batch-transaction #) { :)
 		let $mgmtDoc := mgmt:getManagementDoc()
@@ -576,13 +583,13 @@ declare function mgmt:deleteUser($id as xs:string,$nickname as xs:string)
 						</mail>
 					)
 				) else (),
-				update value $userDoc/@status with 'deleted'
+				upd:replaceValue($userDoc/@status,'deleted')
 			)
 	(: } :)
 };
 
 declare function mgmt:send-mail-to-user($id as xs:string,$message as element(mail))
-	as empty()
+	as empty-sequence()
 {
 	let $userDoc := $mgmtDoc//xcesc:user[@id eq $id]
 	return
@@ -612,7 +619,7 @@ declare function mgmt:send-mail-to-user($id as xs:string,$message as element(mai
 };
 
 declare function mgmt:deleteDeletedUsers($users as element(xcesc:deletedUser)*)
-	as empty() 
+	as empty-sequence() 
 {
 	(: (# exist:batch-transaction #) { :)
 		let $mgmtDoc := mgmt:getManagementDoc()
@@ -667,7 +674,7 @@ declare function mgmt:getActiveUsers()
 
 (: It updates most pieces of the user declaration :)
 declare function mgmt:updateUser($id as xs:string,$userConfig as element(xcesc:user))
-	as empty() 
+	as empty-sequence() 
 {
 	(: (# exist:batch-transaction #) { :)
 		let $userDoc:=mgmt:getUserFromNickname($userConfig/@nickname)[@id eq $id][@status ne 'unconfirmed' and @status ne 'deleted']
@@ -679,19 +686,19 @@ declare function mgmt:updateUser($id as xs:string,$userConfig as element(xcesc:u
 					if($userConfig/@status ne 'unconfirmed') then (
 						for $user in $userDoc[@status ne $userConfig/@status]
 						return
-							update value $userDoc/@status with $userConfig/@status
+							upd:replaceValue($userDoc/@status,$userConfig/@status)
 					) else (),
 					for $user in $userDoc[@firstName ne $userConfig/@firstName]
 					return
-						update value $userDoc/@firstName with $userConfig/@firstName
+						upd:replaceValue($userDoc/@firstName,$userConfig/@firstName)
 					,
 					for $user in $userDoc[@lastName ne $userConfig/@lastName]
 					return
-						update value $userDoc/@lastName with $userConfig/@lastName
+						upd:replaceValue($userDoc/@lastName,$userConfig/@lastName)
 					,
 					for $user in $userDoc[@organization ne $userConfig/@organization]
 					return
-						update value $userDoc/@organization with $userConfig/@organization
+						upd:replaceValue($userDoc/@organization,$userConfig/@organization)
 					,
 					if(not(deep-equal($userDoc/xcesc:eMail,$userConfig/xcesc:eMail))) then (
 						for $mail in $userConfig/xcesc:eMail
@@ -699,25 +706,25 @@ declare function mgmt:updateUser($id as xs:string,$userConfig as element(xcesc:u
 						return
 							if(exists($oldMail)) then (
 								if($oldMail/text() ne $mail/text()) then (
-									update replace $oldMail <xcesc:eMail id="{util:uuid()}" status="unconfirmed">{$mail/text()}</xcesc:eMail>
+									upd:replaceNode($oldMail,<xcesc:eMail id="{util:uuid()}" status="unconfirmed">{$mail/text()}</xcesc:eMail>)
 								) else (
 									if($oldMail/@status ne $mail/@status) then (
-										update value $oldMail/@status with $mail/@status 
-									) else (
-									)
+										up:replaceValue($oldMail/@status,$mail/@status) 
+									) else
+										()
 								)
 							) else (
-								update insert <xcesc:eMail id="{util:uuid()}" status="unconfirmed">{$mail/text()}</xcesc:eMail> into $userDoc
+								upd:insertInto($userDoc,<xcesc:eMail id="{util:uuid()}" status="unconfirmed">{$mail/text()}</xcesc:eMail>)
 							)
 						,
-						update delete $userDoc/xcesc:eMail[not(@id = $userConfig/xcesc:eMail/@id)][@status ne 'unconfirmed']
+						upd:delete($userDoc/xcesc:eMail[not(@id = $userConfig/xcesc:eMail/@id)][@status ne 'unconfirmed'])
 						,
 						mgmt:sendConfirmEMails($id)
 					) else
 						()
 					,
 					if(not(deep-equal($userDoc/xcesc:reference,$userConfig/xcesc:reference))) then
-						update replace $userDoc/xcesc:reference with $userConfig/xcesc:reference
+						upd:replaceNode($userDoc/xcesc:reference,$userConfig/xcesc:reference)
 					else
 						()
 				)
@@ -728,13 +735,13 @@ declare function mgmt:updateUser($id as xs:string,$userConfig as element(xcesc:u
 
 
 declare function mgmt:changeUserPass($id as xs:string, $nickname as xs:string,$oldpass as xs:string,$newpass as xs:string)
-	as empty() 
+	as empty-sequence() 
 {
-	(mgmt:changeUserPass($id,$nickname,$oldpass,$newpass,false))
+	mgmt:changeUserPass($id,$nickname,$oldpass,$newpass,false())
 };
 
 declare function mgmt:changeUserPass($id as xs:string, $nickname as xs:string,$oldpass as xs:string,$newpass as xs:string,$reset as xs:boolean)
-	as empty() 
+	as empty-sequence() 
 {
 	(: (# exist:batch-transaction #) { :)
 		let $userDoc:=mgmt:getUserFromNickname($nickname)[@id eq $id][@status ne 'unconfirmed' and @status ne 'deleted']

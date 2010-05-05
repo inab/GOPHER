@@ -1,4 +1,4 @@
-xquery version "1.0";
+xquery version "1.0" encoding "UTF-8";
 
 (::pragma exist:output-size-limit -1::)
 declare namespace xcesc="http://www.cnio.es/scombio/xcesc/1.0";
