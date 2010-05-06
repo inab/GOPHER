@@ -186,7 +186,7 @@ declare function mgmt:changeServerOwnership($oldOwnerId as xs:string,$serverId a
 declare function mgmt:createServer($serverConfig as element(xcesc:server))
 	as xs:string?
 {
-	(mgmt:createServer($serverConfig/@name,$serverConfig/@managerId,$serverConfig/@uri,$serverConfig/@type eq $mgmt:partServer,$serverConfig/xcesc:description/text(),$serverConfig/xcesc:kind/text(),$serverConfig/xcesc:otherParams/xcesc:param,$serverConfig/xcesc:reference))
+	(mgmt:createServer($serverConfig/@name,$serverConfig/@managerId,$serverConfig/@uri,$serverConfig/@type eq $mgmt:partServer,$serverConfig/xcesc:description/text(),$serverConfig/xcesc:kind/text(),$serverConfig/xcesc:otherParams/xcesc:param,$serverConfig/xcesc:references/xcesc:reference))
 };
 
 (: And programmatically :)
@@ -207,7 +207,7 @@ declare function mgmt:createServer($name as xs:string,$managerId as xs:string,$u
 							<xcesc:kind>{$domain}</xcesc:kind>
 					}
 					<xcesc:otherParams>{$params}</xcesc:otherParams>
-					{$references}
+					<xcesc:references>{$references}</xcesc:references>
 				</xcesc:server>
 				return (
 					upd:insertInto($mgmtDoc//xcesc:servers,$newServer),
@@ -241,7 +241,7 @@ declare function mgmt:deleteServer($managerId as xs:string,$id as xs:string)
 		let $serverDoc := mgmt:getManagementDoc()//xcesc:server[@id eq $id][@managerId eq $managerId]
 		return
 			if(empty($serverDoc)) then
-				 error((),string-join(("On server deletion",$id,"owned by",$managerId,"is unknown"),' '))
+				 error((),string-join(("On server deletion, server",$id,"owned by",$managerId,"is unknown"),' '))
 			else
 				upd:delete($serverDoc)
 	(: } :)
@@ -252,8 +252,7 @@ declare function mgmt:getOnlineServers()
 	as element(xcesc:server)*
 {
 	(: (# exist:batch-transaction #) { :)
-		let $currentDateTime:=current-dateTime()
-		return mgmt:getOnlineServers($currentDateTime,$mgmt:partServer)
+	mgmt:getOnlineParticipants(current-dateTime())
 	(: } :)
 };
 
@@ -306,22 +305,38 @@ declare function mgmt:getOnlineServers($currentDateTime as xs:dateTime,$serverTy
 };
 
 (: It obtains the whole server configuration :)
-declare function mgmt:getServer($id as xs:string+)
+declare function mgmt:getServer($id as xs:string)
 	as element(xcesc:server)*
 {
 	mgmt:getManagementDoc()//xcesc:server[@id eq $id]
 };
 
+declare function mgmt:getServers($ids as xs:string+)
+	as element(xcesc:server)*
+{
+	mgmt:getManagementDoc()//xcesc:server[@id = $ids]
+};
+
 (: It obtains the whole server configuration :)
-declare function mgmt:getServersFromName($name as xs:string+)
+declare function mgmt:getServersFromName($name as xs:string)
 	as element(xcesc:server)*
 {
 	mgmt:getManagementDoc()//xcesc:server[@name eq $name]
 };
 
-(: It updates most pieces of the server declaration :)
+declare function mgmt:getServersFromNames($names as xs:string+)
+	as element(xcesc:server)*
+{
+	mgmt:getManagementDoc()//xcesc:server[@name = $names]
+};
+
+(:~
+ : It updates most pieces of the server declaration.
+ : 
+ : @author José María Fernández
+ :)
 declare function mgmt:updateServer($managerId as xs:string,$serverConfig as element(xcesc:server))
-	as empty-sequence() 
+	as empty-sequence()
 {
 	(: (# exist:batch-transaction #) { :)
 		let $serverDoc:=mgmt:getServer($serverConfig/@id)[@managerId eq $managerId]
@@ -344,8 +359,8 @@ declare function mgmt:updateServer($managerId as xs:string,$serverConfig as elem
 				else
 					()
 				,
-				if(not(deep-equal($serverDoc/xcesc:reference,$serverConfig/xcesc:reference))) then
-					upd:replaceNode($serverDoc/xcesc:reference,$serverConfig/xcesc:reference)
+				if(not(deep-equal($serverDoc/xcesc:references,$serverConfig/xcesc:references))) then
+					upd:replaceNode($serverDoc/xcesc:references,$serverConfig/xcesc:references)
 				else
 					()
 				,
@@ -360,7 +375,7 @@ declare function mgmt:updateServer($managerId as xs:string,$serverConfig as elem
 						else
 							()
 			) else
-				error((),string-join(("On server update",$serverConfig/@id,"owned by",$managerId,"is unknown"),' '))
+				error((),string-join(("On server update, server",$serverConfig/@id,"owned by",$managerId,"is unknown"),' '))
 	(: } :)
 };
 
@@ -412,7 +427,7 @@ declare function mgmt:confirmUser($id as xs:string,$answer as xs:boolean)
 					</mail>)
 				)
 			) else (
-				util:log-system-err(string-join(("On server creation, user",$nickname,"already existed"),' ')),
+				util:log-system-err(string-join(("On user creation, user",$nickname,"already existed"),' ')),
 				error((),string-join(("On user creation, user",$nickname,"already existed"),' '))
 			)
 	(: } :)
@@ -431,7 +446,7 @@ declare function mgmt:confirmEMail($id as xs:string,$eMailId as xs:string,$answe
 				mailcore:send-email(<mail>
 					<to>{$mailConfig/text()}</to>
 					<bcc>{$mgmt:configRoot/mgmt:admin[1]/@mail}</bcc>
-					<subject>{$mgmt:projectName}: mail for user {$userConfig/@nickname} has been enabled</subject>
+					<subject>{$mgmt:projectName}: e-mail for user {$userConfig/@nickname} has been enabled</subject>
 					<message>
 						<text>User {$userConfig/@nickname} has enabled e-mail address {$mailConfig/text()} for notifications at {$mgmt:projectName} ({$mgmt:publicBaseURI})</text>
 					</message>
@@ -498,7 +513,7 @@ declare function mgmt:createUser($nickname as xs:string,$nickpass as xs:string,$
 						return
 							<xcesc:eMail id="{$eMailId}" status="unconfirmed">{$eMail/text()}</xcesc:eMail>
 					}
-					{$references}
+					<xcesc:references>{$references}</xcesc:references>
 				</xcesc:user>
 				return (
 					upd:insertInto($mgmtDoc//xcesc:users,$newUser),
@@ -544,7 +559,7 @@ declare function mgmt:createUser($nickname as xs:string,$nickpass as xs:string,$
 declare function mgmt:createUser($userConfig as element(xcesc:user))
 	as xs:string?
 {
-	(mgmt:createUser($userConfig/@nickname/string(),$userConfig/@nickpass/string(),$userConfig/@firstName/string(),$userConfig/@lastName/string(),$userConfig/@organization/string(),$userConfig/xcesc:eMail,$userConfig/xcesc:reference))
+	(mgmt:createUser($userConfig/@nickname/string(),$userConfig/@nickpass/string(),$userConfig/@firstName/string(),$userConfig/@lastName/string(),$userConfig/@organization/string(),$userConfig/xcesc:eMail,$userConfig/xcesc:references/xcesc:reference))
 };
 
 (: User deletion :)
@@ -723,13 +738,13 @@ declare function mgmt:updateUser($id as xs:string,$userConfig as element(xcesc:u
 					) else
 						()
 					,
-					if(not(deep-equal($userDoc/xcesc:reference,$userConfig/xcesc:reference))) then
-						upd:replaceNode($userDoc/xcesc:reference,$userConfig/xcesc:reference)
+					if(not(deep-equal($userDoc/xcesc:references,$userConfig/xcesc:references))) then
+						upd:replaceNode($userDoc/xcesc:references,$userConfig/xcesc:references)
 					else
 						()
 				)
 			) else
-				error((),string-join(("On user update",$userConfig/@nickname,"changes from",$id,"are not allowed"),' '))
+				error((),string-join(("On user update,",$userConfig/@nickname,"changes from",$id,"are not allowed"),' '))
 	(: } :)
 };
 
@@ -753,7 +768,7 @@ declare function mgmt:changeUserPass($id as xs:string, $nickname as xs:string,$o
 					xmldb:change-user($nickname,$newpass,(),())
 				)
 			) else
-				error((),string-join(("On user password update",$nickname,"password changes from",$id,"are not allowed"),' '))
+				error((),string-join(("On user password update,",$nickname,"password changes from",$id,"are not allowed"),' '))
 	(: } :)
 };
 

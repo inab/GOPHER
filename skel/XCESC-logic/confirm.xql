@@ -19,6 +19,7 @@ let $mailId := request:get-parameter("mailId",())[1]
 return
 	if(empty($confirm) or not($confirm = ("yes","no"))) then (
 		(: Lost or invalid confirmation value :)
+		response:set-status-code(400)
 	) else (
 		let $answer := if($confirm eq 'yes') then true() else false()
 		return
@@ -29,17 +30,50 @@ return
 					response:set-status-code(400)
 				) else (
 					(: TODO: return checks :)
-					mgmt:changeServerOwnership($oldOwnerId,$serverId,$newOwnerId,$answer)
+					system:as-user($mgmt:adminUser,$mgmt:adminPass,
+						util:catch("*",
+							(: Write code here! :)
+							let $emp1 := mgmt:changeServerOwnership($oldOwnerId,$serverId,$newOwnerId,$answer)
+							return
+								response:set-status-code(200)
+							,
+							let $emp2 := util:log-app("error","xcesc.cron",<error>An error occurred on XCESC change server ownership ({$oldOwnerId}, {$serverId}, {$newOwnerId}, {$answer}) job: {$util:exception-message}.</error>)
+							return
+								response:set-status-code(500)
+						)
+					)
 				)
 			) else (
 				if(empty($mailId)) then (
 					(: TODO: return checks :)
 					(: User confirmation :)
-					mgmt:confirmUser($id,$answer)
+					system:as-user($mgmt:adminUser,$mgmt:adminPass,
+						util:catch("*",
+							(: Write code here! :)
+							let $emp1 := mgmt:confirmUser($id,$answer)
+							return
+								response:set-status-code(200)
+							,
+							let $emp2 := util:log-app("error","xcesc.cron",<error>An error occurred on XCESC user creation confirmation ({$id}, {$answer}) job: {$util:exception-message}.</error>)
+							return
+								response:set-status-code(500)
+						)
+					)
 				) else (
 					(: TODO: return checks :)
 					(: Mail confirmation :)
-					mgmt:confirmEMail($id,$mailId,$answer)
+					system:as-user($mgmt:adminUser,$mgmt:adminPass,
+						util:catch("*",
+							(: Write code here! :)
+							let $emp1 := mgmt:confirmEMail($id,$mailId,$answer)
+							return
+								response:set-status-code(200)
+							,
+							let $emp2 := util:log-app("error","xcesc.cron",<error>An error occurred on XCESC change server ownership ({$id}, {$mailId}, {$answer}) job: {$util:exception-message}.</error>)
+							return
+								response:set-status-code(500)
+						)
+					)
 				)
 			)
 	)

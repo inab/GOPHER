@@ -44,49 +44,58 @@
 		</xsd:annotation>
 	</xsd:import>
 	
-	<xsd:element name="reference">
+	<xsd:element name="references">
 		<xsd:annotation>
-			<xsd:documentation><![CDATA[A reference to external information associated to the server]]></xsd:documentation>
+			<xsd:documentation><![CDATA[This element contains the external references to the server, at documentation level]]></xsd:documentation>
 		</xsd:annotation>
 		<xsd:complexType>
-			<xsd:simpleContent>
-				<xsd:extension base="xsd:anyURI">
-					<xsd:attribute name="description" type="xsd:string" use="required">
-						<xsd:annotation>
-							<xsd:documentation><![CDATA[A brief description about the pointed contents]]></xsd:documentation>
-						</xsd:annotation>
-					</xsd:attribute>
-					<xsd:attribute name="kind" use="required">
-						<xsd:annotation>
-							<xsd:documentation><![CDATA[The supposed type of the content]]></xsd:documentation>
-						</xsd:annotation>
-						<xsd:simpleType>
-							<xsd:restriction base="xsd:string">
-								<xsd:enumeration value="site">
+			<xsd:sequence minOccurs="1" maxOccurs="1">
+				<xsd:element name="reference">
+					<xsd:annotation>
+						<xsd:documentation><![CDATA[A reference to external information associated to the server]]></xsd:documentation>
+					</xsd:annotation>
+					<xsd:complexType>
+						<xsd:simpleContent>
+							<xsd:extension base="xsd:anyURI">
+								<xsd:attribute name="description" type="xsd:string" use="required">
 									<xsd:annotation>
-										<xsd:documentation><![CDATA[Link to the main site]]></xsd:documentation>
+										<xsd:documentation><![CDATA[A brief description about the pointed contents]]></xsd:documentation>
 									</xsd:annotation>
-								</xsd:enumeration>
-								<xsd:enumeration value="link">
+								</xsd:attribute>
+								<xsd:attribute name="kind" use="required">
 									<xsd:annotation>
-										<xsd:documentation><![CDATA[Link to associated material (e.g. PubMed)]]></xsd:documentation>
+										<xsd:documentation><![CDATA[The supposed type of the content]]></xsd:documentation>
 									</xsd:annotation>
-								</xsd:enumeration>
-								<xsd:enumeration value="logo">
-									<xsd:annotation>
-										<xsd:documentation><![CDATA[Link to a server logo]]></xsd:documentation>
-									</xsd:annotation>
-								</xsd:enumeration>
-								<xsd:enumeration value="image">
-									<xsd:annotation>
-										<xsd:documentation><![CDATA[Link to images, like screenshots]]></xsd:documentation>
-									</xsd:annotation>
-								</xsd:enumeration>
-							</xsd:restriction>
-						</xsd:simpleType>
-					</xsd:attribute>
-				</xsd:extension>
-			</xsd:simpleContent>
+									<xsd:simpleType>
+										<xsd:restriction base="xsd:string">
+											<xsd:enumeration value="site">
+												<xsd:annotation>
+													<xsd:documentation><![CDATA[Link to the main site]]></xsd:documentation>
+												</xsd:annotation>
+											</xsd:enumeration>
+											<xsd:enumeration value="link">
+												<xsd:annotation>
+													<xsd:documentation><![CDATA[Link to associated material (e.g. PubMed)]]></xsd:documentation>
+												</xsd:annotation>
+											</xsd:enumeration>
+											<xsd:enumeration value="logo">
+												<xsd:annotation>
+													<xsd:documentation><![CDATA[Link to a server logo]]></xsd:documentation>
+												</xsd:annotation>
+											</xsd:enumeration>
+											<xsd:enumeration value="image">
+												<xsd:annotation>
+													<xsd:documentation><![CDATA[Link to images, like screenshots]]></xsd:documentation>
+												</xsd:annotation>
+											</xsd:enumeration>
+										</xsd:restriction>
+									</xsd:simpleType>
+								</xsd:attribute>
+							</xsd:extension>
+						</xsd:simpleContent>
+					</xsd:complexType>
+				</xsd:element>
+			</xsd:sequence>
 		</xsd:complexType>
 	</xsd:element>
 	
@@ -131,9 +140,9 @@
 						</xsd:sequence>
 					</xsd:complexType>
 				</xsd:element>
-				<xsd:element ref="xcesc:reference" minOccurs="0" maxOccurs="unbounded">
+				<xsd:element ref="xcesc:references" minOccurs="1" maxOccurs="1">
 					<xsd:annotation>
-						<xsd:documentation><![CDATA[A reference to external information associated to the server]]></xsd:documentation>
+						<xsd:documentation><![CDATA[This element contains the external references to the server, at documentation level]]></xsd:documentation>
 					</xsd:annotation>
 				</xsd:element>
 				<xsd:element name="downTime" minOccurs="0" maxOccurs="unbounded">
@@ -250,9 +259,9 @@ When an e-mail is disabled, it is not used to send the user notifications]]></xs
 												</xsd:simpleContent>
 											</xsd:complexType>
 										</xsd:element>
-										<xsd:element ref="xcesc:reference" minOccurs="0" maxOccurs="unbounded">
+										<xsd:element ref="xcesc:references" minOccurs="1" maxOccurs="1">
 											<xsd:annotation>
-												<xsd:documentation><![CDATA[A reference to external information associated to the user]]></xsd:documentation>
+												<xsd:documentation><![CDATA[The set of references to external information associated to the user]]></xsd:documentation>
 											</xsd:annotation>
 										</xsd:element>
 									</xsd:sequence>

@@ -14,8 +14,16 @@ import module namespace job="http://www.cnio.es/scombio/xcesc/1.0/xquery/jobMana
 let $pathInfo := request:get-path-info()
 let $jobTokens := tokenize(substring($pathInfo,1),'/')
 return
-	if (count($jobTokens) >= 3 and session:set-current-user($mgmt:adminUser,$mgmt:adminPass)) then (
-		response:set-status-code(job:joinAssessments($jobTokens[0],$jobTokens[1],$jobTokens[2],current-dateTime(),request:get-data())),
-		session:invalidate-session()
+	if (count($jobTokens) >= 3) then (
+		system:as-user($mgmt:adminUser,$mgmt:adminPass,
+			util:catch("*",
+				(: Write code here! :)
+				response:set-status-code(job:joinAssessments($jobTokens[0],$jobTokens[1],$jobTokens[2],current-dateTime(),request:get-data()))
+				,
+				let $emp1 := util:log-app("error","xcesc.cron",<error>An error occurred meanwhile processing the assessments from ({$jobTokens[0]}, {$jobTokens[1]}, {$jobTokens[2]}) job: {$util:exception-message}.</error>)
+				return
+					response:set-status-code(500)
+			)
+		)
 	) else
 		response:set-status-code(400)
