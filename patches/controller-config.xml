@@ -38,7 +38,7 @@
 	-->
 	
 	<root pattern="^/@AtomicVirtual@.*" path="xmldb:exist:///db/@AtomicVirtual@"/>
-	<root pattern="^/@PublicLogic@/.*\.(xq|xql)" path="xmldb:exist:///db/XCESC-logic"/>
+	<root pattern="^/@PublicLogic@.*" path="xmldb:exist:///db/XCESC-logic"/>
 	<root pattern="^/$" path="xmldb:exist:///db/www/index.html"/>
 	<root pattern=".*" path="xmldb:exist:///db/www"/>
 	<forward pattern=".*\.(xq|xql|xqy|xquery)$" servlet="XQueryServlet"/>

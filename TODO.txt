@@ -1,0 +1,54 @@
+TODO
+----
+1.-	Login box: with username field, password field, remember me checkbox, Forgot password link, Forgot username link, Login button, Sign up button.
+	- Login button authenticates through AJAX with the server, setting up a cookie received from the server.
+	  If authentication succeeds, the login box will translate into Logged Box. The container page could possibly reload (depending on context).
+	  If authentication fails, the login box will show a brief error message.
+	- 'Forgot password' link opens a new window where to write the username. The user will receive the password in any of the first confirmed e-mail address.
+	- 'Forgot username' link opens a new window where to write any of the confirmed user e-mail addresses.
+	- Sign Up button opens a new window where to write the needed information to ask for an account.
+2.-	Logged box: with First and Last names, with username and image, Logout button, and a CSS menu with options like Edit profile, Manage Profiles, Manage Servers.
+	- All this information will come from a service which will react to the cookie authentication token, returning an XML.
+	- Logout button de-authenticates through AJAX with the server, clearing up the cookie received from the server.
+	  The container page could possibly reload (depending on context).
+	- 'Edit profile' links to the Profile page, tab 'User profile'. This will not appear for GOPHER admin.
+	- 'Manage profiles' links to the Profile page, tab 'User profiles'. It only appears for GOPHER admin. This will not appear for other GOPHER users.
+	- 'Manage Servers' links to the Profile page, tab 'Servers'.
+3.- Main pages: They will include the Login/Logged boxes.
+	- Boxes will appear on north-east corner.
+	- Changes in Login/logged state will not reload these pages.
+4.-	Profile page. This page will include the Logged box.
+	- Box will appear on north-east corner.
+	- Changes in Logged state will reload server main page.
+	- The page contains next tabs. Some of them or they contents may not be rendered, based on GOPHER admin level:
+		- Edit profile/Edit profile nickname: All the information associated to the user can be changed just here.
+		  If it is not the admin profile, it will be an erase button.
+		
+
+
+
+
+OLD TODO
+--------
+*	gopher.bioinfo.cnio.es
+*	Create GOPHER blog on installation (if it does not exist yet).
+*	Main page.
+*	Participants Registration page.
+	- User tries to register, manager receives a mail which allows or denies
+	registration.
+*	Servers Registration page.
+*	Servers management page.
+*	Available servers page (descriptions, etc...).
+*	Documentation page (Protocol explanation pages, etc...)
+*	Latest run page.
+*	Proof of concept services.
+*	Supervisor mode (no query is issued, no result is accepted, no modification is allowed).
+*	Usage of atom protocol for news: servers results, new runs results, etc...
+	(Linked to AtomicWiki).
+
+DONE
+----
+x	Put passwords in Base64.
+x	Send e-mail on events (server result received, server job accepted/rejected, etc...).
+	- Is mail module incomplete? Convince them to finish it!
+p	Participants management page.

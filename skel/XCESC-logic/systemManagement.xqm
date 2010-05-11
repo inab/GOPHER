@@ -64,8 +64,8 @@ declare function mgmt:getManagementDoc()
 		let $mgmtColURI := xmldb:encode($mgmt:mgmtCol)
 		let $dummy := xmldb:create-collection("/",$mgmtColURI)
 		let $retElem := doc(xmldb:store($mgmtColURI,$mgmt:mgmtDocURI,$newDoc,'application/xml'))/element()
-		(: Only the owner can look at/change this file :)
-		let $empty := xmldb:set-resource-permissions($mgmt:mgmtColURI,$mgmt:mgmtDocURI,$mgmt:adminUser,$mgmt:xcescGroup,7*64)
+		(: Only the owner can look at/change this file, and group people can only look at :)
+		let $empty := xmldb:set-resource-permissions($mgmt:mgmtColURI,$mgmt:mgmtDocURI,$mgmt:adminUser,$mgmt:xcescGroup,7*64+4*8)
 		return $retElem
 	)
 };
@@ -438,8 +438,8 @@ declare function mgmt:confirmEMail($id as xs:string,$eMailId as xs:string,$answe
 	as xs:string?
 {
 	(: (# exist:batch-transaction #) { :)
-		let $mgmtDoc:=mgmt:getManagementDoc()
-		let $mailConfig := $mgmtDoc//xcesc:user[@id eq $id]/xcesc:eMail[@id eq $eMailId][@status eq 'unconfirmed']
+		let $userConfig := mgmt:getUserFromId($id)
+		let $mailConfig := $userConfig/xcesc:eMail[@id eq $eMailId][@status eq 'unconfirmed']
 		return
 			if($answer) then (
 				upd:replaceValue($mailConfig/@status,'enabled'),
@@ -453,7 +453,7 @@ declare function mgmt:confirmEMail($id as xs:string,$eMailId as xs:string,$answe
 				</mail>),
 				$eMailId
 			) else (
-				upd:delete($emailConfig),
+				upd:delete($mailConfig),
 				mailcore:send-email(<mail>
 					<to>{$mailConfig/text()}</to>
 					<bcc>{$mgmt:configRoot/mgmt:admin[1]/@mail/string()}</bcc>
@@ -469,8 +469,7 @@ declare function mgmt:confirmEMail($id as xs:string,$eMailId as xs:string,$answe
 declare function mgmt:sendConfirmEMails($id as xs:string)
 	as empty-sequence()
 {
-		let $mgmtDoc:=mgmt:getManagementDoc()
-		let $userConfig := $mgmtDoc//xcesc:user[@id eq $id][@status ne 'unconfirmed']
+		let $userConfig := mgmt:getUserFromId($id)[not(@status = ('unconfirmed','deleted'))]
 		return
 			mailcore:send-email(
 				for $email in $userConfig/xcesc:eMail[@status eq 'unconfirmed']
@@ -573,7 +572,7 @@ declare function mgmt:deleteUser($id as xs:string,$nickname as xs:string)
 			if(empty($userDoc)) then
 				 error((),string-join(("On user deletion,",$id,"is not allowed to erase",$nickname,"or some of them are unknown"),' '))
 			else (
-				if($userDoc/@status ne 'unconfirmed' and $userDoc/@status ne 'deleted') then (
+				if(not($userDoc/@status = ('unconfirmed','deleted'))) then (
 				 	if(xmldb:exists-user($nickname)) then (
 						system:as-user(
 							collection($core:configColURI)//meta:metaManagement[1]/@user/string(),
@@ -659,6 +658,23 @@ declare function mgmt:getActiveUserFromId($id as xs:string)
 	mgmt:getManagementDoc()//xcesc:user[@id eq $id][@status eq 'enabled']
 };
 
+declare function mgmt:getRestrictedInfoFromId($id as xs:string)
+	as element(xcesc:user)?
+{
+	for $userDoc in mgmt:getActiveUserFromId($id)
+	return
+		element { node-name($userDoc) } {
+			for $child in $userDoc/@*
+			return
+				if(not($child/local-name() = ('nickpass','password'))) then (
+					$child
+				) else
+					( )
+			,
+			$userDoc/node()
+		}
+};
+
 (: It obtains the whole user configuration, by nickname :)
 declare function mgmt:getUserFromNickname($nickname as xs:string)
 	as element(xcesc:user)?
@@ -675,7 +691,7 @@ declare function mgmt:getUserIdFromNickname($nickname as xs:string)
 declare function mgmt:getPasswordFromNickname($nickname as xs:string)
 	as xs:string?
 {
-	mgmt:getUserFromNickname($nickname)/@password/string()
+	mgmt:getUserFromNickname($nickname)/@nickpass/string()
 };
 
 (: It obtains the whole user configuration, by nickname :)
@@ -782,19 +798,5 @@ declare function mgmt:changeUserPass($id as xs:string, $nickname as xs:string,$o
 			) else
 				error((),string-join(("On user password update,",$nickname,"password changes from",$id,"are not allowed"),' '))
 	(: } :)
-};
-
-declare function mgmt:do-login-digest($user as xs:string, $realm as xs:string, $nonce as xs:string)
-	as xs:string?
-{
-	(: We cannot follow if the user is not confirmed or it is disabled :)
-	let $pass := mgmt:getActiveUserFromNickname($user)/@password
-	return
-		if(exists($pass)) then (
-			let $HA1 := util:hash(string-join(($user,$realm,$pass/string()),$login:DIGEST_SEP),'md5')
-			return
-				util:hash(string-join(($nonce,$HA1),$login:DIGEST_SEP),'md5')
-		) else (
-		)
 };
 

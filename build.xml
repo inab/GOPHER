@@ -833,9 +833,6 @@
 				<exclude name="system/**/*.xconf" />
 				<exclude name="system/**/*.xml" />
 			</fileset>
-			<fileset dir="${eXist.conf.dir}">
-				<include name="controller-config.xml"/>
-			</fileset>
 		</xdb:store>
 		
 		<xdb:store uri="${xmldb.uri}/db/${xcesc.config.col}" user="${deploy.eXist.gopher.user}" password="${deploy.eXist.gopher.pass}" failonerror="true" createsubcollections="true">
