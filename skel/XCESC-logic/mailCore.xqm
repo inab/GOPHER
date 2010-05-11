@@ -9,6 +9,8 @@ declare namespace meta="http://www.cnio.es/scombio/xcesc/1.0/xquery/metaManageme
 declare namespace xcesc="http://www.cnio.es/scombio/xcesc/1.0";
 declare namespace xs="http://www.w3.org/2001/XMLSchema";
 
+import module namespace util="http://exist-db.org/xquery/util";
+
 import module namespace mail='http://exist-db.org/xquery/mail';
 import module namespace core='http://www.cnio.es/scombio/xcesc/1.0/xquery/core' at "xmldb:exist:///db/XCESC-logic/core.xqm";
 

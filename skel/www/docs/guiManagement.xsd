@@ -29,6 +29,11 @@
                     <xs:documentation><![CDATA[The path where Chiba helps with XForms]]></xs:documentation>
                 </xs:annotation>
             </xs:attribute>
+            <xs:attribute name="realm" type="xs:string" use="required">
+                <xs:annotation>
+                    <xs:documentation><![CDATA[The realm used by XCESC GUI authentication system]]></xs:documentation>
+                </xs:annotation>
+            </xs:attribute>
         </xs:complexType>
     </xs:element>
 </xs:schema>

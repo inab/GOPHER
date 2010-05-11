@@ -392,6 +392,7 @@
 	</target>
 	
 	<target name="conditional.patch.log4j.xml" depends="is.patched.log4j.xml" unless="already.patched.log4j.xml">
+		<!--
 		<delete file="${eXist.conf.dir}/log4j.xml" failonerror="false"/>
 		<delete file="${eXist.conf.dir}/log4j.xml.rej" failonerror="false"/>
 		<patch
@@ -409,6 +410,15 @@
 				</or>
 			</condition>
 		</fail>
+		-->
+		<xslt
+			in="${eXist.dir}/log4j.xml"
+			out="${eXist.conf.dir}/log4j.xml"
+			style="${GOPHER.patches.dir}/log4j-patcher.xsl"
+			force="true"
+		>
+			<outputproperty name="method" value="xml"/>
+		</xslt>
 	</target>
 	
 	<!--

@@ -99,9 +99,9 @@ declare function mgmt:requestChangeServerOwnership($oldOwnerId as xs:string,$ser
 							<message>
 								<xhtml>
 									<html>
-										<head>{$mgmt:projectName} confirmation: server '{$serverDoc/@name}' ownership change</head>
+										<head>{$mgmt:projectName} confirmation: server '{$serverDoc/@name/string()}' ownership change</head>
 										<body>
-											<p>{$oldUserDoc/@firstName} {$oldUserDoc/@lastName} ({$oldUserDoc/@nickname}), the owner of the server '{$serverDoc/@name}' registered at <a href="{$mgmt:publicBaseURI}">{$mgmt:projectName}</a> affirms you want to accept the server's ownership.</p>
+											<p>{$oldUserDoc/@firstName/string()} {$oldUserDoc/@lastName/string()} ({$oldUserDoc/@nickname/string()}), the owner of the server '{$serverDoc/@name}' registered at <a href="{$mgmt:publicBaseURI}">{$mgmt:projectName}</a> affirms you want to accept the server's ownership.</p>
 											<p>
 												Do you <a href="{$mgmt:confirmModuleURI}?oldOwner={$oldOwnerId}&amp;serverId={$serverId}&amp;newOwner={$newOwnerId}&amp;confirm=yes">agree</a> with the ownership change
 												or you <a href="{$mgmt:confirmModuleURI}?oldOwner={$oldOwnerId}&amp;serverId={$serverId}&amp;newOwner={$newOwnerId}&amp;confirm=no">reject</a> it?
@@ -121,7 +121,7 @@ declare function mgmt:requestChangeServerOwnership($oldOwnerId as xs:string,$ser
 declare function mgmt:changeServerOwnership($oldOwnerId as xs:string,$serverId as xs:string,$newOwnerId as xs:string)
 	as empty-sequence()
 {
-	changeServerOwnership($oldOwnerId,$serverId,$newOwnerId,true())
+	mgmt:changeServerOwnership($oldOwnerId,$serverId,$newOwnerId,true())
 };
 
 declare function mgmt:changeServerOwnership($oldOwnerId as xs:string,$serverId as xs:string,$newOwnerId as xs:string,$answer as xs:boolean)
@@ -149,9 +149,9 @@ declare function mgmt:changeServerOwnership($oldOwnerId as xs:string,$serverId a
 							<message>
 								<xhtml>
 									<html>
-										<head>{$mgmt:projectName} notification: server '{$serverDoc/@name}' ownership changed</head>
+										<head>{$mgmt:projectName} notification: server '{$serverDoc/@name/string()}' ownership changed</head>
 										<body>
-											<p>{$userDoc/@firstName} {$userDoc/@lastName} ({$userDoc/@nickname}), hass accepted the ownership of the server '{$serverDoc/@name}' registered at <a href="{$mgmt:publicBaseURI}">{$mgmt:projectName}</a>.</p>
+											<p>{$userDoc/@firstName/string()} {$userDoc/@lastName/string()} ({$userDoc/@nickname/string()}), hass accepted the ownership of the server '{$serverDoc/@name/string()}' registered at <a href="{$mgmt:publicBaseURI}">{$mgmt:projectName}</a>.</p>
 											<p>You are no more the owner.</p>
 										</body>
 									</html>
@@ -164,9 +164,9 @@ declare function mgmt:changeServerOwnership($oldOwnerId as xs:string,$serverId a
 							<message>
 								<xhtml>
 									<html>
-										<head>{$mgmt:projectName} notification: server '{$serverDoc/@name}' ownership rejection</head>
+										<head>{$mgmt:projectName} notification: server '{$serverDoc/@name/string()}' ownership rejection</head>
 										<body>
-											<p>{$userDoc/@firstName} {$userDoc/@lastName} ({$userDoc/@nickname}), has rejected the ownership of the server '{$serverDoc/@name}' registered at <a href="{$mgmt:publicBaseURI}">{$mgmt:projectName}</a>.</p>
+											<p>{$userDoc/@firstName/string()} {$userDoc/@lastName/string()} ({$userDoc/@nickname/string()}), has rejected the ownership of the server '{$serverDoc/@name/string()}' registered at <a href="{$mgmt:publicBaseURI}">{$mgmt:projectName}</a>.</p>
 											<p>You are still the owner.</p>
 										</body>
 									</html>
@@ -216,9 +216,9 @@ declare function mgmt:createServer($name as xs:string,$managerId as xs:string,$u
 						<message>
 							<xhtml>
 								<html>
-									<head>{$mgmt:projectName} notification: server '{$newServer/@name}' has been registered</head>
+									<head>{$mgmt:projectName} notification: server '{$newServer/@name/string()}' has been registered</head>
 									<body>
-										<p>The server '{$newServer/@name}' is registered at <a href="{$mgmt:publicBaseURI}">{$mgmt:projectName}</a>.</p>
+										<p>The server '{$newServer/@name/string()}' is registered at <a href="{$mgmt:publicBaseURI}">{$mgmt:projectName}</a>.</p>
 										<p>You are now the owner.</p>
 									</body>
 								</html>
@@ -407,10 +407,10 @@ declare function mgmt:confirmUser($id as xs:string,$answer as xs:boolean)
 					return (
 						upd:replaceValue($userConfig/@status,'enabled'),
 						mailcore:send-email(<mail>
-							<to>{$mgmt:configRoot/mgmt:admin[1]/@mail}</to>
-							<subject>{$mgmt:projectName} User Registration approval: {$userConfig/@nickname}</subject>
+							<to>{$mgmt:configRoot/mgmt:admin[1]/@mail/string()}</to>
+							<subject>{$mgmt:projectName} User Registration approval: {$userConfig/@nickname/string()}</subject>
 							<message>
-								<text>User {$userConfig/@nickname} has been created at {$mgmt:projectName} ({$mgmt:publicBaseURI})</text>
+								<text>User {$userConfig/@nickname/string()} has been created at {$mgmt:projectName} ({$mgmt:publicBaseURI})</text>
 							</message>
 						</mail>),
 						mgmt:sendConfirmEMails($id),
@@ -419,16 +419,16 @@ declare function mgmt:confirmUser($id as xs:string,$answer as xs:boolean)
 				) else (
 					mgmt:deleteUser($id,$userConfig/@nickname),
 					mailcore:send-email(<mail>
-						<to>{$mgmt:configRoot/mgmt:admin[1]/@mail}</to>
-						<subject>{$mgmt:projectName} User Registration rejection: {$userConfig/@nickname}</subject>
+						<to>{$mgmt:configRoot/mgmt:admin[1]/@mail/string()}</to>
+						<subject>{$mgmt:projectName} User Registration rejection: {$userConfig/@nickname/string()}</subject>
 						<message>
-							<text>User {$userConfig/@nickname} has been rejected at {$mgmt:projectName} ({$mgmt:publicBaseURI})</text>
+							<text>User {$userConfig/@nickname/string()} has been rejected at {$mgmt:projectName} ({$mgmt:publicBaseURI})</text>
 						</message>
 					</mail>)
 				)
 			) else (
-				util:log-system-err(string-join(("On user creation, user",$nickname,"already existed"),' ')),
-				error((),string-join(("On user creation, user",$nickname,"already existed"),' '))
+				util:log-system-err(string-join(("On user creation, user",$id,"already existed"),' ')),
+				error((),string-join(("On user creation, user",$id,"already existed"),' '))
 			)
 	(: } :)
 };
@@ -445,10 +445,10 @@ declare function mgmt:confirmEMail($id as xs:string,$eMailId as xs:string,$answe
 				upd:replaceValue($mailConfig/@status,'enabled'),
 				mailcore:send-email(<mail>
 					<to>{$mailConfig/text()}</to>
-					<bcc>{$mgmt:configRoot/mgmt:admin[1]/@mail}</bcc>
-					<subject>{$mgmt:projectName}: e-mail for user {$userConfig/@nickname} has been enabled</subject>
+					<bcc>{$mgmt:configRoot/mgmt:admin[1]/@mail/string()}</bcc>
+					<subject>{$mgmt:projectName}: e-mail for user {$userConfig/@nickname/string()} has been enabled</subject>
 					<message>
-						<text>User {$userConfig/@nickname} has enabled e-mail address {$mailConfig/text()} for notifications at {$mgmt:projectName} ({$mgmt:publicBaseURI})</text>
+						<text>User {$userConfig/@nickname/string()} has enabled e-mail address {$mailConfig/text()} for notifications at {$mgmt:projectName} ({$mgmt:publicBaseURI})</text>
 					</message>
 				</mail>),
 				$eMailId
@@ -456,10 +456,10 @@ declare function mgmt:confirmEMail($id as xs:string,$eMailId as xs:string,$answe
 				upd:delete($emailConfig),
 				mailcore:send-email(<mail>
 					<to>{$mailConfig/text()}</to>
-					<bcc>{$mgmt:configRoot/mgmt:admin[1]/@mail}</bcc>
-					<subject>{$mgmt:projectName}: user {$userConfig/@nickname} has rejected this e-mail address</subject>
+					<bcc>{$mgmt:configRoot/mgmt:admin[1]/@mail/string()}</bcc>
+					<subject>{$mgmt:projectName}: user {$userConfig/@nickname/string()} has rejected this e-mail address</subject>
 					<message>
-						<text>User {$userConfig/@nickname} has rejected e-mail address {$mailConfig/text()} for notifications at {$mgmt:projectName} ({$mgmt:publicBaseURI})</text>
+						<text>User {$userConfig/@nickname/string()} has rejected e-mail address {$mailConfig/text()} for notifications at {$mgmt:projectName} ({$mgmt:publicBaseURI})</text>
 					</message>
 				</mail>)
 			)
@@ -476,17 +476,17 @@ declare function mgmt:sendConfirmEMails($id as xs:string)
 				for $email in $userConfig/xcesc:eMail[@status eq 'unconfirmed']
 				return 
 					<mail>
-						<to>{$userConfig/@firstName} {$userConfig/@lastName} &lt;{$email/text()}&gt;</to>
-						<subject>{$mgmt:projectName} confirmation: e-mail for user {$userConfig/@nickname}</subject>
+						<to>{$userConfig/@firstName/string()} {$userConfig/@lastName/string()} &lt;{$email/text()}&gt;</to>
+						<subject>{$mgmt:projectName} confirmation: e-mail for user {$userConfig/@nickname/string()}</subject>
 						<message>
 							<xhtml>
 								<html>
-									<head>{$mgmt:projectName} confirmation: e-mail for user '{$userConfig/@nickname}'</head>
+									<head>{$mgmt:projectName} confirmation: e-mail for user '{$userConfig/@nickname/string()}'</head>
 									<body>
-										<p>User '{$userConfig/@nickname}' registered at <a href="{$mgmt:publicBaseURI}">{$mgmt:projectName}</a> affirms (s)he manages this e-mail address.</p>
+										<p>User '{$userConfig/@nickname/string()}' registered at <a href="{$mgmt:publicBaseURI}">{$mgmt:projectName}</a> affirms (s)he manages this e-mail address.</p>
 										<p>
-											Do you <a href="{$mgmt:confirmModuleURI}?id={$userConfig/@id}&amp;emailId={$email/@id}&amp;confirm=yes">confirm the e-mail address</a> or
-											<a href="{$mgmt:confirmModuleURI}?id={$userConfig/@id}&amp;emailId={$email/@id}&amp;confirm=no">reject the e-mail registration</a>?
+											Do you <a href="{$mgmt:confirmModuleURI}?id={$userConfig/@id/string()}&amp;emailId={$email/@id/string()}&amp;confirm=yes">confirm the e-mail address</a> or
+											<a href="{$mgmt:confirmModuleURI}?id={$userConfig/@id/string()}&amp;emailId={$email/@id/string()}&amp;confirm=no">reject the e-mail registration</a>?
 										</p>
 									</body>
 								</html>
@@ -505,7 +505,7 @@ declare function mgmt:createUser($nickname as xs:string,$nickpass as xs:string,$
 			if(empty($mgmtDoc//xcesc:user[@nickname eq $nickname]) and not(xmldb:exists-user($nickname))) then (
 				let $id:=util:uuid()
 				(: Perhaps in the future we will add bloggers group... :)
-				let $newUser:=<xcesc:user id="{$id}" nickname="{$nickname}" firstName="{$firstName}" lastName="{$lastName}" organization="{$organization}" status="unconfirmed">
+				let $newUser:=<xcesc:user id="{$id}" nickname="{$nickname}" nickpass="{$nickpass}" firstName="{$firstName}" lastName="{$lastName}" organization="{$organization}" status="unconfirmed">
 					{
 						(: eMail curation, because at the beginning they are unconfirmed by default :)
 						for $eMail in $eMails
@@ -518,7 +518,7 @@ declare function mgmt:createUser($nickname as xs:string,$nickpass as xs:string,$
 				return (
 					upd:insertInto($mgmtDoc//xcesc:users,$newUser),
 					mailcore:send-email(<mail>
-						<to>{$mgmt:configRoot/mgmt:admin[1]/@mail}</to>
+						<to>{$mgmt:configRoot/mgmt:admin[1]/@mail/string()}</to>
 						<subject>XCESC User Registration request</subject>
 						<message>
 							<xhtml>
@@ -535,7 +535,7 @@ declare function mgmt:createUser($nickname as xs:string,$nickpass as xs:string,$
 											<li><b>Reference(s):</b><ul>{
 												for $reference in $references
 												return
-													<li><a href="{$reference/text()}">{$reference/@description}</a> ({$reference/@kind})</li>
+													<li><a href="{$reference/text()}">{$reference/@description/string()}</a> ({$reference/@kind/string()})</li>
 											}</ul></li>
 										</ul>
 										<div align="center">
@@ -584,13 +584,13 @@ declare function mgmt:deleteUser($id as xs:string,$nickname as xs:string)
 					,
 					mgmt:send-mail-to-user($id,
 						<mail>
-							<subject>{$mgmt:projectName} notification: user {$userConfig/@nickname} has been deleted</subject>
+							<subject>{$mgmt:projectName} notification: user {$userDoc/@nickname/string()} has been deleted</subject>
 							<message>
 								<xhtml>
 									<html>
-										<head>{$mgmt:projectName} notification: user '{$userConfig/@nickname}' has been deleted</head>
+										<head>{$mgmt:projectName} notification: user '{$userDoc/@nickname/string()}' has been deleted</head>
 										<body>
-											<p>User '{$userConfig/@nickname}' registered at <a href="{$mgmt:publicBaseURI}">{$mgmt:projectName}</a> has been deleted.</p>
+											<p>User '{$userDoc/@nickname/string()}' registered at <a href="{$mgmt:publicBaseURI}">{$mgmt:projectName}</a> has been deleted.</p>
 										</body>
 									</html>
 								</xhtml>
@@ -606,13 +606,13 @@ declare function mgmt:deleteUser($id as xs:string,$nickname as xs:string)
 declare function mgmt:send-mail-to-user($id as xs:string,$message as element(mail))
 	as empty-sequence()
 {
-	let $userDoc := $mgmtDoc//xcesc:user[@id eq $id]
+	let $userDoc := mgmt:getUserFromId($id)
 	return
 		mailcore:send-email(
 			for $email at $pos in $userDoc/xcesc:eMail[@status eq 'enabled']
 			return
 				<mail>
-					<to>{$userDoc/@firstName} {$userDoc/@lastName} &lt;{$email/text()}&gt;</to>
+					<to>{$userDoc/@firstName/string()} {$userDoc/@lastName/string()} &lt;{$email/text()}&gt;</to>
 					{
 						(
 							$message/to,
@@ -621,7 +621,7 @@ declare function mgmt:send-mail-to-user($id as xs:string,$message as element(mai
 							$message/bcc,
 							(: Only a notification for the first sent e-mail :)
 							if($pos eq 1) then (
-								<bcc>{$mgmt:configRoot/mgmt:admin[1]/@mail}</bcc>
+								<bcc>{$mgmt:configRoot/mgmt:admin[1]/@mail/string()}</bcc>
 							) else ()
 							,
 							$message/subject,
@@ -664,6 +664,18 @@ declare function mgmt:getUserFromNickname($nickname as xs:string)
 	as element(xcesc:user)?
 {
 	mgmt:getManagementDoc()//xcesc:user[@nickname eq $nickname]
+};
+
+declare function mgmt:getUserIdFromNickname($nickname as xs:string)
+	as xs:string?
+{
+	mgmt:getUserFromNickname($nickname)/@id/string()
+};
+
+declare function mgmt:getPasswordFromNickname($nickname as xs:string)
+	as xs:string?
+{
+	mgmt:getUserFromNickname($nickname)/@password/string()
 };
 
 (: It obtains the whole user configuration, by nickname :)
@@ -724,7 +736,7 @@ declare function mgmt:updateUser($id as xs:string,$userConfig as element(xcesc:u
 									upd:replaceNode($oldMail,<xcesc:eMail id="{util:uuid()}" status="unconfirmed">{$mail/text()}</xcesc:eMail>)
 								) else (
 									if($oldMail/@status ne $mail/@status) then (
-										up:replaceValue($oldMail/@status,$mail/@status) 
+										upd:replaceValue($oldMail/@status,$mail/@status) 
 									) else
 										()
 								)
@@ -770,5 +782,19 @@ declare function mgmt:changeUserPass($id as xs:string, $nickname as xs:string,$o
 			) else
 				error((),string-join(("On user password update,",$nickname,"password changes from",$id,"are not allowed"),' '))
 	(: } :)
+};
+
+declare function mgmt:do-login-digest($user as xs:string, $realm as xs:string, $nonce as xs:string)
+	as xs:string?
+{
+	(: We cannot follow if the user is not confirmed or it is disabled :)
+	let $pass := mgmt:getActiveUserFromNickname($user)/@password
+	return
+		if(exists($pass)) then (
+			let $HA1 := util:hash(string-join(($user,$realm,$pass/string()),$login:DIGEST_SEP),'md5')
+			return
+				util:hash(string-join(($nonce,$HA1),$login:DIGEST_SEP),'md5')
+		) else (
+		)
 };
 

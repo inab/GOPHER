@@ -231,7 +231,7 @@ declare function upd:delete($target as node())
 	as empty-sequence()
 {
 	typeswitch ($target)
-		case document() return xmldb:remove(util:collection-name($target),util:document-name($target))
+		case document-node() return xmldb:remove(util:collection-name($target),util:document-name($target))
 		default return update delete $target
 };
 
@@ -484,7 +484,8 @@ declare function upd:put($node as node(),$uri as xs:string)
 	let $numTokens := count($tokens)
 	let $docName := $tokens[$numTokens]
 	let $colName := string-join(subsequence(sourceSeq, 1, $numTokens - 1), '/')
-	xmldb:store($colName,$docName,$node)
+	return
+		xmldb:store($colName,$docName,$node)
 };
 
 (:~
@@ -492,22 +493,26 @@ declare function upd:put($node as node(),$uri as xs:string)
  : @author José María Fernández
  : @param
  :)
+(:
 declare function upd:mergeUpdates($pul1 as pending-update-list,$pul2 as pending-update-list)
 	as empty-sequence()
 {
 	error()
 };
+:)
 
 (:~
  :
  : @author José María Fernández
  : @param
  :)
+(:
 declare function upd:applyUpdates($pul as pending-update-list,$revalidation-mode as xs:string,$inherit-namespaces as xs:boolean)
 	as empty-sequence()
 {
 	error()
 };
+:)
 
 (:~
  :
