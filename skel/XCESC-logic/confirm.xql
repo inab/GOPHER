@@ -9,23 +9,53 @@ import module namespace response="http://exist-db.org/xquery/response";
 import module namespace mgmt="http://www.cnio.es/scombio/xcesc/1.0/xquery/systemManagement" at "xmldb:exist:///db/XCESC-logic/systemManagement.xqm";
 
 (: First, get the path info :)
-let $confirm := request:get-parameter("confirm",())[1]
-let $oldOwner := request:get-parameter("oldOwner",())[1]
-let $newOwner := request:get-parameter("newOwner",())[1]
-let $serverId := request:get-parameter("serverId",())[1]
-let $id := request:get-parameter("id",())[1]
-let $mailId := request:get-parameter("mailId",())[1]
+let $confirm := request:get-parameter($mgmt:CONFIRM_YESNO_KEY,())[1]
+let $oldOwnerId := request:get-parameter($mgmt:CONFIRM_OLDOWNER_KEY,())[1]
+let $newOwnerId := request:get-parameter($mgmt:CONFIRM_NEWOWNER_KEY,())[1]
+let $serverId := request:get-parameter($mgmt:CONFIRM_SERVERID_KEY,())[1]
+let $id := request:get-parameter($mgmt:CONFIRM_ID_KEY,())[1]
+let $mailId := request:get-parameter($mgmt:CONFIRM_MAILID_KEY,())[1]
 return
-	if(empty($confirm) or not($confirm = ("yes","no"))) then (
+	if(empty($confirm) or not($confirm = ($mgmt:CONFIRM_YES_KEY,$mgmt:CONFIRM_NO_KEY))) then (
 		(: Lost or invalid confirmation value :)
+		util:declare-option('exist:serialize',"method=xhtml media-type=text/html process-xsl-pi=no"),
+		<html>
+			<head>
+				<title>{$mgmt:projectName} User/Server Confirmation Error</title>
+			</head>
+			<body>
+				<div align="center">
+					<h1 style="color:red">The confirmation URL</h1>
+					<h2>{request:get-uri()}</h2>
+					<h1 style="color:red">is ill-formed</h1>
+				</div>
+				<div align="right">The {$mgmt:projectName} Team</div>
+			</body>
+		</html>
+		,
 		response:set-status-code(400)
 	) else (
-		let $answer := if($confirm eq 'yes') then true() else false()
+		let $answer := if($confirm eq $mgmt:CONFIRM_YES_KEY) then true() else false()
 		return
 			if(empty($id)) then (
 				(: It is a server ownership change confirmation :)
-				if(empty($oldOwner) or empty($newOwner) or empty($serverId)) then (
+				if(empty($oldOwnerId) or empty($newOwnerId) or empty($serverId)) then (
 					(: Lack of parameters for server change ownership :)
+					util:declare-option('exist:serialize',"method=xhtml media-type=text/html process-xsl-pi=no"),
+					<html>
+						<head>
+							<title>{$mgmt:projectName} Server Ownership Change Confirmation Error</title>
+						</head>
+						<body>
+							<div align="center">
+								<h1 style="color:red">The confirmation URL for server ownership change</h1>
+								<h2>{request:get-uri()}</h2>
+								<h1 style="color:red">is ill-formed or incorrect</h1>
+							</div>
+							<div align="right">The {$mgmt:projectName} Team</div>
+						</body>
+					</html>
+					,
 					response:set-status-code(400)
 				) else (
 					(: TODO: return checks :)
@@ -33,12 +63,43 @@ return
 						util:catch("*",
 							(: Write code here! :)
 							let $emp1 := mgmt:changeServerOwnership($oldOwnerId,$serverId,$newOwnerId,$answer)
-							return
+							return (
+								util:declare-option('exist:serialize',"method=xhtml media-type=text/html process-xsl-pi=no"),
+								<html>
+									<head>
+										<title>{$mgmt:projectName} Server Ownership Change Decision</title>
+									</head>
+									<body>
+										<div align="center">
+											<h1 style="color:green">Using request</h1>
+											<h2>{request:get-uri()}</h2>
+											<h1 style="color:green">you have {if($answer) then 'approved' else 'rejected'} server ownership change request</h1>
+										</div>
+										<div align="right">The {$mgmt:projectName} Team</div>
+									</body>
+								</html>
+								,
 								response:set-status-code(200)
-							,
+							),
 							let $emp2 := util:log-app("error","xcesc.cron",<error>An error occurred on XCESC change server ownership ({$oldOwnerId}, {$serverId}, {$newOwnerId}, {$answer}) job: {$util:exception-message}.</error>)
-							return
+							return (
+								util:declare-option('exist:serialize',"method=xhtml media-type=text/html process-xsl-pi=no"),
+								<html>
+									<head>
+										<title>{$mgmt:projectName} Server Ownership Change Confirmation Error</title>
+									</head>
+									<body>
+										<div align="center">
+											<h1 style="color:red">The confirmation URL for server ownership change</h1>
+											<h2>{request:get-uri()}</h2>
+											<h1 style="color:red">had problems with its request</h1>
+										</div>
+										<div align="right">The {$mgmt:projectName} Team</div>
+									</body>
+								</html>
+								,
 								response:set-status-code(500)
+							)
 						)
 					)
 				)
@@ -50,12 +111,43 @@ return
 						util:catch("*",
 							(: Write code here! :)
 							let $emp1 := mgmt:confirmUser($id,$answer)
-							return
+							return (
+								util:declare-option('exist:serialize',"method=xhtml media-type=text/html process-xsl-pi=no"),
+								<html>
+									<head>
+										<title>{$mgmt:projectName} User Creation Decision</title>
+									</head>
+									<body>
+										<div align="center">
+											<h1 style="color:green">Using request</h1>
+											<h2>{request:get-uri()}</h2>
+											<h1 style="color:green">you have {if($answer) then 'approved' else 'rejected'} user creation request</h1>
+										</div>
+										<div align="right">The {$mgmt:projectName} Team</div>
+									</body>
+								</html>
+								,
 								response:set-status-code(200)
-							,
+							),
 							let $emp2 := util:log-app("error","xcesc.cron",<error>An error occurred on XCESC user creation confirmation ({$id}, {$answer}) job: {$util:exception-message}.</error>)
-							return
+							return (
+								util:declare-option('exist:serialize',"method=xhtml media-type=text/html process-xsl-pi=no"),
+								<html>
+									<head>
+										<title>{$mgmt:projectName} User Creation Error</title>
+									</head>
+									<body>
+										<div align="center">
+											<h1 style="color:red">The confirmation URL for user creation confirmation</h1>
+											<h2>{request:get-uri()}</h2>
+											<h1 style="color:red">has fired some problem in the server</h1>
+										</div>
+										<div align="right">The {$mgmt:projectName} Team</div>
+									</body>
+								</html>
+								,
 								response:set-status-code(500)
+							)
 						)
 					)
 				) else (
@@ -65,12 +157,43 @@ return
 						util:catch("*",
 							(: Write code here! :)
 							let $emp1 := mgmt:confirmEMail($id,$mailId,$answer)
-							return
+							return (
+								util:declare-option('exist:serialize',"method=xhtml media-type=text/html process-xsl-pi=no"),
+								<html>
+									<head>
+										<title>{$mgmt:projectName} e-Mail Validation Decision</title>
+									</head>
+									<body>
+										<div align="center">
+											<h1 style="color:green">Using request</h1>
+											<h2>{request:get-uri()}</h2>
+											<h1 style="color:green">you have {if($answer) then 'approved' else 'rejected'} the ownership of e-mail address</h1>
+										</div>
+										<div align="right">The {$mgmt:projectName} Team</div>
+									</body>
+								</html>
+								,
 								response:set-status-code(200)
-							,
+							),
 							let $emp2 := util:log-app("error","xcesc.cron",<error>An error occurred on XCESC change server ownership ({$id}, {$mailId}, {$answer}) job: {$util:exception-message}.</error>)
-							return
+							return (
+								util:declare-option('exist:serialize',"method=xhtml media-type=text/html process-xsl-pi=no"),
+								<html>
+									<head>
+										<title>{$mgmt:projectName} e-Mail Validation Error</title>
+									</head>
+									<body>
+										<div align="center">
+											<h1 style="color:red">The confirmation URL for e-mail ownership confirmation</h1>
+											<h2>{request:get-uri()}</h2>
+											<h1 style="color:red">has fired some problem in the server</h1>
+										</div>
+										<div align="right">The {$mgmt:projectName} Team</div>
+									</body>
+								</html>
+								,
 								response:set-status-code(500)
+							)
 						)
 					)
 				)

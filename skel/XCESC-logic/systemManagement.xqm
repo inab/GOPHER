@@ -46,9 +46,17 @@ declare variable $mgmt:publicBaseURI as xs:string := concat(
 declare variable $mgmt:mgmtDocPath as xs:string := string-join(($mgmt:mgmtCol,$mgmt:mgmtDoc),'/');
 declare variable $mgmt:mgmtDocPathURI as xs:string := xmldb:encode($mgmt:mgmtDocPath);
 
+declare variable $mgmt:CONFIRM_YES_KEY as xs:string := 'yes';
+declare variable $mgmt:CONFIRM_NO_KEY as xs:string := 'no';
+declare variable $mgmt:CONFIRM_YESNO_KEY as xs:string := 'confirm';
+declare variable $mgmt:CONFIRM_OLDOWNER_KEY as xs:string := 'oldOwner';
+declare variable $mgmt:CONFIRM_NEWOWNER_KEY as xs:string := 'newOwner';
+declare variable $mgmt:CONFIRM_SERVERID_KEY as xs:string := 'serverId';
+declare variable $mgmt:CONFIRM_ID_KEY as xs:string := 'id';
+declare variable $mgmt:CONFIRM_MAILID_KEY as xs:string := 'emailId';
+
 declare variable $mgmt:confirmModule as xs:string := 'confirm.xql';
 declare variable $mgmt:confirmModuleURI as xs:string := string-join(($mgmt:publicBaseURI,$core:relLogicCol,$mgmt:confirmModule),'/');
-
 
 (:::::::::::::::::::::::)
 (: Management Document :)
@@ -103,8 +111,8 @@ declare function mgmt:requestChangeServerOwnership($oldOwnerId as xs:string,$ser
 										<body>
 											<p>{$oldUserDoc/@firstName/string()} {$oldUserDoc/@lastName/string()} ({$oldUserDoc/@nickname/string()}), the owner of the server '{$serverDoc/@name}' registered at <a href="{$mgmt:publicBaseURI}">{$mgmt:projectName}</a> affirms you want to accept the server's ownership.</p>
 											<p>
-												Do you <a href="{$mgmt:confirmModuleURI}?oldOwner={$oldOwnerId}&amp;serverId={$serverId}&amp;newOwner={$newOwnerId}&amp;confirm=yes">agree</a> with the ownership change
-												or you <a href="{$mgmt:confirmModuleURI}?oldOwner={$oldOwnerId}&amp;serverId={$serverId}&amp;newOwner={$newOwnerId}&amp;confirm=no">reject</a> it?
+												Do you <a href="{$mgmt:confirmModuleURI}?{$mgmt:CONFIRM_OLDOWNER_KEY}={$oldOwnerId}&amp;{$mgmt:CONFIRM_SERVERID_KEY}={$serverId}&amp;{$mgmt:CONFIRM_NEWOWNER_KEY}={$newOwnerId}&amp;{$mgmt:CONFIRM_YESNO_KEY}={$mgmt:CONFIRM_YES_KEY}">agree</a> with the ownership change
+												or you <a href="{$mgmt:confirmModuleURI}?{$mgmt:CONFIRM_OLDOWNER_KEY}={$oldOwnerId}&amp;{$mgmt:CONFIRM_SERVERID_KEY}={$serverId}&amp;{$mgmt:CONFIRM_NEWOWNER_KEY}={$newOwnerId}&amp;{$mgmt:CONFIRM_YESNO_KEY}={$mgmt:CONFIRM_NO_KEY}">reject</a> it?
 											</p>
 										</body>
 									</html>
@@ -475,7 +483,7 @@ declare function mgmt:sendConfirmEMails($id as xs:string)
 				for $email in $userConfig/xcesc:eMail[@status eq 'unconfirmed']
 				return 
 					<mail>
-						<to>{$userConfig/@firstName/string()} {$userConfig/@lastName/string()} &lt;{$email/text()}&gt;</to>
+						<to>{concat($userConfig/@firstName/string(),' ',$userConfig/@lastName/string())} &lt;{$email/text()}&gt;</to>
 						<subject>{$mgmt:projectName} confirmation: e-mail for user {$userConfig/@nickname/string()}</subject>
 						<message>
 							<xhtml>
@@ -484,8 +492,8 @@ declare function mgmt:sendConfirmEMails($id as xs:string)
 									<body>
 										<p>User '{$userConfig/@nickname/string()}' registered at <a href="{$mgmt:publicBaseURI}">{$mgmt:projectName}</a> affirms (s)he manages this e-mail address.</p>
 										<p>
-											Do you <a href="{$mgmt:confirmModuleURI}?id={$userConfig/@id/string()}&amp;emailId={$email/@id/string()}&amp;confirm=yes">confirm the e-mail address</a> or
-											<a href="{$mgmt:confirmModuleURI}?id={$userConfig/@id/string()}&amp;emailId={$email/@id/string()}&amp;confirm=no">reject the e-mail registration</a>?
+											Do you <a href="{$mgmt:confirmModuleURI}?{$mgmt:CONFIRM_ID_KEY}={$userConfig/@id/string()}&amp;{$mgmt:CONFIRM_MAILID_KEY}={$email/@id/string()}&amp;{$mgmt:CONFIRM_YESNO_KEY}={$mgmt:CONFIRM_YES_KEY}">confirm the e-mail address</a> or
+											<a href="{$mgmt:confirmModuleURI}?{$mgmt:CONFIRM_ID_KEY}={$userConfig/@id/string()}&amp;{$mgmt:CONFIRM_MAILID_KEY}={$email/@id/string()}&amp;{$mgmt:CONFIRM_YESNO_KEY}={$mgmt:CONFIRM_NO_KEY}">reject the e-mail registration</a>?
 										</p>
 									</body>
 								</html>
@@ -518,7 +526,7 @@ declare function mgmt:createUser($nickname as xs:string,$nickpass as xs:string,$
 					upd:insertInto($mgmtDoc//xcesc:users,$newUser),
 					mailcore:send-email(<mail>
 						<to>{$mgmt:configRoot/mgmt:admin[1]/@mail/string()}</to>
-						<subject>XCESC User Registration request</subject>
+						<subject>{$mgmt:projectName} User Registration request</subject>
 						<message>
 							<xhtml>
 								<html>
@@ -538,8 +546,8 @@ declare function mgmt:createUser($nickname as xs:string,$nickpass as xs:string,$
 											}</ul></li>
 										</ul>
 										<div align="center">
-											<a href="{$mgmt:confirmModuleURI}?id={$id}&amp;confirm=yes">Approve new user {$nickname}</a> <b>or</b>
-											<a href="{$mgmt:confirmModuleURI}?id={$id}&amp;confirm=no">Reject new user {$nickname}</a>?
+											<a href="{$mgmt:confirmModuleURI}?{$mgmt:CONFIRM_ID_KEY}={$id}&amp;{$mgmt:CONFIRM_YESNO_KEY}={$mgmt:CONFIRM_YES_KEY}">Approve new user {$nickname}</a> <b>or</b>
+											<a href="{$mgmt:confirmModuleURI}?{$mgmt:CONFIRM_ID_KEY}={$id}&amp;{$mgmt:CONFIRM_YESNO_KEY}={$mgmt:CONFIRM_NO_KEY}">Reject new user {$nickname}</a>?
 										</div>
 									</body>
 								</html>

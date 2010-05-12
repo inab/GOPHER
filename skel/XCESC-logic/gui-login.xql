@@ -17,7 +17,6 @@ import module namespace mgmt = 'http://www.cnio.es/scombio/xcesc/1.0/xquery/syst
 import module namespace login = 'http://www.cnio.es/scombio/xcesc/1.0/xquery/login' at 'xmldb:exist:///db/XCESC-logic/gui-login.xqm';
 import module namespace gui = 'http://www.cnio.es/scombio/xcesc/1.0/xquery/guiManagement' at 'xmldb:exist:///db/XCESC-logic/guiManagement.xqm';
 
-let $dum2 := util:declare-option('exist:serialize',"method=text media-type=text/plain process-xsl-pi=no")
 let $status := if(session:exists()) then (
 	let $nonce := session:get-attribute($login:NONCE_KEY)
 	let $realm := session:get-attribute($login:REALM_KEY)
@@ -74,5 +73,6 @@ let $status := if(session:exists()) then (
 ) else (
 	login:generate-nonce($gui:realm,util:uuid())
 )
+let $dum2 := util:declare-option('exist:serialize',"method=text media-type=text/plain process-xsl-pi=no")
 return
 	response:set-status-code($status)
