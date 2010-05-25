@@ -22,8 +22,10 @@ if(session:exists()) then (
 			return
 				mgmt:getRestrictedInfoFromId($user-id)
 		) else (
+			util:declare-option('exist:serialize',"method=text media-type=text/plain process-xsl-pi=no"),
 			response:set-status-code(400)
 		)
 ) else (
-	response:set-status-code(400)
+	util:declare-option('exist:serialize',"method=text media-type=text/plain process-xsl-pi=no"),
+	response:set-status-code(401)
 )

@@ -1,0 +1,32 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+	<title>Prueba Login 2</title>
+	<link rel="stylesheet" type="text/css" href="/Atomic/styles/reset-min.css">
+	<link rel="stylesheet" type="text/css" href="/Atomic/styles/default.css">
+	<link rel="stylesheet" type="text/css" href="/Atomic/styles/niftyCorners.css">
+
+	<script type="text/javascript" src="/js/ORFandDB-widgetCommon/browserdetect/BrowserDetect.js"></script>
+	<script type="text/javascript" src="/js/ORFandDB-widgetCommon/widgetCommon.js"></script>
+
+
+	<script type="text/javascript"><!--
+function init() {
+	var JSDEPS=new Array(
+		'/js/jshash-2.2/md5-min.js',
+		'/js/loginLogic.js'
+	);
+	
+	WidgetCommon.widgetCommonInit(JSDEPS,function() {
+		var loginBox = new LoginBox(document.getElementById('loginContainer'));
+	},'');
+	
+}
+//--></script>
+</head>
+<body onload="init()">
+	<div id="loginContainer" style="width:320px;height:200px;">
+	</div>
+</body>
+</html>

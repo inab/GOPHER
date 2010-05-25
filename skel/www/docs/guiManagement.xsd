@@ -29,6 +29,16 @@
                     <xs:documentation><![CDATA[The path where Chiba helps with XForms]]></xs:documentation>
                 </xs:annotation>
             </xs:attribute>
+            <xs:attribute name="style-col" type="xs:string" use="required">
+                <xs:annotation>
+                    <xs:documentation><![CDATA[The collection where style files live]]></xs:documentation>
+                </xs:annotation>
+            </xs:attribute>
+            <xs:attribute name="template-id" type="xs:string" use="required">
+                <xs:annotation>
+                    <xs:documentation><![CDATA[The left-pane id for the content]]></xs:documentation>
+                </xs:annotation>
+            </xs:attribute>
             <xs:attribute name="realm" type="xs:string" use="required">
                 <xs:annotation>
                     <xs:documentation><![CDATA[The realm used by XCESC GUI authentication system]]></xs:documentation>

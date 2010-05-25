@@ -249,7 +249,10 @@
 		>
 			<srcfiles file="${ant.file}"/>
 			<srcfiles file="${ant.file.properties}"/>
+			<srcfiles file="${project.home}/skel/${xcesc.config.col}/systemManagement.xml"/>
+			<srcfiles file="${project.home}/skel/${xcesc.config.col}/jobManagement.xml"/>
 			<srcfiles file="${project.home}/skel/${xcesc.config.col}/guiManagement.xml"/>
+			<srcfiles file="${GOPHER.patches.dir}/controller-config.xml"/>
 		</uptodate>
 	</target>
 	

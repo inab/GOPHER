@@ -1,3 +1,5 @@
+@charset "UTF-8";
+
 * {
     margin: 0;
     padding: 0;
@@ -639,4 +641,16 @@ td.doclink {
 #download img {
     border: 0;
     text-align: center;
+}
+
+/* From jmfernandez */
+
+img {
+	border: none;
+	padding: 1px;
+}
+
+a > img:hover {
+	padding: 0px;
+	border: 1px solid blue;
 }

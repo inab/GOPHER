@@ -4,6 +4,7 @@
     AtomicWiki-logic="Atomic-logic"
     AtomicWiki-VirtualRoot="Atomic"
     XForms-root="forms"
+    style-col="/db/www/style"
     template-id="leftlogos"
     realm="GOPHER-GUI"
 >
