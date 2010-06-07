@@ -10,7 +10,7 @@ LoginBox = function (parent) {
 };
 
 LoginBox.loginURL='/XCESC-logic/gui-login.xql';
-LoginBox.infoURL='/XCESC-logic/gui-session-info.xql';
+LoginBox.infoURL='/XCESC-logic/gui-session-gate.xql';
 LoginBox.authHeader='XCESC-auth';
 LoginBox.loginHeader='XCESC-login';
 
@@ -35,7 +35,11 @@ LoginBox.prototype = {
 			loginHead.className = 'head';
 			loginBox.appendChild(loginHead);
 			
-			var generateTopBottom = function (isTop) {
+			/**
+			 * Helper function used to create fancy borders
+			 * @param {Boolean} [isTop]
+			 */
+			var generateTopBottom = function (/*optional*/ isTop) {
 				var inc;
 				var ini;
 				var fin;
@@ -125,11 +129,29 @@ LoginBox.prototype = {
 			td.className = 'field';
 			tr.appendChild(td);
 			
-			input = thedoc.createElement('input');
-			this.passField = input;
-			input.setAttribute('type','password');
-			input.setAttribute('name','password');
-			td.appendChild(input);
+			var inputpass = thedoc.createElement('input');
+			this.passField = inputpass;
+			inputpass.setAttribute('type','password');
+			inputpass.setAttribute('name','password');
+			td.appendChild(inputpass);
+			
+			// Some event listeners
+			WidgetCommon.addEventListener(input,'keydown',function(evt) {
+				var isStandard = 'keyCode' in evt;
+				var key = isStandard?evt.keyCode:evt.which;
+				if(key==13) {
+					inputpass.focus();
+				}
+			},false);
+			
+			var thisBox=this;
+			WidgetCommon.addEventListener(inputpass,'keydown',function(evt) {
+				var isStandard = 'keyCode' in evt;
+				var key = isStandard?evt.keyCode:evt.which;
+				if(key==13) {
+					thisBox.doLogin(evt);
+				}
+			},false);
 			
 			// Submit button
 			tr = thedoc.createElement('tr');
@@ -146,7 +168,6 @@ LoginBox.prototype = {
 			td.appendChild(input);
 			
 			// The event listener
-			var thisBox=this;
 			WidgetCommon.addEventListener(input, 'click', function(evt){
 				return thisBox.doLogin(evt);
 			}, true);
@@ -306,13 +327,14 @@ LoginBox.prototype = {
 	showLoginForm: function() {
 		this.userField.value = '';
 		this.passField.value = '';
+		this.userField.focus();
 		this.show(this.loginMiddle);
 	},
 	/**
 	 * This function shows login information associated to the session
-	 * @param {Boolean} complain
+	 * @param {Boolean} [complain]
 	 */
-	showLoginInfo: function(complain) {
+	showLoginInfo: function(/*optional*/ complain) {
 		var req = new XMLHttpRequest();
 		var loginBox = this;
 		req.onreadystatechange = function () {
@@ -362,9 +384,9 @@ LoginBox.prototype = {
 	/**
 	 * Div switcher for loginBox
 	 * @method
-	 * @param {HTMLElement} divToShow
+	 * @param {HTMLElement} [divToShow]
 	 */
-	show: function(divToShow) {
+	show: function(/*optional*/ divToShow) {
 		if(divToShow!=this.currentMiddle) {
 			// First, let's hide the previous displayed div
 			if(this.currentMiddle!=undefined)

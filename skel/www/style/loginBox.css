@@ -1,0 +1,102 @@
+@charset "UTF-8";
+@import url("niftyCorners.css");
+
+.login {
+	background-color: #0e86d0;
+	color: white;
+	padding: 5px;
+	font-size: 13px;
+}
+
+.login td {
+	padding-bottom: 5px;
+}
+
+td.label {
+    padding-right: 6px;
+    width: 60px;
+    vertical-align: middle;
+    color: white;
+}
+
+td.field input {
+    width: 100%;
+}
+
+td.field {
+    padding-right: 5px;
+}
+
+#insertLink td.label {
+    color: black;
+    padding-bottom: .5em;
+}
+
+.sidemenu {
+    margin-top: 5px;
+    font-size: 13px;
+    margin-bottom: 6px;
+}
+
+.sidemenu .head {
+    padding: 2px 5px;
+    background-color: #1a1193;
+    color: #FFF;
+    font-weight: bold;
+}
+
+.sidemenu ul {
+    background-color: #0e86d0;
+    color: #FFF;
+    padding: 8px 5px;
+}
+
+.sidemenu li {
+    margin: 5px 0 0;
+}
+
+.sidemenu .currentUser {
+    font-size: 75%;
+    color: rgb(98%, 98%, 98%);
+    text-align: right;
+}
+
+.sidemenu li a {
+    color: rgb(98%, 98%, 98%);
+	font-weight: normal;
+}
+
+.sidemenu .separator {
+    height: 1px;
+    background-color: rgb(98%, 98%, 98%);
+    margin: 6px 0;
+}
+
+@media print {
+    .sidemenu { display: none; }
+    .box { display: none; }
+}
+
+.box .head {
+    padding: 2px 5px;
+    background-color: #DDD;
+    color: #666;
+    font-weight: bold;
+}
+
+.box .body {
+    background-color: #F6F6F6;
+    padding: 8px 5px;
+}
+
+.box .content h2 {
+    font-size: 1em;
+    color: #777777;
+    font-variant: normal;
+}
+
+.box .box-toggle {
+    float: right;
+    font-size: .75em;
+}
+

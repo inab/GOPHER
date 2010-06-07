@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html xml:id="leftlogos">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:id="leftlogos">
 	<head>
 		<!--
 			<title>Left side logotypes</title>
@@ -9,22 +8,16 @@
   		<link rel="shortcut icon" href="/style/GOPHER-favicon.ico" type="image/vnd.microsoft.icon" />
 		<link rel="icon" href="/style/GOPHER-favicon.ico" type="image/vnd.microsoft.icon" />
 		<link rel="stylesheet" type="text/css" href="/style/default-style.css" />
-	<script type="text/javascript" src="/js/ORFandDB-widgetCommon/browserdetect/BrowserDetect.js"></script>
-	<script type="text/javascript" language="JavaScript" src="/js/adobesvgcheck/svgcheck.js"></script>
-	<script type="text/vbscript" language="VBScript" src="/js/adobesvgcheck/svgcheck.vbs"></script>
-	<script type="text/javascript" language="JavaScript"><!--
-if(BrowserDetect.browser=='Explorer') {
-	checkAndGetSVGViewer();
-}
-// -->
-	</script>
-	<script type="text/javascript" src="/js/ORFandDB-widgetCommon/widgetCommon.js"></script>
+		
+		<script type="text/javascript" src="/js/ORFandDB-widgetCommon/browserdetect/BrowserDetect.js"></script>
+        <script type="text/javascript">
+			window.WidgetCommon_NO_INIT = 1;
+		</script>
+		<script type="text/javascript" src="/js/ORFandDB-widgetCommon/widgetCommon.js"></script>
 	
-	<script type="text/javascript" src="/js/main.js"></script>
-<script type="text/javascript" src="/XCESC-GUI-logic/feed.xql">
-</script>
+		<script type="text/javascript" src="/js/main.js"></script>
 	</head>
-	<body onload="InitXCESC()" onunload="DisposeXCESC()">
+	<body onload="InitXCESC();" onunload="DisposeXCESC();">
 		<div id="left" style="float:left;margin-right:24px;">
 			<a class="imgLink" href="http://gopher.bioinfo.cnio.es/" target="_blank"><img src="/style/GOPHER.png" style="float:left;clear:both;" alt="GOPHER logo" /></a>
 			<a class="imgLink" href="http://atomic.exist-db.org/" target="_blank"><img src="/style/AtomicWiki.png" style="float:left;clear:left;" alt="AtomicWiki logo" /></a>
@@ -36,13 +29,7 @@ if(BrowserDetect.browser=='Explorer') {
 		
 		<div id="title"></div>
 		
-		<div id="newsgopher">
-			<div class="block">
-				<div class="head"><h3>Blog Feed</h3></div>
-				<div id="news_content" class="news_content">
-					Loading News () ...
-				</div>
-			</div>
+		<div id="rightSideContainer">
 		</div>
 		
 		<div id="contents"/>

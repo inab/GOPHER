@@ -5,6 +5,7 @@ xquery version "1.0" encoding "UTF-8";
 
 module namespace gui="http://www.cnio.es/scombio/xcesc/1.0/xquery/guiManagement";
 
+declare namespace xhtml="http://www.w3.org/1999/xhtml";
 declare namespace xcesc="http://www.cnio.es/scombio/xcesc/1.0";
 
 import module namespace request="http://exist-db.org/xquery/request";
@@ -18,32 +19,38 @@ declare variable $gui:guiDoc as element(gui:guiManagement) := collection($core:c
 declare variable $gui:AtomicRoot as xs:string := concat('/',$gui:guiDoc/@AtomicWiki-logic/string());
 declare variable $gui:AtomicVirtualRoot as xs:string := concat('/',$gui:guiDoc/@AtomicWiki-VirtualRoot/string());
 declare variable $gui:realm as xs:string := concat('/',$gui:guiDoc/@realm/string());
-declare variable $gui:template-content as element(html) := collection(xmldb:encode($gui:guiDoc/@style-col/string()))/id($gui:guiDoc/@template-id/string());
+declare variable $gui:template-document as document-node() := collection(xmldb:encode($gui:guiDoc/@style-col/string()))/id($gui:guiDoc/@template-id/string())/root();
+declare variable $gui:template-document-uri as xs:anyURI := document-uri($gui:template-document);
+declare variable $gui:template-content as element(xhtml:html) := $gui:template-document/xhtml:html;
 
 declare function gui:integrate-contents($title as xs:string, $content as node()*)
-	as element(html)
+	as document-node(element(xhtml:html))
 {
-	<html>
-		<head>
-			<title>{$title}</title>
-			{ $gui:template-content/head/node() }
-		</head>
-		<body>
-		{$gui:template-content/body/@*}
-		{
-			for $child in $gui:template-content/body/node()
-			return
-				if($child/@id eq 'contents') then
-					<div id="contents">{$content}</div>
-				else if($child/@id eq 'title') then
-					<div id="title" align="center">
-						<h2 style="color:#bb0909;">{$title}</h2>
-					</div>
-				else
-					$child
-		}
-		</body>
-	</html>
+	document {
+		$gui:template-document/processing-instruction()
+		,
+		<html xmlns="http://www.w3.org/1999/xhtml">
+			<head>
+				<title>{$title}</title>
+				{ $gui:template-content/head/node() }
+			</head>
+			<body>
+			{$gui:template-content/body/@*}
+			{
+				for $child in $gui:template-content/body/node()
+				return
+					if($child/@id eq 'contents') then
+						<div id="contents">{$content}</div>
+					else if($child/@id eq 'title') then
+						<div id="title" align="center">
+							<h2 style="color:#bb0909;">{$title}</h2>
+						</div>
+					else
+						$child
+			}
+			</body>
+		</html>
+	}
 };
 
 declare function gui:extract-path($uri as xs:string) as xs:string {

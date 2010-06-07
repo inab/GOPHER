@@ -18,7 +18,7 @@ import module namespace login = 'http://www.cnio.es/scombio/xcesc/1.0/xquery/log
 import module namespace gui = 'http://www.cnio.es/scombio/xcesc/1.0/xquery/guiManagement' at 'xmldb:exist:///db/XCESC-logic/guiManagement.xqm';
 
 let $status := if(session:exists()) then (
-	if(not(request:get-attribute('doLogout') = 'true')) then (
+	if(not(request:get-parameter('doLogout','false') = 'true')) then (
 		let $nonce := session:get-attribute($login:NONCE_KEY)
 		let $realm := session:get-attribute($login:REALM_KEY)
 		let $auth-header := request:get-header('XCESC-login')

@@ -5,14 +5,16 @@ declare namespace atom="http://www.w3.org/2005/Atom";
 declare namespace exist="http://exist.sourceforge.net/NS/exist";
 
 import module namespace mgmt="http://www.cnio.es/scombio/xcesc/1.0/xquery/systemManagement" at "xmldb:exist:///db/XCESC-logic/systemManagement.xqm";
+import module namespace request="http://exist-db.org/xquery/request";
+import module namespace httpclient="http://exist-db.org/xquery/httpclient";
 
 (:
 declare variable $atom:uri := concat($mgmt:publicBaseURI, "/atom/summary/wiki/blogs/eXist/");
 :)
-(:
 declare variable $atom:host := 'http://localhost:8088';
-:)
+(:
 declare variable $atom:host := $mgmt:publicBaseURI;
+:)
 
 declare variable $atom:uri := concat($atom:host, "/atom/summary/wiki/blogs/Atomic/");
 
@@ -36,9 +38,26 @@ declare function atom:format-entry($feed as element()) {
     </ul>
 };
 
+let $callback0 := request:get-parameter('callback',())
+(: We are very serious about code injection :)
+let $callback := if(empty($callback0) or $callback0[1] eq '' or matches($callback0[1],'[^$a-zA-Z0-9_.]')) then (
+	'atomCallback'
+) else (
+	$callback0[1]
+)
 let $uri := xs:anyURI($atom:uri)
+(:
 let $response := doc($uri)
-let $output :=
-    util:serialize(atom:format-entry($response/atom:feed), "indent=no")
+:)
+let $response0 := httpclient:get($uri,false(),())
+let $response := $response0[@statusCode eq '200']/httpclient:body[@type = ('xml','xhtml')]
+let $output := util:serialize(if($response/atom:feed) then (
+	atom:format-entry($response/atom:feed)
+) else (
+	<div>
+		<b>Error while fetching feed ({$response0/@statusCode/string()}):</b><br/>
+		{$response0/httpclient:body/*}
+	</div>
+), "indent=no")
 return
-	concat("atomCallback('", $output, "');")
+	concat("try { ",$callback,"('", replace(replace(replace($output,'&#13;&#10;','\\n'), '&#10;','\\n'),'&#13;','\\n'), "'); } catch(e) { };")

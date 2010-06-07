@@ -232,6 +232,10 @@ declare function upd:delete($target as node())
 {
 	typeswitch ($target)
 		case document-node() return xmldb:remove(util:collection-name($target),util:document-name($target))
+		case element() return
+			typeswitch ($target/parent::node())
+				case document-node() return xmldb:remove(util:collection-name($target),util:document-name($target))
+				default return update delete $target
 		default return update delete $target
 };
 
