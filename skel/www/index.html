@@ -10,26 +10,31 @@
 	<link rel="stylesheet" type="text/css" href="style/default-style.css">
 
 	<script type="text/javascript" src="js/ORFandDB-widgetCommon/browserdetect/BrowserDetect.js"></script>
+        <script type="text/javascript">
+			window.WidgetCommon_NO_INIT = 1;
+		</script>
 	<script type="text/javascript" src="js/ORFandDB-widgetCommon/widgetCommon.js"></script>
 	
 	<script type="text/javascript" src="js/main.js"></script>
 </head>
 <body onload="InitXCESC();" onunload="DisposeXCESC();">
-<div style="float:left;margin-right:24px;">
+<div id="left">
 	<a class="imgLink" href="http://gopher.bioinfo.cnio.es/" target="_blank"><img src="style/GOPHER.png" alt="GOPHER logo" style="float:left;clear:both;"></a>
+	<div style="float:left; clear:left;">
 	<a class="imgLink" href="http://atomic.exist-db.org/" target="_blank"><img src="style/AtomicWiki.png" alt="AtomicWiki logo" style="float:left;clear:left;"></a>
 	<div style="float:left;clear:right;">
 	<a class="imgLink" href="http://www.exist-db.org/" target="_blank"><img src="style/powered.gif" alt="eXistDB logo"></a><br>
 	<a class="imgLink" href="http://www.agencexml.com/xsltforms" target="_blank"><img src="forms/xsltforms/poweredbyXSLTForms.png" alt="Powered by XSLTForms logo"></a>
 	</div>
+	</div>
 </div>
 
-<div align="center"><h2 class="doctitle">GOPHER - Function Prediction Server Evaluation Resource</h2></div>
+<div id="title" align="center"><h2 class="doctitle">GOPHER - Function Prediction Server Evaluation Resource</h2></div>
 
 <div id="rightSideContainer">
 </div>
 
-<div>
+<div id="contents">
 <p>Welcome to the GOPHER server! At the moment we are finishing the end-user interface. If you would
 like to participate in the server assessment send an e-mail to
 <a href="mailto:gopher_support@cnio.es"><b><tt>gopher_support@cnio.es</tt></b></a></p>
@@ -44,7 +49,7 @@ assessments as any future bioinformatic assessment system based on XCESC.</p>
 <p>While we are tying up the loose ends of the GOPHER server you can start preparing
 your server for the assessment looking at <a href="docs/index.html">the technical documentation</a>.</p>
 </div>
-		<div id="bottom" style="float:left;border: 1px dashed black;">
+		<div id="bottom">
 			José María Fernández, (C) 2009-2010 <a class="imgLink" href="http://www.inab.org/"><img src="style/INB-minilogo.png" alt="INB"></a>
 		</div>
 

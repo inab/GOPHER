@@ -24,8 +24,11 @@ declare variable $mgmt:evalServer as xs:string := 'evaluator';
 
 declare variable $mgmt:projectName as xs:string := $mgmt:configRoot/@projectName/string();
 
-declare variable $mgmt:adminUser as xs:string := $mgmt:configRoot/mgmt:admin/@user/string();
-declare variable $mgmt:adminPass as xs:string := $mgmt:configRoot/mgmt:admin/@password/string();
+declare variable $mgmt:adminUser as xs:string := $mgmt:configRoot/mgmt:admin[1]/@user/string();
+declare variable $mgmt:adminPass as xs:string := $mgmt:configRoot/mgmt:admin[1]/@password/string();
+declare variable $mgmt:adminMail as xs:string := $mgmt:configRoot/mgmt:admin[1]/@mail/string();
+
+declare variable $mgmt:roles as element(mgmt:role)+ := $mgmt:configRoot/mgmt:availableRoles/mgmt:role;
 
 declare variable $mgmt:xcescGroup as xs:string := $mgmt:configRoot/@group/string();
 
@@ -62,7 +65,7 @@ declare variable $mgmt:confirmModuleURI as xs:string := string-join(($mgmt:publi
 (: Management Document :)
 (:::::::::::::::::::::::)
 
-declare function mgmt:getManagementDoc()
+declare function mgmt:getManagementDoc0()
 	as element(xcesc:managementData)
 {
 	if(doc-available($mgmt:mgmtDocPathURI)) then (
@@ -76,6 +79,96 @@ declare function mgmt:getManagementDoc()
 		let $empty := xmldb:set-resource-permissions($mgmt:mgmtColURI,$mgmt:mgmtDocURI,$mgmt:adminUser,$mgmt:xcescGroup,7*64+4*8)
 		return $retElem
 	)
+};
+
+declare function mgmt:createUser($nickname as xs:string,$nickpass as xs:string,$firstName as xs:string,$lastName as xs:string,$organization as xs:string,$eMails as element(xcesc:eMail)+, $references as element(xcesc:reference)*, $roles as element(xcesc:role)*)
+	as xs:string?
+{
+	(: (# exist:batch-transaction #) { :)
+		let $mgmtDoc := mgmt:getManagementDoc0()
+		return
+			if(empty($mgmtDoc//xcesc:user[@nickname eq $nickname]) and ($nickname eq $mgmt:adminUser or not(xmldb:exists-user($nickname)))) then (
+				let $id:=util:uuid()
+				(: Perhaps in the future we will add bloggers group... :)
+				let $status := if($nickname ne $mgmt:adminUser) then ( "unconfirmed" ) else ( "enabled" )
+				let $password := if($nickname ne $mgmt:adminUser) then ( $nickpass ) else ( $mgmt:adminPass )
+				let $newUser:=<xcesc:user id="{$id}" nickname="{$nickname}" nickpass="{$password}" firstName="{$firstName}" lastName="{$lastName}" organization="{$organization}" status="{$status}">
+					{
+						(: eMail curation, because at the beginning they are unconfirmed by default :)
+						for $eMail in $eMails
+						let $eMailId := util:uuid()
+						return
+							<xcesc:eMail id="{$eMailId}" status="{$status}">{$eMail/text()}</xcesc:eMail>
+					}
+					<xcesc:references>{$references}</xcesc:references>
+					<xcesc:roles>{
+						if($nickname eq $mgmt:adminUser) then (
+							for $role in $mgmt:roles[@isSuperUser eq 'true']
+							return
+								<xcesc:role name="{$role/@name}"/>
+						) else
+							()
+						,
+						$roles
+					}</xcesc:roles>
+				</xcesc:user>
+				return (
+					upd:insertInto($mgmtDoc//xcesc:users,$newUser),
+					if($status eq 'unconfirmed') then (
+						mailcore:send-email(<mail>
+							<to>{$mgmt:adminMail}</to>
+							<subject>{$mgmt:projectName} User Registration request</subject>
+							<message>
+								<xhtml>
+									<html>
+										<head>{$mgmt:projectName} User Registration request for '{$nickname}'</head>
+										<body>
+											<p>Received user registration request</p>
+											<ul>
+												<li><b>User:</b> {$nickname}</li>
+												<li><b>First name:</b> {$firstName}</li>
+												<li><b>Last name:</b> {$lastName}</li>
+												<li><b>Organization:</b> {$organization}</li>
+												<li><b>E-mail(s):</b> {string-join($eMails/text(),', ')}</li>
+												<li><b>Reference(s):</b><ul>{
+													for $reference in $references
+													return
+														<li><a href="{$reference/text()}">{$reference/@description/string()}</a> ({$reference/@kind/string()})</li>
+												}</ul></li>
+											</ul>
+											<div align="center">
+												<a href="{$mgmt:confirmModuleURI}?{$mgmt:CONFIRM_ID_KEY}={$id}&amp;{$mgmt:CONFIRM_YESNO_KEY}={$mgmt:CONFIRM_YES_KEY}">Approve new user {$nickname}</a> <b>or</b>
+												<a href="{$mgmt:confirmModuleURI}?{$mgmt:CONFIRM_ID_KEY}={$id}&amp;{$mgmt:CONFIRM_YESNO_KEY}={$mgmt:CONFIRM_NO_KEY}">Reject new user {$nickname}</a>?
+											</div>
+										</body>
+									</html>
+								</xhtml>
+							</message>
+						</mail>)
+					) else
+						()
+					,
+					$id
+				)
+			) else (
+				util:log-system-err(string-join(("On user creation, user",$nickname,"already existed"),' ')),
+				error((),string-join(("On user creation, user",$nickname,"already existed"),' '))
+			)
+	(: } :)
+};
+
+declare function mgmt:getManagementDoc()
+	as element(xcesc:managementData)
+{
+	let $mgmtDoc := mgmt:getManagementDoc0()
+	return
+		if($mgmtDoc//xcesc:user[@nickname eq $mgmt:adminUser]) then (
+			$mgmtDoc
+		) else (
+			let $dumb := mgmt:createUser($mgmt:adminUser,$mgmt:adminPass,concat($mgmt:projectName,' root admin'),'','',<xcesc:eMail>{$mgmt:adminMail}</xcesc:eMail>,(),())
+			return
+				$mgmtDoc
+		)
 };
 
 (:::::::::::)
@@ -415,7 +508,7 @@ declare function mgmt:confirmUser($id as xs:string,$answer as xs:boolean)
 					return (
 						upd:replaceValue($userConfig/@status,'enabled'),
 						mailcore:send-email(<mail>
-							<to>{$mgmt:configRoot/mgmt:admin[1]/@mail/string()}</to>
+							<to>{$mgmt:adminMail}</to>
 							<subject>{$mgmt:projectName} User Registration approval: {$userConfig/@nickname/string()}</subject>
 							<message>
 								<text>User {$userConfig/@nickname/string()} has been created at {$mgmt:projectName} ({$mgmt:publicBaseURI})</text>
@@ -427,7 +520,7 @@ declare function mgmt:confirmUser($id as xs:string,$answer as xs:boolean)
 				) else (
 					mgmt:deleteUser($id,$userConfig/@nickname),
 					mailcore:send-email(<mail>
-						<to>{$mgmt:configRoot/mgmt:admin[1]/@mail/string()}</to>
+						<to>{$mgmt:adminMail}</to>
 						<subject>{$mgmt:projectName} User Registration rejection: {$userConfig/@nickname/string()}</subject>
 						<message>
 							<text>User {$userConfig/@nickname/string()} has been rejected at {$mgmt:projectName} ({$mgmt:publicBaseURI})</text>
@@ -453,7 +546,7 @@ declare function mgmt:confirmEMail($id as xs:string,$eMailId as xs:string,$answe
 				upd:replaceValue($mailConfig/@status,'enabled'),
 				mailcore:send-email(<mail>
 					<to>{$mailConfig/text()}</to>
-					<bcc>{$mgmt:configRoot/mgmt:admin[1]/@mail/string()}</bcc>
+					<bcc>{$mgmt:adminMail}</bcc>
 					<subject>{$mgmt:projectName}: e-mail for user {$userConfig/@nickname/string()} has been enabled</subject>
 					<message>
 						<text>User {$userConfig/@nickname/string()} has enabled e-mail address {$mailConfig/text()} for notifications at {$mgmt:projectName} ({$mgmt:publicBaseURI})</text>
@@ -464,7 +557,7 @@ declare function mgmt:confirmEMail($id as xs:string,$eMailId as xs:string,$answe
 				upd:delete($mailConfig),
 				mailcore:send-email(<mail>
 					<to>{$mailConfig/text()}</to>
-					<bcc>{$mgmt:configRoot/mgmt:admin[1]/@mail/string()}</bcc>
+					<bcc>{$mgmt:adminMail}</bcc>
 					<subject>{$mgmt:projectName}: user {$userConfig/@nickname/string()} has rejected this e-mail address</subject>
 					<message>
 						<text>User {$userConfig/@nickname/string()} has rejected e-mail address {$mailConfig/text()} for notifications at {$mgmt:projectName} ({$mgmt:publicBaseURI})</text>
@@ -503,70 +596,21 @@ declare function mgmt:sendConfirmEMails($id as xs:string)
 			)
 };
 
-declare function mgmt:createUser($nickname as xs:string,$nickpass as xs:string,$firstName as xs:string,$lastName as xs:string,$organization as xs:string,$eMails as element(xcesc:eMail)+, $references as element(xcesc:reference)*)
-	as xs:string?
+declare function mgmt:user-template()
+	as element(xcesc:user)
 {
-	(: (# exist:batch-transaction #) { :)
-		let $mgmtDoc:=mgmt:getManagementDoc()
-		return
-			if(empty($mgmtDoc//xcesc:user[@nickname eq $nickname]) and not(xmldb:exists-user($nickname))) then (
-				let $id:=util:uuid()
-				(: Perhaps in the future we will add bloggers group... :)
-				let $newUser:=<xcesc:user id="{$id}" nickname="{$nickname}" nickpass="{$nickpass}" firstName="{$firstName}" lastName="{$lastName}" organization="{$organization}" status="unconfirmed">
-					{
-						(: eMail curation, because at the beginning they are unconfirmed by default :)
-						for $eMail in $eMails
-						let $eMailId := util:uuid()
-						return
-							<xcesc:eMail id="{$eMailId}" status="unconfirmed">{$eMail/text()}</xcesc:eMail>
-					}
-					<xcesc:references>{$references}</xcesc:references>
-				</xcesc:user>
-				return (
-					upd:insertInto($mgmtDoc//xcesc:users,$newUser),
-					mailcore:send-email(<mail>
-						<to>{$mgmt:configRoot/mgmt:admin[1]/@mail/string()}</to>
-						<subject>{$mgmt:projectName} User Registration request</subject>
-						<message>
-							<xhtml>
-								<html>
-									<head>{$mgmt:projectName} User Registration request for '{$nickname}'</head>
-									<body>
-										<p>Received user registration request</p>
-										<ul>
-											<li><b>User:</b> {$nickname}</li>
-											<li><b>First name:</b> {$firstName}</li>
-											<li><b>Last name:</b> {$lastName}</li>
-											<li><b>Organization:</b> {$organization}</li>
-											<li><b>E-mail(s):</b> {string-join($eMails/text(),', ')}</li>
-											<li><b>Reference(s):</b><ul>{
-												for $reference in $references
-												return
-													<li><a href="{$reference/text()}">{$reference/@description/string()}</a> ({$reference/@kind/string()})</li>
-											}</ul></li>
-										</ul>
-										<div align="center">
-											<a href="{$mgmt:confirmModuleURI}?{$mgmt:CONFIRM_ID_KEY}={$id}&amp;{$mgmt:CONFIRM_YESNO_KEY}={$mgmt:CONFIRM_YES_KEY}">Approve new user {$nickname}</a> <b>or</b>
-											<a href="{$mgmt:confirmModuleURI}?{$mgmt:CONFIRM_ID_KEY}={$id}&amp;{$mgmt:CONFIRM_YESNO_KEY}={$mgmt:CONFIRM_NO_KEY}">Reject new user {$nickname}</a>?
-										</div>
-									</body>
-								</html>
-							</xhtml>
-						</message>
-					</mail>),
-					$id
-				)
-			) else (
-				util:log-system-err(string-join(("On server creation, user",$nickname,"already existed"),' ')),
-				error((),string-join(("On user creation, user",$nickname,"already existed"),' '))
-			)
-	(: } :)
+	<xcesc:user id="" nickname="" nickpass="" firstName="" lastName="" organization="">
+		<xcesc:eMail/>
+		<xcesc:references/>
+		<xcesc:roles/>
+	</xcesc:user>
 };
 
 declare function mgmt:createUser($userConfig as element(xcesc:user))
 	as xs:string?
 {
-	(mgmt:createUser($userConfig/@nickname/string(),$userConfig/@nickpass/string(),$userConfig/@firstName/string(),$userConfig/@lastName/string(),$userConfig/@organization/string(),$userConfig/xcesc:eMail,$userConfig/xcesc:references/xcesc:reference))
+	(: Roles must be set later :)
+	mgmt:createUser($userConfig/@nickname/string(),$userConfig/@nickpass/string(),$userConfig/@firstName/string(),$userConfig/@lastName/string(),$userConfig/@organization/string(),$userConfig/xcesc:eMail,$userConfig/xcesc:references/xcesc:reference,())
 };
 
 (: User deletion :)
@@ -574,6 +618,7 @@ declare function mgmt:deleteUser($id as xs:string,$nickname as xs:string)
 	as empty-sequence() 
 {
 	(: (# exist:batch-transaction #) { :)
+	if($nickname ne $mgmt:adminUser) then (
 		let $mgmtDoc := mgmt:getManagementDoc()
 		let $userDoc := $mgmtDoc//xcesc:user[@id eq $id][@nickname eq $nickname]
 		return
@@ -607,6 +652,8 @@ declare function mgmt:deleteUser($id as xs:string,$nickname as xs:string)
 				) else (),
 				upd:replaceValue($userDoc/@status,'deleted')
 			)
+	) else
+		 error((),string-join(("On user deletion,",$id,"is not allowed to erase",$nickname),' '))
 	(: } :)
 };
 
@@ -628,7 +675,7 @@ declare function mgmt:send-mail-to-user($id as xs:string,$message as element(mai
 							$message/bcc,
 							(: Only a notification for the first sent e-mail :)
 							if($pos eq 1) then (
-								<bcc>{$mgmt:configRoot/mgmt:admin[1]/@mail/string()}</bcc>
+								<bcc>{$mgmt:adminMail}</bcc>
 							) else ()
 							,
 							$message/subject,
@@ -666,6 +713,70 @@ declare function mgmt:getActiveUserFromId($id as xs:string)
 	mgmt:getManagementDoc()//xcesc:user[@id eq $id][@status eq 'enabled']
 };
 
+declare function mgmt:is-super-user($rulerDoc as element(xcesc:user))
+	as xs:boolean
+{
+	exists($mgmt:roles[@isSuperUser eq 'true'][@name = $rulerDoc//xcesc:role[not(@isDenied)]/@name])
+};
+
+declare function mgmt:is-super-user($id as xs:string)
+	as xs:boolean
+{
+	let $rulerDoc := mgmt:getActiveUserFromId($id)
+	return
+		if (exists($rulerDoc)) then (
+			mgmt:is-super-user($rulerDoc)
+		) else (
+			false()
+		)
+};
+
+declare function mgmt:has-user-role($rulerDoc as element(xcesc:user), $role as xs:string, $userDoc as element(xcesc:user))
+	as xs:boolean
+{
+	if(mgmt:is-super-user($rulerDoc) or $userDoc/@id eq $rulerDoc/@id or $rulerDoc//xcesc:role[@name eq $role][not(@isDenied)]) then (
+		true()
+	) else (
+		false()
+	)
+};
+
+declare function mgmt:has-user-id-role($id as xs:string, $role as xs:string, $userDoc as element(xcesc:user))
+	as xs:boolean
+{
+	let $rulerDoc := mgmt:getActiveUserFromId($id)
+	return
+		if(exists($rulerDoc)) then (
+			mgmt:has-user-role($rulerDoc,$role,$userDoc)
+		) else (
+			false()
+		)
+};
+
+declare function mgmt:has-nickname-role($nickname as xs:string, $role as xs:string, $userDoc as element(xcesc:user))
+	as xs:boolean
+{
+	let $rulerDoc := mgmt:getActiveUserFromNickname($nickname)
+	return
+		if(exists($rulerDoc)) then (
+			mgmt:has-user-role($rulerDoc,$role,$userDoc)
+		) else (
+			false()
+		)
+};
+
+declare function mgmt:user-id-can-update($id as xs:string, $userDoc as element(xcesc:user))
+	as xs:boolean
+{
+	mgmt:has-user-id-role($id,'USER.UPDATE',$userDoc)
+};
+
+declare function mgmt:nickname-can-update($nickname as xs:string, $userDoc as element(xcesc:user))
+	as xs:boolean
+{
+	mgmt:has-nickname-role($nickname,'USER.UPDATE',$userDoc)
+};
+
 declare function mgmt:getRestrictedInfoFromId($id as xs:string)
 	as element(xcesc:user)?
 {
@@ -681,6 +792,29 @@ declare function mgmt:getRestrictedInfoFromId($id as xs:string)
 			,
 			$userDoc/node()
 		}
+};
+
+declare function mgmt:getRestrictedUserListFromId($id as xs:string)
+	as element(xcesc:users)
+{
+	<xcesc:users>{
+		if(mgmt:is-super-user($id)) then (
+			for $userDoc in mgmt:getManagementDoc()//xcesc:user[@status ne 'deleted']
+			return
+				element { node-name($userDoc) } {
+					for $child in $userDoc/@*
+					return
+						if(not($child/local-name() = ('nickpass','password'))) then (
+							$child
+						) else
+							( )
+					,
+					$userDoc/node()
+				}
+		) else (
+			mgmt:getRestrictedInfoFromId($id)
+		)
+	}</xcesc:users>
 };
 
 (: It obtains the whole user configuration, by nickname :)
@@ -700,6 +834,18 @@ declare function mgmt:getPasswordFromNickname($nickname as xs:string)
 	as xs:string?
 {
 	mgmt:getUserFromNickname($nickname)/@nickpass/string()
+};
+
+declare function mgmt:getAuthTokensForSessionFromNickname($nickname as xs:string)
+	as xs:string+
+{
+	let $userDoc := mgmt:getUserFromNickname($nickname)
+	return
+		if(mgmt:is-super-user($userDoc)) then (
+			$mgmt:adminUser , $mgmt:adminPass , $userDoc/@nickpass/string()
+		) else (
+			$userDoc/@nickname/string() , $userDoc/@nickpass/string() , $userDoc/@nickpass/string()
+		)
 };
 
 (: It obtains the whole user configuration, by nickname :)
@@ -728,7 +874,11 @@ declare function mgmt:updateUser($id as xs:string,$userConfig as element(xcesc:u
 	as empty-sequence() 
 {
 	(: (# exist:batch-transaction #) { :)
-		let $userDoc:=mgmt:getUserFromNickname($userConfig/@nickname)[@id eq $id][@status ne 'unconfirmed' and @status ne 'deleted']
+		let $userDoc0:=mgmt:getUserFromNickname($userConfig/@nickname)
+		let $userDoc := if(mgmt:user-id-can-update($id,$userDoc0)) then ( 
+			$userDoc0[@status ne 'unconfirmed' and @status ne 'deleted']
+		) else
+			()
 		return
 			if($userDoc) then (
 				if($userConfig/@status eq 'deleted') then (
@@ -738,7 +888,9 @@ declare function mgmt:updateUser($id as xs:string,$userConfig as element(xcesc:u
 						for $user in $userDoc[@status ne $userConfig/@status]
 						return
 							upd:replaceValue($userDoc/@status,$userConfig/@status)
-					) else (),
+					) else
+						()
+					,
 					for $user in $userDoc[@firstName ne $userConfig/@firstName]
 					return
 						upd:replaceValue($userDoc/@firstName,$userConfig/@firstName)
@@ -778,6 +930,12 @@ declare function mgmt:updateUser($id as xs:string,$userConfig as element(xcesc:u
 						upd:replaceNode($userDoc/xcesc:references,$userConfig/xcesc:references)
 					else
 						()
+					,
+					(: Roles can only be updated when user is allowed to do that :)
+					if(mgmt:has-user-id-role($id,'USER.GRANT.ROLE',$userDoc) and not(deep-equal($userDoc/xcesc:roles,$userConfig/xcesc:roles))) then
+						upd:replaceNode($userDoc/xcesc:roles,$userConfig/xcesc:roles)
+					else
+						()
 				)
 			) else
 				error((),string-join(("On user update,",$userConfig/@nickname,"changes from",$id,"are not allowed"),' '))
@@ -795,7 +953,12 @@ declare function mgmt:changeUserPass($id as xs:string, $nickname as xs:string,$o
 	as empty-sequence() 
 {
 	(: (# exist:batch-transaction #) { :)
-		let $userDoc:=mgmt:getUserFromNickname($nickname)[@id eq $id][@status ne 'unconfirmed' and @status ne 'deleted']
+	if($nickname ne $mgmt:adminUser) then (
+		let $userDoc0:=mgmt:getUserFromNickname($nickname)
+		let $userDoc := if(mgmt:has-user-id-role($id,'USER.PASSWORD.UPDATE',$userDoc0)) then ( 
+			$userDoc0[@status ne 'unconfirmed' and @status ne 'deleted']
+		) else
+			()
 		return
 			if($userDoc and ($reset or xmldb:authenticate('/db',$nickname,$oldpass))) then (
 				system:as-user(
@@ -805,6 +968,8 @@ declare function mgmt:changeUserPass($id as xs:string, $nickname as xs:string,$o
 				)
 			) else
 				error((),string-join(("On user password update,",$nickname,"password changes from",$id,"are not allowed"),' '))
+	) else
+		error((),string-join(("On user password update,",$nickname,"password changes are not allowed"),' '))
 	(: } :)
 };
 

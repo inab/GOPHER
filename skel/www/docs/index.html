@@ -1,3 +1,4 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
 <html>
 <head>
 	<title>XCESC technical documentation</title>
@@ -7,40 +8,30 @@
         <link rel="icon" href="../style/GOPHER-favicon.ico" type="image/vnd.microsoft.icon">
 	<link rel="stylesheet" type="text/css" href="../style/default-style.css">
 
-	<style  type="text/css"><!--
-img {
-	border: none;
-	padding: 1px;
-}
-
-a > img:hover {
-	padding: 0px;
-	border: 1px solid blue;
-}
-//--></style>
-
 	<script type="text/javascript" src="../js/ORFandDB-widgetCommon/browserdetect/BrowserDetect.js"></script>
+        <script type="text/javascript">
+			window.WidgetCommon_NO_INIT = 1;
+		</script>
+	<script type="text/javascript" src="../js/ORFandDB-widgetCommon/widgetCommon.js"></script>
+	
+	<script type="text/javascript" src="../js/main.js"></script>
 
-	<script type="text/javascript" language="JavaScript" src="../js/adobesvgcheck/svgcheck.js"></script>
-	<script type="text/vbscript" language="VBScript" src="../js/adobesvgcheck/svgcheck.vbs"></script>
-	<script type="text/javascript" language="JavaScript"><!--
-if(BrowserDetect.browser=='Explorer') {
-	checkAndGetSVGViewer();
-}
-// -->
-	</script>
 </head>
-<body>
-<div style="float:left;margin-right:24px;">
-	<a class="imgLink" href="http://gopher.bioinfo.cnio.es/" target="_blank"><img src="../style/GOPHER.png" alt="GOPHER logo" style="float:left;clear:both;"></a>
-	<a class="imgLink" href="http://atomic.exist-db.org/" target="_blank"><img src="../style/AtomicWiki.png" alt="AtomicWiki logo" style="float:left;clear:left;"></a>
-	<div style="float:left;clear:right;">
-	<a class="imgLink" href="http://www.exist-db.org/" target="_blank"><img src="../style/powered.gif" alt="eXistDB logo"></a><br>
-	<a class="imgLink" href="http://www.agencexml.com/xsltforms" target="_blank"><img src="../forms/xsltforms/poweredbyXSLTForms.png" alt="Powered by XSLTForms logo"></a>
-	</div>
-</div>
-<div>
-	<div align="center"><h2 style="color:#bb0909;">XCESC (XML Continuous Evaluation System Core) technical documentation</h2></div>
+<body onload="InitXCESC();" onunload="DisposeXCESC();">
+		<div id="left">
+			<a class="imgLink" href="http://gopher.bioinfo.cnio.es/" target="_blank"><img src="/style/GOPHER.png" style="float:left;clear:both;width:150px;" alt="GOPHER logo" /></a>
+			<div style="float:left; clear:left;">
+				<a class="imgLink" href="http://atomic.exist-db.org/" target="_blank"><img src="/style/AtomicWiki.png" style="float:left;clear:left;width:50px;" alt="AtomicWiki logo"/></a>
+				<div style="float:left;clear:right;">
+					<a class="imgLink" href="http://www.exist-db.org/" target="_blank"><img src="/style/powered.gif" style="width:50px;" alt="eXistDB logo"/></a><br />
+					<a class="imgLink" href="http://www.agencexml.com/xsltforms" target="_blank"><img src="/forms/xsltforms/poweredbyXSLTForms.png" alt="Powered by XSLTForms logo" /></a>
+				</div>
+			</div>
+		</div>
+	<div id="title"><h2 class="doctitle">XCESC (XML Continuous Evaluation System Core) technical documentation</h2></div>
+		<div id="rightSideContainer">
+		</div>
+<div id="contents">
 	<p>As any CES <i>(continuous evaluation system)</i>, XCESC always follows the same conceptual
 steps:</p>
 <ul>
@@ -62,7 +53,7 @@ assessment is measured.</li>
 	can I become a participant? The answer is using well-documented or standardized protocols
 	and messages, and providing an example client. In the case of XCESC
 	you can find next documentation useful:</p>
-<div align="center"><a class="imgLink" href="gopher-message-flow.svg" target="_blank" alt="GOPHER message flow"><img
+<div style="width:33%;float:right;clear:right;text-align:right;"><a class="imgLink" href="gopher-message-flow.svg" target="_blank" alt="GOPHER message flow"><img
 src="gopher-message-flow.png"></a></div>
 <p>Asynchronous message flow of the system in the assessment phase is above (click it in order to
 get its SVG scalable version). A more formal definition of the protocol will be provided soon.</p>
@@ -80,7 +71,7 @@ will be able to write custom versions of the template to integrate with their in
 infrastructure, such as running the jobs in separate machines, putting the jobs in a software and
 jobs queue system, putting the jobs in a grid environment, ...</p>
 </div>
-		<div id="bottom" style="float:left;border: 1px dashed black;">
+		<div id="bottom">
 			José María Fernández, (C) 2009-2010 <a class="imgLink" href="http://www.inab.org/"><img src="../style/INB-minilogo.png" alt="INB"></a>
 		</div>
 </body>

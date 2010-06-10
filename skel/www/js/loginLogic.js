@@ -86,6 +86,7 @@ LoginBox.prototype = {
 			
 			var form = thedoc.createElement('form');
 			this.loginForm = form;
+			//form.setAttribute('action','javascript:false;');
 			form.setAttribute('accept-charset','utf-8');
 			form.setAttribute('method','POST');
 			loginMiddle.appendChild(form);
@@ -137,20 +138,44 @@ LoginBox.prototype = {
 			
 			// Some event listeners
 			WidgetCommon.addEventListener(input,'keydown',function(evt) {
-				var isStandard = 'keyCode' in evt;
-				var key = isStandard?evt.keyCode:evt.which;
+				if(!evt)  evt=window.event;
+				var key = ('keyCode' in evt) ? evt.keyCode : ('which' in evt) ? evt.which : evt.charCode;
 				if(key==13) {
+					evt.cancelBubble = true;
+					if('stopPropagation' in evt)
+						evt.stopPropagation();
+					if('preventDefault' in evt)
+						evt.preventDefault();
 					inputpass.focus();
+					return false;
 				}
+				return true;
 			},false);
 			
 			var thisBox=this;
 			WidgetCommon.addEventListener(inputpass,'keydown',function(evt) {
-				var isStandard = 'keyCode' in evt;
-				var key = isStandard?evt.keyCode:evt.which;
+				if(!evt)  evt=window.event;
+				var key = ('keyCode' in evt) ? evt.keyCode : ('which' in evt) ? evt.which : evt.charCode;
 				if(key==13) {
+					evt.cancelBubble = true;
+					if('stopPropagation' in evt)
+						evt.stopPropagation();
+					if('preventDefault' in evt)
+						evt.preventDefault();
 					thisBox.doLogin(evt);
+					return false;
 				}
+				return true;
+			},false);
+			
+			WidgetCommon.addEventListener(form,'submit',function(evt) {
+				if(!evt)  evt=window.event;
+				evt.cancelBubble = true;
+				if('stopPropagation' in evt)
+					evt.stopPropagation();
+				if('preventDefault' in evt)
+					evt.preventDefault();
+				return false;
 			},false);
 			
 			// Submit button
@@ -169,6 +194,7 @@ LoginBox.prototype = {
 			
 			// The event listener
 			WidgetCommon.addEventListener(input, 'click', function(evt){
+				if(!evt)  evt=window.event;
 				return thisBox.doLogin(evt);
 			}, true);
 			
@@ -195,7 +221,10 @@ LoginBox.prototype = {
 			this.errorMiddle = errorMiddle;
 			errorMiddle.className = 'login';
 			errorMiddle.style.display = 'none';
-			var errorSVG = WidgetCommon.createSVG('/style/dialog-error.svg',errorMiddle);
+			try {
+				var errorSVG = WidgetCommon.createSVG('/style/dialog-error.svg',errorMiddle);
+			} catch(e) {
+			}
 			var errorSpan = thedoc.createElement('span');
 			this.errorSpan = errorSpan;
 			errorMiddle.appendChild(errorSpan);
@@ -327,8 +356,8 @@ LoginBox.prototype = {
 	showLoginForm: function() {
 		this.userField.value = '';
 		this.passField.value = '';
-		this.userField.focus();
 		this.show(this.loginMiddle);
+		this.userField.focus();
 	},
 	/**
 	 * This function shows login information associated to the session

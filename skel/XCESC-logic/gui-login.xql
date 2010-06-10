@@ -53,12 +53,12 @@ let $status := if(session:exists()) then (
 							let $generated-response := login:do-login-digest($incoming-user,$incoming-realm,$incoming-nonce)
 							return
 								if(exists($generated-response) and $generated-response eq $incoming-response) then (
-									let $pass := mgmt:getPasswordFromNickname($incoming-user)
+									let $auth-tokens := mgmt:getAuthTokensForSessionFromNickname($incoming-user)
 									let $jarl := (
 										session:create(),
 										session:set-attribute($login:XCESC_USER_ID_KEY,mgmt:getUserIdFromNickname($incoming-user)),
-										if(session:set-current-user($incoming-user,$pass)) then (
-											xmldb:login('/db',$incoming-user,$pass)
+										if(session:set-current-user($incoming-user,$auth-tokens[3])) then (
+											xmldb:login('/db',$auth-tokens[1],$auth-tokens[2])
 										) else
 											( )
 									)

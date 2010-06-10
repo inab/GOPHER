@@ -22,7 +22,7 @@ if (not(starts-with($exist:path , '/')) or $tokens = 'controller.xql') then
 	</exist:dispatch>
 else if ($nummatches > 0) then
 	(
-	request:set-attribute('xslt.xcesc_template_path',xs:string($gui:template-document-uri))
+	request:set-attribute('xslt.xcesc_template_path',xs:string(gui:get-template-uri('leftMiniLogos')))
 	,
 	request:set-attribute('xslt.xcesc_project_name',xs:string($mgmt:projectName))
 	,

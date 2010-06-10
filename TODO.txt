@@ -20,7 +20,7 @@ TODO
 4.-	Profile page. This page will include the Logged box.
 	- Box will appear on north-east corner.
 	- Changes in Logged state will reload server main page.
-	- The page contains next tabs. Some of them or they contents may not be rendered, based on GOPHER admin level:
+	- The page contains next tabs. Some of them or their contents may not be rendered, based on GOPHER admin level:
 		- Edit profile/Edit profile nickname: All the information associated to the user can be changed just here.
 		  If it is not the admin profile, it will be an erase button.
 		

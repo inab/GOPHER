@@ -34,6 +34,34 @@
                         </xs:attribute>
                     </xs:complexType>
                 </xs:element>
+                <xs:element name="availableRoles">
+                	<xs:annotation>
+                		<xs:documentation><![CDATA[The list of database available roles]]></xs:documentation>
+                	</xs:annotation>
+                	<xs:complexType>
+                		<xs:sequence minOccurs="1" maxOccurs="1">
+                			<xs:element name="role" minOccurs="1" maxOccurs="unbounded">
+                				<xs:complexType>
+                					<xs:attribute name="name" type="xs:string" use="required">
+                						<xs:annotation>
+                							<xs:documentation><![CDATA[The role name]]></xs:documentation>
+                						</xs:annotation>
+                					</xs:attribute>
+                					<xs:attribute name="isSuperUser" type="xs:boolean" use="optional" default="false">
+                						<xs:annotation>
+                							<xs:documentation><![CDATA[Is a superuser role?]]></xs:documentation>
+                						</xs:annotation>
+                					</xs:attribute>
+                					<xs:attribute name="description" type="xs:string" use="required">
+                						<xs:annotation>
+                							<xs:documentation><![CDATA[The description of the role]]></xs:documentation>
+                						</xs:annotation>
+                					</xs:attribute>
+                				</xs:complexType>
+                			</xs:element>
+                		</xs:sequence>
+                	</xs:complexType>
+                </xs:element>
             </xs:sequence>
             
             <xs:attribute name="projectName" use="required" type="xs:string">

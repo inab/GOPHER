@@ -22,37 +22,37 @@
 			</head>
 			<body>
 				<xsl:copy-of select="$template/xhtml:body/@*"/>
-				<xsl:variable name="content" select="."/>
-				<xsl:for-each select="$template/xhtml:body/node()">
-					<xsl:choose>
-						<xsl:when test="@id = 'title'">
-							<div id="title" align="center">
-								<h2 class="doctitle"><xsl:copy-of select="$content//xhtml:div[@id = 'title']/node()"/></h2>
-							</div>
-						</xsl:when>
-						<xsl:when test="@id = 'contents'">
-							<div id="contents">
-								<xsl:copy-of select="$content//xhtml:div[@id = 'contents']/node()"/>
-							</div>
-						</xsl:when>
-						<xsl:otherwise>
-							<!-- Due some bugs in eXist <=> Saxon interaction, next sentence must travel through templates -->
-							<!--
-							<xsl:copy-of select="."/>
-							-->
-							<xsl:apply-templates select="." mode="copy"/>
-						</xsl:otherwise>
-					</xsl:choose>
-				</xsl:for-each>
+				<xsl:apply-templates select="$template/xhtml:body/node()" mode="copy">
+					<xsl:with-param name="content" select="."/>
+				</xsl:apply-templates>
 			</body>
 		</html>
 	</xsl:template>
 	
 	<!-- Due some bugs in eXist <=> Saxon interaction, we need these templates -->
-	<xsl:template match="node()" mode="copy">
+	<xsl:template match="*[@id = 'title']" mode="copy">
+		<xsl:param name="content"/>
 		<xsl:copy>
 			<xsl:apply-templates select="@*" mode="copy"/>
-			<xsl:apply-templates select="node()" mode="copy"/>
+			<h2 xmlns="http://www.w3.org/1999/xhtml" class="doctitle"><xsl:copy-of select="$content//xhtml:div[@id = 'title']/node()"/></h2>
+		</xsl:copy>
+	</xsl:template>
+
+	<xsl:template match="*[@id = 'contents']" mode="copy">
+		<xsl:param name="content"/>
+		<xsl:copy>
+			<xsl:apply-templates select="@*" mode="copy"/>
+			<xsl:copy-of select="$content//xhtml:div[@id = 'contents']/node()"/>
+		</xsl:copy>
+	</xsl:template>
+
+	<xsl:template match="node()" mode="copy">
+		<xsl:param name="content"/>
+		<xsl:copy>
+			<xsl:apply-templates select="@*" mode="copy"/>
+			<xsl:apply-templates select="node()" mode="copy">
+				<xsl:with-param name="content" select="$content"/>
+			</xsl:apply-templates>
 		</xsl:copy>
 	</xsl:template>
 

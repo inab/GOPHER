@@ -11,4 +11,10 @@
 	publicLogicRelURI="XCESC-logic"
 >
     <admin user="gopher" password="!Ese:PotR0Kloro" group="gopher" mail="gopher_support@cnio.es"/>
+    <availableRoles>
+    	<role name="ADMIN" isSuperUser="true" description="The superuser role"/>
+    	<role name="USER.UPDATE" description="The user update role"/>
+    	<role name="USER.PASSWORD.UPDATE" description="The user password update role"/>
+    	<role name="USER.GRANT.ROLE" description="The granting roles role"/>
+    </availableRoles>
 </systemManagement>

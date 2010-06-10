@@ -1,81 +1,355 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<html xmlns="http://www.w3.org/1999/xhtml" xmlns:xf="http://www.w3.org/2002/xforms" xmlns:ev="http://www.w3.org/2001/xml-events">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:xf="http://www.w3.org/2002/xforms" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xcesc="http://www.cnio.es/scombio/xcesc/1.0">
 	<head>
 		<title>Data Management</title>
 		
 		<style type="text/css"><![CDATA[
 			@namespace xf url("http://www.w3.org/2002/xforms");
 			
+			.horiz-tab-menu {
+				text-align: center;
+				margin-bottom: 2px;
+			}
+			
 			/* all the attributes of each tab, except the background color */
-			#horiz-tab-menu xf|trigger {
-				border-left: black solid 1px;
-				border-top: black solid 1px;
-				border-right: black solid 1px;
+			/*
+			.horiz-tab-menu xf|trigger ,
+			*/
+			.horiz-tab-menu .xforms-trigger ,
+			.horiz-tab-menu label.tab {
+				border-left: rgb(102, 204, 102) solid 1px;
+				border-top: rgb(102, 204, 102) solid 1px;
+				border-right: rgb(102, 204, 102) solid 1px;
 				border-bottom: 0px;
-				font-weight: bold;
 				font-family: Helvetica, sans-serif;
 				font-size: .9em;
 				margin-right: 5px;
 				padding: 3px;
 				/* the following only works under FireFox */
 				-moz-border-radius: .5em .5em 0em 0em;
-				border-radius-topright: .5em;
-				border-radius-topleft: .5em;
+				-webkit-border-top-left-radius: .5em;
+				-webkit-border-top-right-radius: .5em;
+				-ms-border-radius-topleft: .5em;
+				-ms-border-radius-topright: .5em;
+				-khtml-border-radius-topleft: .5em;
+				-khtml-border-radius-topright: .5em;
+				border-radius-top-right: .5em;
+				border-radius-top-left: .5em;
+			}
+			
+			.horiz-tab-menu label.tab {
+				font-weight: bold;
+				color: #000;
+				background-color: rgb(230, 255, 230);
+				/*
+				background-color: rgb(204, 255, 204);
+				*/
+			}
+			
+			.horiz-tab-menu .xforms-trigger {
+				/*
+				background-color: rgb(204, 255, 204);
+				*/
+				background-color: #BBE8BB;
+			}
+			
+			.horiz-tab-menu .xforms-trigger a ,
+			.horiz-tab-menu .xforms-trigger a:visited {
+				font-weight: normal;
+				color: rgb(102,102,102);
 			}
 			
 			/* the attributes of each div inside of a case */
-			xf|switch xf|case div {
-				border-left: solid black 1px;
-				border-top: solid black 0px;
-				border-right: solid black 1px;
-				border-bottom: solid black 1px;
+			/*
+			xf|switch xf|case div ,
+			*/
+			.xforms-switch .xforms-case div , .tabContent {
+				border-left: solid rgb(102, 204, 102) 1px;
+				border-top: solid rgb(102, 204, 102) 1px;
+				border-right: solid rgb(102, 204, 102) 1px;
+				border-bottom: solid rgb(102, 204, 102) 1px;
+				/* the following only works under FireFox */
+				-moz-border-radius: .5em;
+				-webkit-border-radius: .5em;
+				-ms-border-radius: .5em;
+				-khtml-border-radius: .5em;
+				border-radius: .5em;
+				background-color: rgb(230, 255, 230);
 			}
 			
-			#tab-1, #div-1  {
+			.horiz-tab-menu .xforms-switch {
+				display: inline-block;
+			}
+			
+			#div-1  {
 				background-color: pink;
 			}
 			
-			#tab-2, #div-2  {
+			#div-2  {
 				background-color: salmon;
 			}
 			
-			#tab-3, #div-3  {
+			#div-3  {
 				background-color: khaki;
 			}
 ]]></style>
+		<xf:model id="default-model">
+			<xf:instance id="userProfile" src="/XCESC-logic/gui-session-gate.xql/users" />
+			<xf:instance id="newUserTrigger">
+				<data>
+					<new-user-trigger/>
+				</data>
+			</xf:instance>
+		<!--
+			<xf:instance id="users" src="/XCESC-logic/gui-session-gate.xql/users" />
+		-->
+			<!--
+			<xf:instance>
+				<sample:balance>
+					<sample:transaction>
+						<sample:date>2004-05-06</sample:date>
+						<sample:desc>Salery</sample:desc>
+						<sample:withdraw>false</sample:withdraw>
+						<sample:amount>5000.00</sample:amount>
+					</sample:transaction>
+					<sample:transaction>
+						<sample:date>2004-05-06</sample:date>
+						<sample:desc>News Paper</sample:desc>
+						<sample:withdraw>true</sample:withdraw>
+						<sample:amount>2.00</sample:amount>
+					</sample:transaction>
+					<sample:totals>
+						<sample:in>0</sample:in>
+						<sample:out>0</sample:out>
+						<sample:total>0</sample:total>
+					</sample:totals>
+				</sample:balance>
+			</xf:instance>
+			<xf:bind nodeset="sample:transaction/sample:date" type="xsd:date"/>
+			<xf:bind nodeset="sample:transaction/sample:amount" type="xf:amount"/>
+			<xf:bind nodeset="sample:totals/sample:in" type="xf:amount" calculate="sum(/sample:balance/sample:transaction[sample:withdraw='false']/sample:amount)"/>
+			<xf:bind nodeset="sample:totals/sample:out" type="xf:amount" calculate="sum(/sample:balance/sample:transaction[sample:withdraw='true']/sample:amount)"/>
+			<xf:bind nodeset="sample:totals/sample:total" type="xf:amount" calculate="../sample:in - ../sample:out"/>
+			-->
+			<xf:bind id="newUserBind" nodeset="instance('newUserTrigger')/newUserTrigger" relevant="instance('userProfile')/xcesc:user/@id" /> 
+			<xf:bind nodeset="instance('userProfile')/xcesc:user">
+				<xf:bind nodeset="@nickname" type="xsd:string" required="true()"/>
+				<xf:bind nodeset="@nickpass" type="xsd:string" />
+				<xf:bind nodeset="@id" type="xsd:string" readonly="true()"/>
+				<xf:bind nodeset="@firstName" type="xsd:string" required="true()"/>
+				<xf:bind nodeset="@lastName" type="xsd:string" required="true()"/>
+				<xf:bind nodeset="@organization" type="xsd:string" required="true()"/>
+				<xf:bind nodeset="xcesc:eMail" type="xsd:string" required="true()"/>
+			</xf:bind>
+
+		<!--
+			<xf:bind nodeset="instance('users')">
+				<xf:bind nodeset="xcesc:user">
+					<xf:bind nodeset="@nickname" type="xsd:string" required="true()"/>
+					<xf:bind nodeset="@nickpass" type="xsd:string" />
+					<xf:bind nodeset="@id" type="xsd:string" readonly="true()"/>
+					<xf:bind nodeset="@firstName" type="xsd:string" required="true()"/>
+					<xf:bind nodeset="@lastName" type="xsd:string" required="true()"/>
+					<xf:bind nodeset="@organization" type="xsd:string" required="true()"/>
+					<xf:bind nodeset="xcesc:eMail" type="xsd:string" required="true()"/>
+				</xf:bind>
+			</xf:bind>
+
+			<xf:submission ref="/xcesc:users" mediatype="application/xml" id="s01" method="post" replace="all" action="{tokenize(request:get-servlet-path(),'/')[last()]}">
+				<xf:message level="modeless" ev:event="xforms-submit-error">Submit error.</xf:message>
+			</xf:submission>
+		-->
+		</xf:model>
 	</head>
 	<body>
 		<div id="title">Data Management</div>
 		
 		<div id="contents">
-			<div id="horiz-tab-menu">
-				<xf:trigger id="tab-1" appearance="minimal">
-					<xf:label>Tab 1 Title</xf:label>
-					<xf:toggle case="case-1" ev:event="DOMActivate" />
-				</xf:trigger>
-				<xf:trigger id="tab-2" appearance="minimal">
-					<xf:label>Tab 2 Title</xf:label>
-					<xf:toggle case="case-2" ev:event="DOMActivate" />
-				</xf:trigger>
-				<xf:trigger id="tab-3" appearance="minimal">
-					<xf:label>Tab 3 Title</xf:label>
-					<xf:toggle case="case-3" ev:event="DOMActivate" />
-				</xf:trigger>
+			<div class="horiz-tab-menu">
+				<xf:switch appearance="minimal">
+					<xf:case id="userProfileTabActiveCase" selected="true">
+						<xf:label class="tab">User Profile</xf:label>
+						<xf:trigger class="serverManagementTab" appearance="minimal">
+							<xf:label>Server Management</xf:label>
+							<xf:toggle case="serverManagementTabActiveCase" ev:event="DOMActivate" />
+							<xf:toggle case="serverManagementCase" ev:event="DOMActivate" />
+						</xf:trigger>
+						<xf:trigger class="tab-3" appearance="minimal">
+							<xf:label>Tab 3 Title</xf:label>
+							<xf:toggle case="Tab3Case" ev:event="DOMActivate" />
+							<xf:toggle case="case-3" ev:event="DOMActivate" />
+						</xf:trigger>
+					</xf:case>
+					<xf:case id="serverManagementTabActiveCase">
+						<xf:trigger class="userProfileTab" appearance="minimal">
+							<xf:label>User Profile</xf:label>
+							<xf:toggle case="userProfileTabActiveCase" ev:event="DOMActivate" />
+							<xf:toggle case="userProfileCase" ev:event="DOMActivate" />
+						</xf:trigger>
+						<xf:label class="tab">Server Management</xf:label>
+						<xf:trigger class="tab-3" appearance="minimal">
+							<xf:label>Tab 3 Title</xf:label>
+							<xf:toggle case="Tab3Case" ev:event="DOMActivate" />
+							<xf:toggle case="case-3" ev:event="DOMActivate" />
+						</xf:trigger>
+					</xf:case>
+					<xf:case id="Tab3Case">
+						<xf:trigger class="userProfileTab" appearance="minimal">
+							<xf:label>User Profile</xf:label>
+							<xf:toggle case="userProfileTabActiveCase" ev:event="DOMActivate" />
+							<xf:toggle case="userProfileCase" ev:event="DOMActivate" />
+						</xf:trigger>
+						<xf:trigger class="serverManagementTab" appearance="minimal">
+							<xf:label>Server Management</xf:label>
+							<xf:toggle case="serverManagementTabActiveCase" ev:event="DOMActivate" />
+							<xf:toggle case="serverManagementCase" ev:event="DOMActivate" />
+						</xf:trigger>
+						<xf:label class="tab">Tab 3 Title</xf:label>
+					</xf:case>
+				</xf:switch>
 			</div>
 			<xf:switch>
-				<xf:case id="case-1" selected="true">
-					<div id="div-1">
+				<xf:case id="userProfileCase" selected="true">
+					<div>
+						<xf:trigger bind="newUserTrigger" appearance="minimal">
+							<xf:toggle case="editUser" ev:event="DOMActivate" />
+						</xf:trigger>
+						<xf:repeat nodeset="xcesc:user" id="usuarios" appearance="full">
+							<xf:switch>
+								<xf:case id="viewUser" selected="true">
+				                    <xf:output ref="@id">
+				                        <xf:label>XCESC user Id</xf:label>
+				                        <xf:hint>XCESC Id assigned to the user</xf:hint>
+				                    </xf:output>
+				                    <xf:output ref="@nickname">
+				                        <xf:label>User name</xf:label>
+				                        <xf:hint>The user name you are using in GOPHER</xf:hint>
+				                    </xf:output>
+				
+				                    <xf:output ref="'********'">
+				                        <xf:label>User password</xf:label>
+				                        <xf:hint>The password you want to set at the beginning</xf:hint>
+				                    </xf:output>
+				
+				                    <xf:output ref="@firstName">
+				                        <xf:label>First Name(s)</xf:label>
+				                        <xf:hint>Your first name(s)</xf:hint>
+				                    </xf:output>
+				                    <xf:output ref="@lastName">
+				                        <xf:label>Last Name(s)</xf:label>                        
+				                        <xf:hint>Your last name(s)</xf:hint>
+				                    </xf:output>
+				                    <xf:output ref="@organization">
+				                        <xf:label>Organization</xf:label>                        
+				                        <xf:hint>The main organization unit you are representing with this user and assessment</xf:hint>
+				                    </xf:output>
+				                    <xf:output ref="xcesc:eMail">
+				                        <xf:label>e-mail</xf:label>                        
+				                        <xf:hint>The e-mail you want GOPHER to use when it needs to contact you</xf:hint>
+				                    </xf:output>
+								</xf:case>
+								<xf:case id="editUser" selected="false">
+				                    <xf:output ref="@id">
+				                        <xf:label>XCESC user Id</xf:label>
+				                        <xf:hint>XCESC Id assigned to the user</xf:hint>
+				                    </xf:output>
+				                    <xf:input ref="@nickname">
+				                        <xf:label>User name</xf:label>
+				                        <xf:hint>The user name you are using in GOPHER</xf:hint>
+				                    </xf:input>
+				
+				                    <xf:secret ref="@nickpass">
+				                        <xf:label>User password</xf:label>
+				                        <xf:hint>The password you want to set at the beginning</xf:hint>
+				                    </xf:secret>
+				
+				                    <xf:input ref="@firstName">
+				                        <xf:label>First Name(s)</xf:label>
+				                        <xf:hint>Your first name(s)</xf:hint>
+				                    </xf:input>
+				                    <xf:input ref="@lastName">
+				                        <xf:label>Last Name(s)</xf:label>                        
+				                        <xf:hint>Your last name(s)</xf:hint>
+				                    </xf:input>
+				                    <xf:input ref="@organization">
+				                        <xf:label>Organization</xf:label>                        
+				                        <xf:hint>The main organization unit you are representing with this user and assessment</xf:hint>
+				                    </xf:input>
+				                    <xf:input ref="xcesc:eMail">
+				                        <xf:label>e-mail</xf:label>                        
+				                        <xf:hint>The e-mail you want GOPHER to use when it needs to contact you</xf:hint>
+				                    </xf:input>
+								</xf:case>
+							</xf:switch>
+						</xf:repeat>
+						<!--
+						<xf:repeat nodeset="xcesc:user" id="usuarios" appearance="full">
+				                    <xf:output ref="@id">
+				                        <xf:label>XCESC user Id</xf:label>
+				                        <xf:hint>XCESC Id assigned to the user</xf:hint>
+				                    </xf:output>
+				                    <xf:input ref="@nickname">
+				                        <xf:label>User name</xf:label>
+				                        <xf:hint>The user name you are using in GOPHER</xf:hint>
+				                    </xf:input>
+				
+				                    <xf:secret ref="@nickpass">
+				                        <xf:label>User password</xf:label>
+				                        <xf:hint>The password you want to set at the beginning</xf:hint>
+				                    </xf:secret>
+				
+				                    <xf:input ref="@firstName">
+				                        <xf:label>First Name(s)</xf:label>
+				                        <xf:hint>Your first name(s)</xf:hint>
+				                    </xf:input>
+				                    <xf:input ref="@lastName">
+				                        <xf:label>Last Name(s)</xf:label>                        
+				                        <xf:hint>Your last name(s)</xf:hint>
+				                    </xf:input>
+				                    <xf:input ref="@organization">
+				                        <xf:label>Organization</xf:label>                        
+				                        <xf:hint>The main organization unit you are representing with this user and assessment</xf:hint>
+				                    </xf:input>
+				                    <xf:input ref="xcesc:eMail">
+				                        <xf:label>e-mail</xf:label>                        
+				                        <xf:hint>The e-mail you want GOPHER to use when it needs to contact you</xf:hint>
+				                    </xf:input>
+							<xf:trigger class="delete">
+								<xf:label>X</xf:label>
+								<xf:action ev:event="DOMActivate">
+									<xf:insert nodeset="xcesc:deletedUser" position="after" at="last()"/>
+									<xf:setvalue ref="xcesc:deletedUser[last()]/@nickname" value="@nickname"/>
+									<xf:setvalue ref="xcesc:deletedUser[last()]/@id" value="@id"/>
+									<xf:delete nodeset="." at="1" if="count(//xcesc:user) > 1"/>
+								</xf:action>
+							</xf:trigger>
+						</xf:repeat>
+						-->
+					<!--
 					menu 1 content menu 1 content menu 1 content menu 1 content
 					menu 1 content menu 1 content menu 1 content menu 1 content
 					menu 1 content menu 1 content menu 1 content menu 1 content
 					menu 1 content menu 1 content menu 1 content menu 1 content
 					menu 1 content menu 1 content menu 1 content menu 1 content
 					menu 1 content menu 1 content menu 1 content menu 1 content
+					menu 1 content menu 1 content menu 1 content menu 1 content
+					menu 1 content menu 1 content menu 1 content menu 1 content
+					menu 1 content menu 1 content menu 1 content menu 1 content
+					menu 1 content menu 1 content menu 1 content menu 1 content
+					menu 1 content menu 1 content menu 1 content menu 1 content
+					menu 1 content menu 1 content menu 1 content menu 1 content
+					menu 1 content menu 1 content menu 1 content menu 1 content
+					menu 1 content menu 1 content menu 1 content menu 1 content
+					menu 1 content menu 1 content menu 1 content menu 1 content
+					menu 1 content menu 1 content menu 1 content menu 1 content
+					menu 1 content menu 1 content menu 1 content menu 1 content
+					menu 1 content menu 1 content menu 1 content menu 1 content
+					-->
 					</div>
 				</xf:case>
-				<xf:case id="case-2">
-					<div id="div-2">
+				<xf:case id="serverManagementCase">
+					<div>
 					menu 2 content menu 2 content menu 2 content menu 2 content
 					menu 2 content menu 2 content menu 2 content menu 2 content
 					menu 2 content menu 2 content menu 2 content menu 2 content
@@ -85,7 +359,31 @@
 					</div>
 				</xf:case>
 				<xf:case id="case-3">
-					<div id="div-3">
+					<div>
+					menu 3 content menu 3 content menu 3 content menu 3 content
+					menu 3 content menu 3 content menu 3 content menu 3 content
+					menu 3 content menu 3 content menu 3 content menu 3 content
+					menu 3 content menu 3 content menu 3 content menu 3 content
+					menu 3 content menu 3 content menu 3 content menu 3 content
+					menu 3 content menu 3 content menu 3 content menu 3 content
+					menu 3 content menu 3 content menu 3 content menu 3 content
+					menu 3 content menu 3 content menu 3 content menu 3 content
+					menu 3 content menu 3 content menu 3 content menu 3 content
+					menu 3 content menu 3 content menu 3 content menu 3 content
+					menu 3 content menu 3 content menu 3 content menu 3 content
+					menu 3 content menu 3 content menu 3 content menu 3 content
+					menu 3 content menu 3 content menu 3 content menu 3 content
+					menu 3 content menu 3 content menu 3 content menu 3 content
+					menu 3 content menu 3 content menu 3 content menu 3 content
+					menu 3 content menu 3 content menu 3 content menu 3 content
+					menu 3 content menu 3 content menu 3 content menu 3 content
+					menu 3 content menu 3 content menu 3 content menu 3 content
+					menu 3 content menu 3 content menu 3 content menu 3 content
+					menu 3 content menu 3 content menu 3 content menu 3 content
+					menu 3 content menu 3 content menu 3 content menu 3 content
+					menu 3 content menu 3 content menu 3 content menu 3 content
+					menu 3 content menu 3 content menu 3 content menu 3 content
+					menu 3 content menu 3 content menu 3 content menu 3 content
 					menu 3 content menu 3 content menu 3 content menu 3 content
 					menu 3 content menu 3 content menu 3 content menu 3 content
 					menu 3 content menu 3 content menu 3 content menu 3 content

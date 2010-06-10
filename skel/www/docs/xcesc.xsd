@@ -264,6 +264,29 @@ When an e-mail is disabled, it is not used to send the user notifications]]></xs
 												<xsd:documentation><![CDATA[The set of references to external information associated to the user]]></xsd:documentation>
 											</xsd:annotation>
 										</xsd:element>
+										<xsd:element name="roles" minOccurs="1" maxOccurs="1">
+											<xsd:annotation>
+												<xsd:documentation><![CDATA[The set of roles associated to the user]]></xsd:documentation>
+											</xsd:annotation>
+											<xsd:complexType>
+												<xsd:sequence minOccurs="1" maxOccurs="1">
+													<xsd:element name="role" minOccurs="0" maxOccurs="unbounded">
+														<xsd:complexType>
+															<xsd:attribute name="ref" type="xsd:string" use="required">
+																<xsd:annotation>
+																	<xsd:documentation><![CDATA[The name of the obtained (or denied) role]]></xsd:documentation>
+																</xsd:annotation>
+															</xsd:attribute>
+															<xsd:attribute name="isDenied" type="xsd:boolean" use="optional" default="false">
+																<xsd:annotation>
+																	<xsd:documentation><![CDATA[Has been this role denied to the user?]]></xsd:documentation>
+																</xsd:annotation>
+															</xsd:attribute>
+														</xsd:complexType>
+													</xsd:element>
+												</xsd:sequence>
+											</xsd:complexType>
+										</xsd:element>
 									</xsd:sequence>
 									<xsd:attribute name="nickname" type="xsd:string" use="required">
 										<xsd:annotation>

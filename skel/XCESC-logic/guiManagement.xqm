@@ -23,6 +23,18 @@ declare variable $gui:template-document as document-node() := collection(xmldb:e
 declare variable $gui:template-document-uri as xs:anyURI := document-uri($gui:template-document);
 declare variable $gui:template-content as element(xhtml:html) := $gui:template-document/xhtml:html;
 
+declare function gui:get-template($template-id as xs:string)
+	as document-node()
+{
+	collection(xmldb:encode($gui:guiDoc/@style-col/string()))/id($template-id)/root()
+};
+
+declare function gui:get-template-uri($template-id as xs:string)
+	as xs:anyURI
+{
+	document-uri(gui:get-template($template-id))
+};
+
 declare function gui:integrate-contents($title as xs:string, $content as node()*)
 	as document-node(element(xhtml:html))
 {
