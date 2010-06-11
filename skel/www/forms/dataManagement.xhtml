@@ -9,7 +9,7 @@
 			
 			.horiz-tab-menu {
 				text-align: center;
-				margin-bottom: 2px;
+				margin-bottom: 1px;
 			}
 			
 			/* all the attributes of each tab, except the background color */
@@ -18,9 +18,6 @@
 			*/
 			.horiz-tab-menu .xforms-trigger ,
 			.horiz-tab-menu label.tab {
-				border-left: rgb(102, 204, 102) solid 1px;
-				border-top: rgb(102, 204, 102) solid 1px;
-				border-right: rgb(102, 204, 102) solid 1px;
 				border-bottom: 0px;
 				font-family: Helvetica, sans-serif;
 				font-size: .9em;
@@ -42,6 +39,9 @@
 				font-weight: bold;
 				color: #000;
 				background-color: rgb(230, 255, 230);
+				border-left: rgb(102, 204, 102) solid 1px;
+				border-top: rgb(102, 204, 102) solid 1px;
+				border-right: rgb(102, 204, 102) solid 1px;
 				/*
 				background-color: rgb(204, 255, 204);
 				*/
@@ -52,6 +52,12 @@
 				background-color: rgb(204, 255, 204);
 				*/
 				background-color: #BBE8BB;
+				/*
+				border-left: #BBE8BB solid 1px;
+				border-top: #BBE8BB solid 1px;
+				border-right: #BBE8BB solid 1px;
+				*/
+				border:0px;
 			}
 			
 			.horiz-tab-menu .xforms-trigger a ,
@@ -94,6 +100,10 @@
 				background-color: khaki;
 			}
 ]]></style>
+        <script type="text/javascript">
+			window.LoginBox_DO_RELOAD = 1;
+		</script>
+		
 		<xf:model id="default-model">
 			<xf:instance id="userProfile" src="/XCESC-logic/gui-session-gate.xql/users" />
 			<xf:instance id="newUserTrigger">
@@ -101,37 +111,13 @@
 					<new-user-trigger/>
 				</data>
 			</xf:instance>
+		
+		
 		<!--
 			<xf:instance id="users" src="/XCESC-logic/gui-session-gate.xql/users" />
 		-->
+			
 			<!--
-			<xf:instance>
-				<sample:balance>
-					<sample:transaction>
-						<sample:date>2004-05-06</sample:date>
-						<sample:desc>Salery</sample:desc>
-						<sample:withdraw>false</sample:withdraw>
-						<sample:amount>5000.00</sample:amount>
-					</sample:transaction>
-					<sample:transaction>
-						<sample:date>2004-05-06</sample:date>
-						<sample:desc>News Paper</sample:desc>
-						<sample:withdraw>true</sample:withdraw>
-						<sample:amount>2.00</sample:amount>
-					</sample:transaction>
-					<sample:totals>
-						<sample:in>0</sample:in>
-						<sample:out>0</sample:out>
-						<sample:total>0</sample:total>
-					</sample:totals>
-				</sample:balance>
-			</xf:instance>
-			<xf:bind nodeset="sample:transaction/sample:date" type="xsd:date"/>
-			<xf:bind nodeset="sample:transaction/sample:amount" type="xf:amount"/>
-			<xf:bind nodeset="sample:totals/sample:in" type="xf:amount" calculate="sum(/sample:balance/sample:transaction[sample:withdraw='false']/sample:amount)"/>
-			<xf:bind nodeset="sample:totals/sample:out" type="xf:amount" calculate="sum(/sample:balance/sample:transaction[sample:withdraw='true']/sample:amount)"/>
-			<xf:bind nodeset="sample:totals/sample:total" type="xf:amount" calculate="../sample:in - ../sample:out"/>
-			-->
 			<xf:bind id="newUserBind" nodeset="instance('newUserTrigger')/newUserTrigger" relevant="instance('userProfile')/xcesc:user/@id" /> 
 			<xf:bind nodeset="instance('userProfile')/xcesc:user">
 				<xf:bind nodeset="@nickname" type="xsd:string" required="true()"/>
@@ -142,6 +128,7 @@
 				<xf:bind nodeset="@organization" type="xsd:string" required="true()"/>
 				<xf:bind nodeset="xcesc:eMail" type="xsd:string" required="true()"/>
 			</xf:bind>
+			-->
 
 		<!--
 			<xf:bind nodeset="instance('users')">
@@ -160,6 +147,7 @@
 				<xf:message level="modeless" ev:event="xforms-submit-error">Submit error.</xf:message>
 			</xf:submission>
 		-->
+		
 		</xf:model>
 	</head>
 	<body>
@@ -215,6 +203,7 @@
 						<xf:trigger bind="newUserTrigger" appearance="minimal">
 							<xf:toggle case="editUser" ev:event="DOMActivate" />
 						</xf:trigger>
+						<!--
 						<xf:repeat nodeset="xcesc:user" id="usuarios" appearance="full">
 							<xf:switch>
 								<xf:case id="viewUser" selected="true">
@@ -283,6 +272,8 @@
 								</xf:case>
 							</xf:switch>
 						</xf:repeat>
+						-->
+						
 						<!--
 						<xf:repeat nodeset="xcesc:user" id="usuarios" appearance="full">
 				                    <xf:output ref="@id">
@@ -326,7 +317,6 @@
 							</xf:trigger>
 						</xf:repeat>
 						-->
-					<!--
 					menu 1 content menu 1 content menu 1 content menu 1 content
 					menu 1 content menu 1 content menu 1 content menu 1 content
 					menu 1 content menu 1 content menu 1 content menu 1 content
@@ -345,7 +335,6 @@
 					menu 1 content menu 1 content menu 1 content menu 1 content
 					menu 1 content menu 1 content menu 1 content menu 1 content
 					menu 1 content menu 1 content menu 1 content menu 1 content
-					-->
 					</div>
 				</xf:case>
 				<xf:case id="serverManagementCase">

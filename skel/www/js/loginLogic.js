@@ -3,7 +3,7 @@
  * @constructor
  * @param {HTMLElement} parent
  */
-LoginBox = function (parent) {
+function LoginBox(parent) {
 	this.initBox(parent);
 	this.show(this.waitMiddle);
 	this.showLoginInfo();
@@ -295,7 +295,10 @@ LoginBox.prototype = {
 								if(req2.readyState == 4 ) {
 									if(req2.status == 200) {
 										// alert("In theory, logged in");
-										loginBox.showLoginInfo(true);
+										if('LoginBox_DO_RELOAD' in window)
+											window.location.reload();
+										else
+											loginBox.showLoginInfo(true);
 									} else {
 										// alert("Could not login: "+req2.status);
 										loginBox.showError("Could not login (invalid username or password ["+req2.status+"]?)");
@@ -339,9 +342,12 @@ LoginBox.prototype = {
 		req.onreadystatechange = function(){
 			if (req.readyState == 4) {
 				// It doesn't matter whether we could logout or not
-				loginBox.showLoginForm();
 				req.onreadystatechange = function () {};
 				req = undefined;
+				if('LoginBox_DO_RELOAD' in window)
+					window.location.reload();
+				else
+					loginBox.showLoginForm();
 			}
 		};
 		var params=new Object();

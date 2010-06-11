@@ -597,13 +597,15 @@ declare function mgmt:sendConfirmEMails($id as xs:string)
 };
 
 declare function mgmt:user-template()
-	as element(xcesc:user)
+	as element(xcesc:users)
 {
-	<xcesc:user id="" nickname="" nickpass="" firstName="" lastName="" organization="">
-		<xcesc:eMail/>
-		<xcesc:references/>
-		<xcesc:roles/>
-	</xcesc:user>
+	<xcesc:users>
+		<xcesc:user id="" nickname="" nickpass="" firstName="" lastName="" organization="">
+			<xcesc:eMail/>
+			<xcesc:references/>
+			<xcesc:roles/>
+		</xcesc:user>
+	</xcesc:users>
 };
 
 declare function mgmt:createUser($userConfig as element(xcesc:user))

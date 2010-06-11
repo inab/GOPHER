@@ -5,7 +5,7 @@
  * @param {String} contentId
  * @param {Function} newAtomCallback
  */
-BlogFeedBox = function (parent,contentId,newAtomCallback) {
+function BlogFeedBox(parent,contentId,newAtomCallback) {
 	this.initBox(parent,contentId);
 	this.show(newAtomCallback);
 };

@@ -15,27 +15,22 @@ import module namespace mgmt = 'http://www.cnio.es/scombio/xcesc/1.0/xquery/syst
 import module namespace login = 'http://www.cnio.es/scombio/xcesc/1.0/xquery/login' at 'xmldb:exist:///db/XCESC-logic/gui-login.xqm';
 
 let $path := request:get-path-info()
-let $res := if(session:exists()) then (
-	let $user-id := session:get-attribute($login:XCESC_USER_ID_KEY)
-	return
-		if(exists($user-id)) then (
-			if($path eq '') then (
-				let $logo := util:log-app('error','xcesc.cron',string-join((xmldb:get-current-user(),$user-id,session:get-attribute('user'),session:get-attribute('password'),session:get-attribute-names()),' '))
-				return (
-					200
-					,
-					mgmt:getRestrictedInfoFromId($user-id)
-				)
-			) else if($path eq '/users') then (
-				200
-				,
-				mgmt:getRestrictedUserListFromId($user-id)
-			) else (
-				400
-			)
-		) else (
-			400
+let $user-id := session:get-attribute($login:XCESC_USER_ID_KEY)
+let $res := if(session:exists() and exists($user-id)) then (
+	if($path eq '') then (
+		let $logo := util:log-app('error','xcesc.cron',string-join((xmldb:get-current-user(),$user-id,session:get-attribute('user'),session:get-attribute('password'),session:get-attribute-names()),' '))
+		return (
+			200
+			,
+			mgmt:getRestrictedInfoFromId($user-id)
 		)
+	) else if($path eq '/users') then (
+		200
+		,
+		mgmt:getRestrictedUserListFromId($user-id)
+	) else (
+		400
+	)
 ) else if($path eq '/users') then (
 	200
 	,
@@ -43,10 +38,13 @@ let $res := if(session:exists()) then (
 ) else (
 	401
 )
-return
+return (
+	response:set-header('Cache-Control','no-store, must-revalidate')
+	,
 	if(count($res) > 1) then (
 		$res[2]
 	) else (
 		util:declare-option('exist:serialize',"method=text media-type=text/plain process-xsl-pi=no"),
 		response:set-status-code($res[1])
 	)
+)
