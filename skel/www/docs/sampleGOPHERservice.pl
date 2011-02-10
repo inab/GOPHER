@@ -9,7 +9,7 @@ use CGI;
 use LWP::UserAgent;
 use POSIX qw(setsid);
 use XML::LibXML;
-use XML::LibXML::XPathContext;
+use XML::LibXML::Common;
 
 $|=1;
 
@@ -43,7 +43,7 @@ sub launchJob($$) {
 			open(STDERR,'>','/dev/null');
 			setsid();
 			
-			# Here the query is parsed
+			# Here the query is parsed, and answer is built
 			my($answerDoc)=XML::LibXML::Document->new('1.0','UTF-8');
 			my($answers)=$answerDoc->createElementNS($XCESC_NS,'answers');
 			$answerDoc->setDocumentElement($answers);
@@ -73,7 +73,7 @@ sub launchJob($$) {
 			
 			# And the results, which depending on the kind of prediction or assessment
 			# will be one or more term elements, or one or more result elements
-			#
+			
 			# An example of annotation/assessment with term elements would be
 			# my($term)=$answerDoc->createElementNS($XCESC_NS,'term');
 			# $match->appendChild($term);
@@ -81,7 +81,7 @@ sub launchJob($$) {
 			# $term->setAttribute('publicId','GO:0004174');
 			# $term->setAttribute('score',100);
 			# $term->setAttribute('p-value',0.5);
-			#
+			
 			# An example of annotation/assessment with result elements would be
 			# my($result)=$answerDoc->createElementNS($XCESC_NS,'result');
 			# $match->appendChild($result);
@@ -126,6 +126,7 @@ sub launchJob($$) {
 }
 
 my($c)=CGI->new();
+my $hasQueryDoc = undef;
 my($doc)=undef;
 my($errstate)=undef;
 my($httpcode)=202;
@@ -135,6 +136,7 @@ foreach my $param ($c->param()) {
 	if($param eq 'POSTDATA' || $param eq 'XForms:Model') {
 		# Let's parse the incoming XML message, which must
 		# follow XCESC schema
+		$hasQueryDoc = 1;
 		eval {
 			my($parser)=XML::LibXML->new();
 			# Beware encodings here!!!!
@@ -148,28 +150,41 @@ foreach my $param ($c->param()) {
 	}
 }
 
-if(defined($doc)) {
-	my($context)=XML::LibXML::XPathContext->new();
-	my($el)=$doc->documentElement();
-	if($el->namespaceURI() eq $XCESC_NS && $el->localname() eq 'queries') {
-		my($callback)=$el->getAttribute('callback');
-		if(defined($callback) && $callback ne '') {
-			$context->registerNs('xcesc',$XCESC_NS);
-			
-			foreach my $query ($context->findnodes('//xcesc:query',$doc)) {
-				# This is the function to implement
-				$errstate='Accepted'  if(launchJob($query,$callback));
+if(defined($hasQueryDoc)) {
+	if(defined($doc)) {
+		my($el)=$doc->documentElement();
+		if($el->namespaceURI() eq $XCESC_NS && $el->localname() eq 'queries') {
+			my($callback)=$el->getAttribute('callback');
+			if(defined($callback) && $callback ne '') {
+				
+				foreach my $query ($el->childNodes()) {
+					next  unless(
+						$query->nodeType() eq ELEMENT_NODE &&
+						$query->localname() eq 'query' &&
+						$query->namespaceURI() eq $XCESC_NS &&
+						$query->hasAttribute('queryId')
+					);
+					
+					# This is the function to implement
+					$errstate='Accepted'  if(launchJob($query,$callback));
+				}
+			} else {
+				$errstate='XML Document does not contain a callback!';
+				$httpcode=400;
 			}
+		} else {
+			$errstate='XML Document is not a GOPHER queries one!';
+			$httpcode=400;
 		}
-	} else {
-		$errstate='XML Document is not a GOPHER queries one!';
-		$httpcode=400;
 	}
+} else {
+	$errstate = "Empty Query Message";
+	$httpcode = 400;
 }
 
 if(!defined($errstate)) {
 	# Setting a default error state
-	$errstate='Empty query';
+	$errstate='No query has been accepted';
 	$httpcode=400;
 }
 

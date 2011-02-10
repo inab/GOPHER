@@ -499,7 +499,7 @@ function viewDocumentation(compDesc, compName, docTextArray) {
          <div id="h-222482467_logicalDiagram" class="contents">
             <img usemap="#h375502785" src="schemaDiagrams/h375502785.png"/>
             <!--
-            Map ref: file:/home/jmfernandez/projects/GOPHER/skel/docs//schemaDiagrams/h375502785.map--><map name="h375502785">
+            Map ref: file:/home/jmfernandez/projects/GOPHER/skel/www/docs//schemaDiagrams/h375502785.map--><map name="h375502785">
 </map>
          </div>
          <script type="text/javascript">
@@ -526,6 +526,21 @@ function viewDocumentation(compDesc, compName, docTextArray) {
                      <a href="jobManagement.xsd.html#ns_xs" title="Find out namespace of 'xs' prefix">xs</a>:string</span> 
                   <span class="occurs">[1]</span> 
                   <p class="documentation">'The subcollection based on \"collection\" where each round job data is going to be stored.'</p>"</span>
+               <br/>
+               <span style="margin-left: 0.5em"> intervalBeforeAssessment="<span class="type">
+                     <a href="jobManagement.xsd.html#ns_xs" title="Find out namespace of 'xs' prefix">xs</a>:dayTimeDuration</span> 
+                  <span class="occurs">[1]</span> 
+                  <p class="documentation">'The minimal interval of time which must be spent in order to evaluate a prediction'</p>"</span>
+               <br/>
+               <span style="margin-left: 0.5em"> participantDeadline="<span class="type">
+                     <a href="jobManagement.xsd.html#ns_xs" title="Find out namespace of 'xs' prefix">xs</a>:dayTimeDuration</span> 
+                  <span class="occurs">[1]</span> 
+                  <p class="documentation">'The maximal interval of time which can be spent in order to issue a prediction'</p>"</span>
+               <br/>
+               <span style="margin-left: 0.5em"> evaluatorDeadline="<span class="type">
+                     <a href="jobManagement.xsd.html#ns_xs" title="Find out namespace of 'xs' prefix">xs</a>:dayTimeDuration</span> 
+                  <span class="occurs">[1]</span> 
+                  <p class="documentation">'The maximal interval of time which can be spent in order to evaluate a prediction'</p>"</span>
                <br/>
                <span style="margin-left: 0.5em"> physicalScratch="<span class="type">
                      <a href="jobManagement.xsd.html#ns_xs" title="Find out namespace of 'xs' prefix">xs</a>:string</span> 
@@ -579,8 +594,17 @@ function viewDocumentation(compDesc, compName, docTextArray) {
          <div id="h-222482467_diagram" class="contents">
             <img usemap="#h1997659639" src="schemaDiagrams/h1997659639.png"/>
             <!--
-            Map ref: file:/home/jmfernandez/projects/GOPHER/skel/docs//schemaDiagrams/h1997659639.map--><map name="h1997659639">
-</map>
+            Map ref: file:/home/jmfernandez/projects/GOPHER/skel/www/docs//schemaDiagrams/h1997659639.map--><map name="h1997659639">
+               <area shape="rect" alt="h-989960648" coords="219,323,461,349"
+                     href="xpath-datatypes.html_h-989960648.html#h-989960648"/>
+
+               <area shape="rect" alt="h-989960648" coords="219,359,426,385"
+                     href="xpath-datatypes.html_h-989960648.html#h-989960648"/>
+
+               <area shape="rect" alt="h-989960648" coords="219,395,412,421"
+                     href="xpath-datatypes.html_h-989960648.html#h-989960648"/>
+
+            </map>
          </div>
          <script type="text/javascript">
 <!--
@@ -637,6 +661,21 @@ function viewDocumentation(compDesc, compName, docTextArray) {
                      <span class="scTag">name</span>="<span class="scContent">roundsSubCollection</span>" <span class="scTag">type</span>="<span class="scContent">
                         <span class="type">
                            <a href="jobManagement.xsd.html#ns_xs" title="Find out namespace of 'xs' prefix">xs</a>:string</span>
+                     </span>" <span class="scTag">use</span>="<span class="scContent">required</span>"/&gt;</div>
+                  <div style="margin-left: 1.5em">&lt;<span class="scTag">xs:attribute</span> 
+                     <span class="scTag">name</span>="<span class="scContent">intervalBeforeAssessment</span>" <span class="scTag">type</span>="<span class="scContent">
+                        <span class="type">
+                           <a href="jobManagement.xsd.html#ns_xs" title="Find out namespace of 'xs' prefix">xs</a>:dayTimeDuration</span>
+                     </span>" <span class="scTag">use</span>="<span class="scContent">required</span>"/&gt;</div>
+                  <div style="margin-left: 1.5em">&lt;<span class="scTag">xs:attribute</span> 
+                     <span class="scTag">name</span>="<span class="scContent">participantDeadline</span>" <span class="scTag">type</span>="<span class="scContent">
+                        <span class="type">
+                           <a href="jobManagement.xsd.html#ns_xs" title="Find out namespace of 'xs' prefix">xs</a>:dayTimeDuration</span>
+                     </span>" <span class="scTag">use</span>="<span class="scContent">required</span>"/&gt;</div>
+                  <div style="margin-left: 1.5em">&lt;<span class="scTag">xs:attribute</span> 
+                     <span class="scTag">name</span>="<span class="scContent">evaluatorDeadline</span>" <span class="scTag">type</span>="<span class="scContent">
+                        <span class="type">
+                           <a href="jobManagement.xsd.html#ns_xs" title="Find out namespace of 'xs' prefix">xs</a>:dayTimeDuration</span>
                      </span>" <span class="scTag">use</span>="<span class="scContent">required</span>"/&gt;</div>
                   <div style="margin-left: 1.5em">&lt;<span class="scTag">xs:attribute</span> 
                      <span class="scTag">name</span>="<span class="scContent">physicalScratch</span>" <span class="scTag">type</span>="<span class="scContent">

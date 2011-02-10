@@ -512,6 +512,19 @@ function viewDocumentation(compDesc, compName, docTextArray) {
             </td>
          </tr>
          <tr>
+            <th>Schema Composition</th>
+            <td>
+               <ul>
+                  <li>This schema imports schema(s) from the following namespace(s):<ul>
+                        <li>
+                           <em>http://www.w3.org/2001/XMLSchema</em> (at <a title="Jump to schema documentation for 'http://www.w3.org/2007/xpath-datatypes'."
+                              href="xpath-datatypes.html">http://www.w3.org/2007/xpath-datatypes</a>)</li>
+                     </ul>
+                  </li>
+               </ul>
+            </td>
+         </tr>
+         <tr>
             <th>Documentation</th>
             <td class="documentation">XCESC job management configuration schema</td>
          </tr>
@@ -552,7 +565,9 @@ function viewDocumentation(compDesc, compName, docTextArray) {
          </div>
          <div id="schema_scbox" class="contents">
             <div style="margin-left: 0em">&lt;<span class="scTag">xs:schema</span> 
-               <span class="scTag">elementFormDefault</span>="<span class="scContent">qualified</span>" <span class="scTag">targetNamespace</span>="<span class="scContent">http://www.cnio.es/scombio/xcesc/1.0/xquery/jobManagement</span>"&gt;<div class="scContent" style="margin-left: 1.5em">...</div>&lt;/<span class="scTag">xs:schema</span>&gt;</div>
+               <span class="scTag">elementFormDefault</span>="<span class="scContent">qualified</span>" <span class="scTag">targetNamespace</span>="<span class="scContent">http://www.cnio.es/scombio/xcesc/1.0/xquery/jobManagement</span>"&gt;<div style="margin-left: 1.5em">&lt;<span class="scTag">xs:import</span> 
+                  <span class="scTag">namespace</span>="<span class="scContent">http://www.w3.org/2001/XMLSchema</span>" <span class="scTag">schemaLocation</span>="<span class="scContent">http://www.w3.org/2007/xpath-datatypes</span>"/&gt;</div>
+               <div class="scContent" style="margin-left: 1.5em">...</div>&lt;/<span class="scTag">xs:schema</span>&gt;</div>
          </div>
          <script type="text/javascript">
 <!--

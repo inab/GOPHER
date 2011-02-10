@@ -493,7 +493,7 @@ function viewDocumentation(compDesc, compName, docTextArray) {
          </tr>
          <tr>
             <th>Documentation</th>
-            <td class="documentation">The query which is submitted to the servers</td>
+            <td class="documentation">The query which is submitted to the servers. It can be either a query to a prediction server, or an assessment request to an evaluation server</td>
          </tr>
       </table>
       <div class="sample box">
@@ -506,8 +506,11 @@ function viewDocumentation(compDesc, compName, docTextArray) {
          <div id="h-591237691_logicalDiagram" class="contents">
             <img usemap="#h444611975" src="schemaDiagrams/h444611975.png"/>
             <!--
-            Map ref: file:/home/jmfernandez/projects/GOPHER/skel/docs//schemaDiagrams/h444611975.map--><map name="h444611975">
-</map>
+            Map ref: file:/home/jmfernandez/projects/GOPHER/skel/www/docs//schemaDiagrams/h444611975.map--><map name="h444611975">
+               <area shape="rect" alt="h-1080705996" coords="344,88,616,144"
+                     href="xcesc.xsd.html_h-1080705996.html#h-1080705996"/>
+
+            </map>
          </div>
          <script type="text/javascript">
 <!--
@@ -525,13 +528,23 @@ function viewDocumentation(compDesc, compName, docTextArray) {
          <div id="h-591237691_xibox" class="contents">
             <div style="margin-left: 0em">&lt;<a href="xcesc.xsd.html#ns_xcesc" title="Find out namespace of 'xcesc' prefix">xcesc</a>:query<br/>
                <span style="margin-left: 0.5em"> queryId="<span class="type">
-                     <a href="xcesc.xsd.html#ns_xsd" title="Find out namespace of 'xsd' prefix">xsd</a>:positiveInteger</span> 
+                     <a href="xcesc.xsd.html#ns_xsd" title="Find out namespace of 'xsd' prefix">xsd</a>:string</span> 
                   <span class="occurs">[1]</span> 
                   <p class="documentation">'The id of the query (typically, a number)'</p>"</span>&gt; <br/>
                <span class="other" style="margin-left: 1.5em">&lt;!-- Mixed content --&gt;</span>
                <br/>
-               <div class="other" style="margin-left: 1.5em">Allow any elements from any namespace (lax validation). <span class="occurs">[0..*]</span>
-               </div>&lt;/<a href="xcesc.xsd.html#ns_xcesc" title="Find out namespace of 'xcesc' prefix">xcesc</a>:query&gt;</div>
+               <span class="group" style="margin-left: 1.5em">Start <a title="Look up 'Choice' in glossary" href="xcesc.xsd.html#term_Choice">Choice</a> 
+                  <span class="occurs">[1]</span>
+               </span>
+               <br/>
+               <div class="other" style="margin-left: 3em">Allow any elements from a namespace other than this schema's namespace (lax validation). <span class="occurs">[0..*]</span>
+               </div>
+               <div style="margin-left: 3em">&lt;<a href="xcesc.xsd.html#ns_xcesc" title="Find out namespace of 'xcesc' prefix">xcesc</a>:<a title="Jump to &#34;target&#34; element declaration."
+                     href="xcesc.xsd.html_h-1080705996.html">target</a>&gt; ... &lt;/<a href="xcesc.xsd.html#ns_xcesc" title="Find out namespace of 'xcesc' prefix">xcesc</a>:<a title="Jump to &#34;target&#34; element declaration."
+                     href="xcesc.xsd.html_h-1080705996.html">target</a>&gt; <span class="occurs">[1..*]</span>
+               </div>
+               <span class="group" style="margin-left: 1.5em">End Choice</span>
+               <br/>&lt;/<a href="xcesc.xsd.html#ns_xcesc" title="Find out namespace of 'xcesc' prefix">xcesc</a>:query&gt;</div>
          </div>
          <script type="text/javascript">
 <!--
@@ -549,8 +562,11 @@ function viewDocumentation(compDesc, compName, docTextArray) {
          <div id="h-591237691_diagram" class="contents">
             <img usemap="#h-228708079" src="schemaDiagrams/h-228708079.png"/>
             <!--
-            Map ref: file:/home/jmfernandez/projects/GOPHER/skel/docs//schemaDiagrams/h-228708079.map--><map name="h-228708079">
-</map>
+            Map ref: file:/home/jmfernandez/projects/GOPHER/skel/www/docs//schemaDiagrams/h-228708079.map--><map name="h-228708079">
+               <area shape="rect" alt="h-1080705996" coords="235,51,375,91"
+                     href="xcesc.xsd.html_h-1080705996.html#h-1080705996"/>
+
+            </map>
          </div>
          <script type="text/javascript">
 <!--
@@ -568,12 +584,17 @@ function viewDocumentation(compDesc, compName, docTextArray) {
          <div id="h-591237691_scbox" class="contents">
             <div style="margin-left: 0em">&lt;<span class="scTag">xsd:element</span> 
                <span class="scTag">name</span>="<span class="scContent">query</span>"&gt;<div style="margin-left: 1.5em">&lt;<span class="scTag">xsd:complexType</span> 
-                  <span class="scTag">mixed</span>="<span class="scContent">true</span>"&gt;<div style="margin-left: 1.5em">&lt;<span class="scTag">xsd:sequence</span>&gt;<div style="margin-left: 1.5em">&lt;<span class="scTag">xsd:any</span> 
-                        <span class="scTag">minOccurs</span>="<span class="scContent">0</span>" <span class="scTag">maxOccurs</span>="<span class="scContent">unbounded</span>" <span class="scTag">namespace</span>="<span class="scContent">##any</span>" <span class="scTag">processContents</span>="<span class="scContent">lax</span>"/&gt;</div>&lt;/<span class="scTag">xsd:sequence</span>&gt;</div>
+                  <span class="scTag">mixed</span>="<span class="scContent">true</span>"&gt;<div style="margin-left: 1.5em">&lt;<span class="scTag">xsd:choice</span>&gt;<div style="margin-left: 1.5em">&lt;<span class="scTag">xsd:any</span> 
+                        <span class="scTag">minOccurs</span>="<span class="scContent">0</span>" <span class="scTag">maxOccurs</span>="<span class="scContent">unbounded</span>" <span class="scTag">namespace</span>="<span class="scContent">##other</span>" <span class="scTag">processContents</span>="<span class="scContent">lax</span>"/&gt;</div>
+                     <div style="margin-left: 1.5em">&lt;<span class="scTag">xsd:element</span> 
+                        <span class="scTag">ref</span>="<span class="scContent">
+                           <a href="xcesc.xsd.html#ns_xcesc" title="Find out namespace of 'xcesc' prefix">xcesc</a>:<a title="Jump to &#34;target&#34; element declaration."
+                              href="xcesc.xsd.html_h-1080705996.html">target</a>
+                        </span>" <span class="scTag">minOccurs</span>="<span class="scContent">1</span>" <span class="scTag">maxOccurs</span>="<span class="scContent">unbounded</span>"/&gt;</div>&lt;/<span class="scTag">xsd:choice</span>&gt;</div>
                   <div style="margin-left: 1.5em">&lt;<span class="scTag">xsd:attribute</span> 
                      <span class="scTag">name</span>="<span class="scContent">queryId</span>" <span class="scTag">type</span>="<span class="scContent">
                         <span class="type">
-                           <a href="xcesc.xsd.html#ns_xsd" title="Find out namespace of 'xsd' prefix">xsd</a>:positiveInteger</span>
+                           <a href="xcesc.xsd.html#ns_xsd" title="Find out namespace of 'xsd' prefix">xsd</a>:string</span>
                      </span>" <span class="scTag">use</span>="<span class="scContent">required</span>"/&gt;</div>&lt;/<span class="scTag">xsd:complexType</span>&gt;</div>&lt;/<span class="scTag">xsd:element</span>&gt;</div>
          </div>
          <script type="text/javascript">

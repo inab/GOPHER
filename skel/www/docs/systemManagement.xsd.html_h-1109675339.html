@@ -499,7 +499,7 @@ function viewDocumentation(compDesc, compName, docTextArray) {
          <div id="h-1109675339_logicalDiagram" class="contents">
             <img usemap="#h-1354660659" src="schemaDiagrams/h-1354660659.png"/>
             <!--
-            Map ref: file:/home/jmfernandez/projects/GOPHER/skel/docs//schemaDiagrams/h-1354660659.map--><map name="h-1354660659">
+            Map ref: file:/home/jmfernandez/projects/GOPHER/skel/www/docs//schemaDiagrams/h-1354660659.map--><map name="h-1354660659">
 </map>
          </div>
          <script type="text/javascript">
@@ -518,6 +518,12 @@ function viewDocumentation(compDesc, compName, docTextArray) {
          <div id="h-1109675339_xibox" class="contents">
             <div style="margin-left: 0em">&lt;<a href="systemManagement.xsd.html#ns_mgmt"
                   title="Find out namespace of 'mgmt' prefix">mgmt</a>:systemManagement<br/>
+               <span style="margin-left: 0.5em"> projectName="<span class="type">
+                     <a href="systemManagement.xsd.html#ns_xs"
+                        title="Find out namespace of 'xs' prefix">xs</a>:string</span> 
+                  <span class="occurs">[1]</span> 
+                  <p class="documentation">'The project name for this XCESC instance'</p>"</span>
+               <br/>
                <span style="margin-left: 0.5em"> collection="<span class="type">
                      <a href="systemManagement.xsd.html#ns_xs"
                         title="Find out namespace of 'xs' prefix">xs</a>:string</span> 
@@ -552,7 +558,13 @@ function viewDocumentation(compDesc, compName, docTextArray) {
                      <a href="systemManagement.xsd.html#ns_xs"
                         title="Find out namespace of 'xs' prefix">xs</a>:anyURI</span> 
                   <span class="occurs">[1]</span> 
-                  <p class="documentation">'The public base query path for this XCESC installation.'</p>"</span>&gt; <br/>
+                  <p class="documentation">'The public base query path for this XCESC installation.'</p>"</span>
+               <br/>
+               <span style="margin-left: 0.5em"> publicLogicRelURI="<span class="type">
+                     <a href="systemManagement.xsd.html#ns_xs"
+                        title="Find out namespace of 'xs' prefix">xs</a>:string</span> 
+                  <span class="occurs">[1]</span> 
+                  <p class="documentation">'The name of the relative URI used for callable external logic in this XCESC installation.'</p>"</span>&gt; <br/>
                <div style="margin-left: 1.5em">&lt;<a href="systemManagement.xsd.html#ns_mgmt"
                      title="Find out namespace of 'mgmt' prefix">mgmt</a>:admin<br/>
                   <span style="margin-left: 0.5em"> user="<span class="type">
@@ -572,7 +584,32 @@ function viewDocumentation(compDesc, compName, docTextArray) {
                            title="Find out namespace of 'xs' prefix">xs</a>:string</span> 
                      <span class="occurs">[1]</span> 
                      <p class="documentation">'The manager e-mail'</p>"</span>/&gt;  <span class="occurs">[1]</span>
-               </div>&lt;/<a href="systemManagement.xsd.html#ns_mgmt"
+               </div>
+               <div style="margin-left: 1.5em">&lt;<a href="systemManagement.xsd.html#ns_mgmt"
+                     title="Find out namespace of 'mgmt' prefix">mgmt</a>:availableRoles&gt;  <span class="occurs">[1]</span>  
+                  <p class="documentation">'The list of database available roles'</p>
+                  <br/>
+                  <div style="margin-left: 1.5em">&lt;<a href="systemManagement.xsd.html#ns_mgmt"
+                        title="Find out namespace of 'mgmt' prefix">mgmt</a>:role<br/>
+                     <span style="margin-left: 0.5em"> name="<span class="type">
+                           <a href="systemManagement.xsd.html#ns_xs"
+                              title="Find out namespace of 'xs' prefix">xs</a>:string</span> 
+                        <span class="occurs">[1]</span> 
+                        <p class="documentation">'The role name'</p>"</span>
+                     <br/>
+                     <span style="margin-left: 0.5em"> isSuperUser="<span class="type">
+                           <a href="systemManagement.xsd.html#ns_xs"
+                              title="Find out namespace of 'xs' prefix">xs</a>:boolean</span> 
+                        <span class="occurs">[0..1]</span> 
+                        <p class="documentation">'Is a superuser role?'</p>"</span>
+                     <br/>
+                     <span style="margin-left: 0.5em"> description="<span class="type">
+                           <a href="systemManagement.xsd.html#ns_xs"
+                              title="Find out namespace of 'xs' prefix">xs</a>:string</span> 
+                        <span class="occurs">[1]</span> 
+                        <p class="documentation">'The description of the role'</p>"</span>/&gt;  <span class="occurs">[1..*]</span>
+                  </div>&lt;/<a href="systemManagement.xsd.html#ns_mgmt"
+                     title="Find out namespace of 'mgmt' prefix">mgmt</a>:availableRoles&gt;</div>&lt;/<a href="systemManagement.xsd.html#ns_mgmt"
                   title="Find out namespace of 'mgmt' prefix">mgmt</a>:systemManagement&gt;</div>
          </div>
          <script type="text/javascript">
@@ -591,7 +628,7 @@ function viewDocumentation(compDesc, compName, docTextArray) {
          <div id="h-1109675339_diagram" class="contents">
             <img usemap="#h558738051" src="schemaDiagrams/h558738051.png"/>
             <!--
-            Map ref: file:/home/jmfernandez/projects/GOPHER/skel/docs//schemaDiagrams/h558738051.map--><map name="h558738051">
+            Map ref: file:/home/jmfernandez/projects/GOPHER/skel/www/docs//schemaDiagrams/h558738051.map--><map name="h558738051">
 </map>
          </div>
          <script type="text/javascript">
@@ -627,7 +664,34 @@ function viewDocumentation(compDesc, compName, docTextArray) {
                                  <span class="type">
                                     <a href="systemManagement.xsd.html#ns_xs"
                                        title="Find out namespace of 'xs' prefix">xs</a>:string</span>
-                              </span>" <span class="scTag">use</span>="<span class="scContent">required</span>"/&gt;</div>&lt;/<span class="scTag">xs:complexType</span>&gt;</div>&lt;/<span class="scTag">xs:element</span>&gt;</div>&lt;/<span class="scTag">xs:sequence</span>&gt;</div>
+                              </span>" <span class="scTag">use</span>="<span class="scContent">required</span>"/&gt;</div>&lt;/<span class="scTag">xs:complexType</span>&gt;</div>&lt;/<span class="scTag">xs:element</span>&gt;</div>
+                     <div style="margin-left: 1.5em">&lt;<span class="scTag">xs:element</span> 
+                        <span class="scTag">name</span>="<span class="scContent">availableRoles</span>"&gt;<div style="margin-left: 1.5em">&lt;<span class="scTag">xs:complexType</span>&gt;<div style="margin-left: 1.5em">&lt;<span class="scTag">xs:sequence</span> 
+                              <span class="scTag">minOccurs</span>="<span class="scContent">1</span>" <span class="scTag">maxOccurs</span>="<span class="scContent">1</span>"&gt;<div style="margin-left: 1.5em">&lt;<span class="scTag">xs:element</span> 
+                                 <span class="scTag">name</span>="<span class="scContent">role</span>" <span class="scTag">minOccurs</span>="<span class="scContent">1</span>" <span class="scTag">maxOccurs</span>="<span class="scContent">unbounded</span>"&gt;<div style="margin-left: 1.5em">&lt;<span class="scTag">xs:complexType</span>&gt;<div style="margin-left: 1.5em">&lt;<span class="scTag">xs:attribute</span> 
+                                       <span class="scTag">name</span>="<span class="scContent">name</span>" <span class="scTag">type</span>="<span class="scContent">
+                                          <span class="type">
+                                             <a href="systemManagement.xsd.html#ns_xs"
+                                                title="Find out namespace of 'xs' prefix">xs</a>:string</span>
+                                       </span>" <span class="scTag">use</span>="<span class="scContent">required</span>"/&gt;</div>
+                                    <div style="margin-left: 1.5em">&lt;<span class="scTag">xs:attribute</span> 
+                                       <span class="scTag">name</span>="<span class="scContent">isSuperUser</span>" <span class="scTag">type</span>="<span class="scContent">
+                                          <span class="type">
+                                             <a href="systemManagement.xsd.html#ns_xs"
+                                                title="Find out namespace of 'xs' prefix">xs</a>:boolean</span>
+                                       </span>" <span class="scTag">use</span>="<span class="scContent">optional</span>" <span class="scTag">default</span>="<span class="scContent">false</span>"/&gt;</div>
+                                    <div style="margin-left: 1.5em">&lt;<span class="scTag">xs:attribute</span> 
+                                       <span class="scTag">name</span>="<span class="scContent">description</span>" <span class="scTag">type</span>="<span class="scContent">
+                                          <span class="type">
+                                             <a href="systemManagement.xsd.html#ns_xs"
+                                                title="Find out namespace of 'xs' prefix">xs</a>:string</span>
+                                       </span>" <span class="scTag">use</span>="<span class="scContent">required</span>"/&gt;</div>&lt;/<span class="scTag">xs:complexType</span>&gt;</div>&lt;/<span class="scTag">xs:element</span>&gt;</div>&lt;/<span class="scTag">xs:sequence</span>&gt;</div>&lt;/<span class="scTag">xs:complexType</span>&gt;</div>&lt;/<span class="scTag">xs:element</span>&gt;</div>&lt;/<span class="scTag">xs:sequence</span>&gt;</div>
+                  <div style="margin-left: 1.5em">&lt;<span class="scTag">xs:attribute</span> 
+                     <span class="scTag">name</span>="<span class="scContent">projectName</span>" <span class="scTag">type</span>="<span class="scContent">
+                        <span class="type">
+                           <a href="systemManagement.xsd.html#ns_xs"
+                              title="Find out namespace of 'xs' prefix">xs</a>:string</span>
+                     </span>" <span class="scTag">use</span>="<span class="scContent">required</span>"/&gt;</div>
                   <div style="margin-left: 1.5em">&lt;<span class="scTag">xs:attribute</span> 
                      <span class="scTag">name</span>="<span class="scContent">collection</span>" <span class="scTag">type</span>="<span class="scContent">
                         <span class="type">
@@ -663,6 +727,12 @@ function viewDocumentation(compDesc, compName, docTextArray) {
                         <span class="type">
                            <a href="systemManagement.xsd.html#ns_xs"
                               title="Find out namespace of 'xs' prefix">xs</a>:anyURI</span>
+                     </span>" <span class="scTag">use</span>="<span class="scContent">required</span>"/&gt;</div>
+                  <div style="margin-left: 1.5em">&lt;<span class="scTag">xs:attribute</span> 
+                     <span class="scTag">name</span>="<span class="scContent">publicLogicRelURI</span>" <span class="scTag">type</span>="<span class="scContent">
+                        <span class="type">
+                           <a href="systemManagement.xsd.html#ns_xs"
+                              title="Find out namespace of 'xs' prefix">xs</a>:string</span>
                      </span>" <span class="scTag">use</span>="<span class="scContent">required</span>"/&gt;</div>&lt;/<span class="scTag">xs:complexType</span>&gt;</div>&lt;/<span class="scTag">xs:element</span>&gt;</div>
          </div>
          <script type="text/javascript">

@@ -469,6 +469,8 @@ function viewDocumentation(compDesc, compName, docTextArray) {
          <tr>
             <th>Used by (from the same schema document)</th>
             <td>Element <b>
+                  <a href="xcesc.xsd.html_h-1858945322.html">jobEvaluation</a>
+               </b>, Element <b>
                   <a href="xcesc.xsd.html_h1548730930.html">answers</a>
                </b>, Element <b>
                   <a href="xcesc.xsd.html_h-1080705996.html">target</a>
@@ -508,7 +510,7 @@ function viewDocumentation(compDesc, compName, docTextArray) {
          <div id="h-595513662_logicalDiagram" class="contents">
             <img usemap="#h1788386538" src="schemaDiagrams/h1788386538.png"/>
             <!--
-            Map ref: file:/home/jmfernandez/projects/GOPHER/skel/docs//schemaDiagrams/h1788386538.map--><map name="h1788386538">
+            Map ref: file:/home/jmfernandez/projects/GOPHER/skel/www/docs//schemaDiagrams/h1788386538.map--><map name="h1788386538">
 </map>
          </div>
          <script type="text/javascript">
@@ -529,7 +531,12 @@ function viewDocumentation(compDesc, compName, docTextArray) {
                <span style="margin-left: 0.5em"> domain="<span class="type">
                      <a href="xcesc.xsd.html#ns_xsd" title="Find out namespace of 'xsd' prefix">xsd</a>:string</span> 
                   <span class="occurs">[1]</span> 
-                  <p class="documentation">'The match domain is the kind of prediction/assessment done. For instance, if a server is hybrid, in the sense it is able to generate predictions/assessments for homology modelling and ab initio, then the origin of the match must be identified'</p>"</span>&gt; <br/>
+                  <p class="documentation">'The match domain is the kind of prediction/assessment done. For instance, if a server is hybrid, in the sense it is able to generate predictions/assessments for homology modelling and ab initio, then the origin of the match must be identified'</p>"</span>
+               <br/>
+               <span style="margin-left: 0.5em"> timeStamp="<span class="type">
+                     <a href="xcesc.xsd.html#ns_xsd" title="Find out namespace of 'xsd' prefix">xsd</a>:dateTime</span> 
+                  <span class="occurs">[0..1]</span> 
+                  <p class="documentation">'The timestamp assigned to this match once it arrives to the server'</p>"</span>&gt; <br/>
                <div style="margin-left: 1.5em">&lt;<a href="xcesc.xsd.html#ns_xcesc" title="Find out namespace of 'xcesc' prefix">xcesc</a>:scope<br/>
                   <span style="margin-left: 0.5em"> label="<span class="type">
                         <a href="xcesc.xsd.html#ns_xsd" title="Find out namespace of 'xsd' prefix">xsd</a>:string</span> 
@@ -562,7 +569,7 @@ function viewDocumentation(compDesc, compName, docTextArray) {
                      <span class="occurs">[1]</span> 
                      <p class="documentation">'The namespace of the annotation. For instance, GO'</p>"</span>
                   <br/>
-                  <span style="margin-left: 0.5em"> id="<span class="type">
+                  <span style="margin-left: 0.5em"> publicId="<span class="type">
                         <a href="xcesc.xsd.html#ns_xsd" title="Find out namespace of 'xsd' prefix">xsd</a>:string</span> 
                      <span class="occurs">[1]</span> 
                      <p class="documentation">'The id of the annotation'</p>"</span>
@@ -615,11 +622,14 @@ function viewDocumentation(compDesc, compName, docTextArray) {
          <div id="h-595513662_diagram" class="contents">
             <img usemap="#h1115066484" src="schemaDiagrams/h1115066484.png"/>
             <!--
-            Map ref: file:/home/jmfernandez/projects/GOPHER/skel/docs//schemaDiagrams/h1115066484.map--><map name="h1115066484">
-               <area shape="rect" alt="h1444303858" coords="477,216,739,242"
+            Map ref: file:/home/jmfernandez/projects/GOPHER/skel/www/docs//schemaDiagrams/h1115066484.map--><map name="h1115066484">
+               <area shape="rect" alt="h555717641" coords="477,144,767,170"
+                     href="xcesc.xsd.html_h555717641.html#h555717641"/>
+
+               <area shape="rect" alt="h1444303858" coords="477,180,739,206"
                      href="xcesc.xsd.html_h1444303858.html#h1444303858"/>
 
-               <area shape="rect" alt="h1444303858" coords="491,303,753,329"
+               <area shape="rect" alt="h1444303858" coords="491,267,753,293"
                      href="xcesc.xsd.html_h1444303858.html#h1444303858"/>
 
             </map>
@@ -661,16 +671,11 @@ function viewDocumentation(compDesc, compName, docTextArray) {
                                     <a href="xcesc.xsd.html#ns_xsd" title="Find out namespace of 'xsd' prefix">xsd</a>:string</span>
                               </span>" <span class="scTag">use</span>="<span class="scContent">optional</span>" <span class="scTag">default</span>="<span class="scContent">residues</span>"/&gt;</div>&lt;/<span class="scTag">xsd:complexType</span>&gt;</div>&lt;/<span class="scTag">xsd:element</span>&gt;</div>
                      <div style="margin-left: 1.5em">&lt;<span class="scTag">xsd:choice</span>&gt;<div style="margin-left: 1.5em">&lt;<span class="scTag">xsd:element</span> 
-                           <span class="scTag">name</span>="<span class="scContent">term</span>" <span class="scTag">minOccurs</span>="<span class="scContent">1</span>" <span class="scTag">maxOccurs</span>="<span class="scContent">unbounded</span>"&gt;<div style="margin-left: 1.5em">&lt;<span class="scTag">xsd:complexType</span>&gt;<div style="margin-left: 1.5em">&lt;<span class="scTag">xsd:attribute</span> 
-                                 <span class="scTag">name</span>="<span class="scContent">namespace</span>" <span class="scTag">type</span>="<span class="scContent">
-                                    <span class="type">
-                                       <a href="xcesc.xsd.html#ns_xsd" title="Find out namespace of 'xsd' prefix">xsd</a>:string</span>
-                                 </span>" <span class="scTag">use</span>="<span class="scContent">required</span>"/&gt;</div>
-                              <div style="margin-left: 1.5em">&lt;<span class="scTag">xsd:attribute</span> 
-                                 <span class="scTag">name</span>="<span class="scContent">id</span>" <span class="scTag">type</span>="<span class="scContent">
-                                    <span class="type">
-                                       <a href="xcesc.xsd.html#ns_xsd" title="Find out namespace of 'xsd' prefix">xsd</a>:string</span>
-                                 </span>" <span class="scTag">use</span>="<span class="scContent">required</span>"/&gt;</div>
+                           <span class="scTag">name</span>="<span class="scContent">term</span>" <span class="scTag">minOccurs</span>="<span class="scContent">1</span>" <span class="scTag">maxOccurs</span>="<span class="scContent">unbounded</span>"&gt;<div style="margin-left: 1.5em">&lt;<span class="scTag">xsd:complexType</span>&gt;<div style="margin-left: 1.5em">&lt;<span class="scTag">xsd:attributeGroup</span> 
+                                 <span class="scTag">ref</span>="<span class="scContent">
+                                    <a href="xcesc.xsd.html#ns_xcesc" title="Find out namespace of 'xcesc' prefix">xcesc</a>:<a title="Jump to &#34;namespaceAttributesGroup&#34; attribute group definition."
+                                       href="xcesc.xsd.html_h555717641.html">namespaceAttributesGroup</a>
+                                 </span>"/&gt;</div>
                               <div style="margin-left: 1.5em">&lt;<span class="scTag">xsd:attributeGroup</span> 
                                  <span class="scTag">ref</span>="<span class="scContent">
                                     <a href="xcesc.xsd.html#ns_xcesc" title="Find out namespace of 'xcesc' prefix">xcesc</a>:<a title="Jump to &#34;scoreAttributesGroup&#34; attribute group definition."
@@ -689,7 +694,12 @@ function viewDocumentation(compDesc, compName, docTextArray) {
                      <span class="scTag">name</span>="<span class="scContent">domain</span>" <span class="scTag">type</span>="<span class="scContent">
                         <span class="type">
                            <a href="xcesc.xsd.html#ns_xsd" title="Find out namespace of 'xsd' prefix">xsd</a>:string</span>
-                     </span>" <span class="scTag">use</span>="<span class="scContent">required</span>"/&gt;</div>&lt;/<span class="scTag">xsd:complexType</span>&gt;</div>&lt;/<span class="scTag">xsd:element</span>&gt;</div>
+                     </span>" <span class="scTag">use</span>="<span class="scContent">required</span>"/&gt;</div>
+                  <div style="margin-left: 1.5em">&lt;<span class="scTag">xsd:attribute</span> 
+                     <span class="scTag">name</span>="<span class="scContent">timeStamp</span>" <span class="scTag">type</span>="<span class="scContent">
+                        <span class="type">
+                           <a href="xcesc.xsd.html#ns_xsd" title="Find out namespace of 'xsd' prefix">xsd</a>:dateTime</span>
+                     </span>" <span class="scTag">use</span>="<span class="scContent">optional</span>"/&gt;</div>&lt;/<span class="scTag">xsd:complexType</span>&gt;</div>&lt;/<span class="scTag">xsd:element</span>&gt;</div>
          </div>
          <script type="text/javascript">
 <!--

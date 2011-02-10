@@ -493,7 +493,7 @@ function viewDocumentation(compDesc, compName, docTextArray) {
          <div id="h88799792_logicalDiagram" class="contents">
             <img usemap="#h-248221808" src="schemaDiagrams/h-248221808.png"/>
             <!--
-            Map ref: file:/home/jmfernandez/projects/GOPHER/skel/docs//schemaDiagrams/h-248221808.map--><map name="h-248221808">
+            Map ref: file:/home/jmfernandez/projects/GOPHER/skel/www/docs//schemaDiagrams/h-248221808.map--><map name="h-248221808">
 </map>
          </div>
          <script type="text/javascript">
@@ -543,11 +543,6 @@ function viewDocumentation(compDesc, compName, docTextArray) {
                      <br/>--&gt;</div>
                   <br/>
                   <div style="margin-left: 1.5em">&lt;<a href="xcesc.xsd.html#ns_xcesc" title="Find out namespace of 'xcesc' prefix">xcesc</a>:user<br/>
-                     <span style="margin-left: 0.5em"> id="<span class="type">
-                           <a href="xcesc.xsd.html#ns_xsd" title="Find out namespace of 'xsd' prefix">xsd</a>:string</span> 
-                        <span class="occurs">[1]</span> 
-                        <p class="documentation">'The unique id of the user in the system'</p>"</span>
-                     <br/>
                      <span style="margin-left: 0.5em"> nickname="<span class="type">
                            <a href="xcesc.xsd.html#ns_xsd" title="Find out namespace of 'xsd' prefix">xsd</a>:string</span> 
                         <span class="occurs">[1]</span> 
@@ -558,11 +553,16 @@ function viewDocumentation(compDesc, compName, docTextArray) {
                         <span class="occurs">[0..1]</span> 
                         <p class="documentation">'The pasword associated to the user in the system. This attribute is only used in XForms'</p>"</span>
                      <br/>
+                     <span style="margin-left: 0.5em"> id="<span class="type">
+                           <a href="xcesc.xsd.html#ns_xsd" title="Find out namespace of 'xsd' prefix">xsd</a>:string</span> 
+                        <span class="occurs">[1]</span> 
+                        <p class="documentation">'The unique id of the user in the system'</p>"</span>
+                     <br/>
                      <span style="margin-left: 0.5em"> status="<span class="constraint">
                            <span class="type">
-                              <a href="xcesc.xsd.html#ns_xsd" title="Find out namespace of 'xsd' prefix">xsd</a>:string</span> (<em>value</em> comes from list: {'disabled'|'enabled'})</span> 
+                              <a href="xcesc.xsd.html#ns_xsd" title="Find out namespace of 'xsd' prefix">xsd</a>:string</span> (<em>value</em> comes from list: {'disabled'|'enabled'|'unconfirmed'|'deleted'})</span> 
                         <span class="occurs">[1]</span> 
-                        <p class="documentation">'The user status: enabled or disabled. When an user is disabled, all the servers owned by him/her are disabled'</p>"</span>
+                        <p class="documentation">'The user/e-mail status: enabled, disabled or unconfirmed. When an user is disabled, all the servers owned by him/her are disabled. When an e-mail is disabled, it is not used to send the user notifications'</p>"</span>
                      <br/>
                      <span style="margin-left: 0.5em"> firstName="<span class="type">
                            <a href="xcesc.xsd.html#ns_xsd" title="Find out namespace of 'xsd' prefix">xsd</a>:string</span> 
@@ -580,15 +580,43 @@ function viewDocumentation(compDesc, compName, docTextArray) {
                         <p class="documentation">'The organization where the user is integrated'</p>"</span>&gt;  <span class="occurs">[0..*]</span>  
                      <p class="documentation">'A XCESC user, with all the contact information'</p>
                      <br/>
-                     <div style="margin-left: 1.5em">&lt;<a href="xcesc.xsd.html#ns_xcesc" title="Find out namespace of 'xcesc' prefix">xcesc</a>:eMail&gt; <span class="type">
-                           <a href="xcesc.xsd.html#ns_xsd" title="Find out namespace of 'xsd' prefix">xsd</a>:string</span> &lt;/<a href="xcesc.xsd.html#ns_xcesc" title="Find out namespace of 'xcesc' prefix">xcesc</a>:eMail&gt; <span class="occurs">[1..*]</span> 
+                     <div style="margin-left: 1.5em">&lt;<a href="xcesc.xsd.html#ns_xcesc" title="Find out namespace of 'xcesc' prefix">xcesc</a>:eMail<br/>
+                        <span style="margin-left: 0.5em"> id="<span class="type">
+                              <a href="xcesc.xsd.html#ns_xsd" title="Find out namespace of 'xsd' prefix">xsd</a>:string</span> 
+                           <span class="occurs">[1]</span> 
+                           <p class="documentation">'The unique id of the user in the system'</p>"</span>
+                        <br/>
+                        <span style="margin-left: 0.5em"> status="<span class="constraint">
+                              <span class="type">
+                                 <a href="xcesc.xsd.html#ns_xsd" title="Find out namespace of 'xsd' prefix">xsd</a>:string</span> (<em>value</em> comes from list: {'disabled'|'enabled'|'unconfirmed'|'deleted'})</span> 
+                           <span class="occurs">[1]</span> 
+                           <p class="documentation">'The user/e-mail status: enabled, disabled or unconfirmed. When an user is disabled, all the servers owned by him/her are disabled. When an e-mail is disabled, it is not used to send the user notifications'</p>"</span>&gt;  <span class="occurs">[1..*]</span>  
                         <p class="documentation">'The e-mail address(es). They must be valid ones'</p>
+                        <br/>
+                        <span style="margin-left: 1.5em"> 
+                           <span class="type">
+                              <a href="xcesc.xsd.html#ns_xsd" title="Find out namespace of 'xsd' prefix">xsd</a>:string</span> 
+                        </span>
+                        <br/>&lt;/<a href="xcesc.xsd.html#ns_xcesc" title="Find out namespace of 'xcesc' prefix">xcesc</a>:eMail&gt;</div>
+                     <div style="margin-left: 1.5em">&lt;<a href="xcesc.xsd.html#ns_xcesc" title="Find out namespace of 'xcesc' prefix">xcesc</a>:<a title="Jump to &#34;references&#34; element declaration."
+                           href="xcesc.xsd.html_h2129128363.html">references</a>&gt; ... &lt;/<a href="xcesc.xsd.html#ns_xcesc" title="Find out namespace of 'xcesc' prefix">xcesc</a>:<a title="Jump to &#34;references&#34; element declaration."
+                           href="xcesc.xsd.html_h2129128363.html">references</a>&gt; <span class="occurs">[1]</span> 
+                        <p class="documentation">'The set of references to external information associated to the user'</p>
                      </div>
-                     <div style="margin-left: 1.5em">&lt;<a href="xcesc.xsd.html#ns_xcesc" title="Find out namespace of 'xcesc' prefix">xcesc</a>:<a title="Jump to &#34;reference&#34; element declaration."
-                           href="xcesc.xsd.html_h-346960440.html">reference</a>&gt; ... &lt;/<a href="xcesc.xsd.html#ns_xcesc" title="Find out namespace of 'xcesc' prefix">xcesc</a>:<a title="Jump to &#34;reference&#34; element declaration."
-                           href="xcesc.xsd.html_h-346960440.html">reference</a>&gt; <span class="occurs">[0..*]</span> 
-                        <p class="documentation">'A reference to external information associated to the user'</p>
-                     </div>&lt;/<a href="xcesc.xsd.html#ns_xcesc" title="Find out namespace of 'xcesc' prefix">xcesc</a>:user&gt;</div>&lt;/<a href="xcesc.xsd.html#ns_xcesc" title="Find out namespace of 'xcesc' prefix">xcesc</a>:users&gt;</div>
+                     <div style="margin-left: 1.5em">&lt;<a href="xcesc.xsd.html#ns_xcesc" title="Find out namespace of 'xcesc' prefix">xcesc</a>:roles&gt;  <span class="occurs">[1]</span>  
+                        <p class="documentation">'The set of roles associated to the user'</p>
+                        <br/>
+                        <div style="margin-left: 1.5em">&lt;<a href="xcesc.xsd.html#ns_xcesc" title="Find out namespace of 'xcesc' prefix">xcesc</a>:role<br/>
+                           <span style="margin-left: 0.5em"> ref="<span class="type">
+                                 <a href="xcesc.xsd.html#ns_xsd" title="Find out namespace of 'xsd' prefix">xsd</a>:string</span> 
+                              <span class="occurs">[1]</span> 
+                              <p class="documentation">'The name of the obtained (or denied) role'</p>"</span>
+                           <br/>
+                           <span style="margin-left: 0.5em"> isDenied="<span class="type">
+                                 <a href="xcesc.xsd.html#ns_xsd" title="Find out namespace of 'xsd' prefix">xsd</a>:boolean</span> 
+                              <span class="occurs">[0..1]</span> 
+                              <p class="documentation">'Has been this role denied to the user?'</p>"</span>/&gt;  <span class="occurs">[0..*]</span>
+                        </div>&lt;/<a href="xcesc.xsd.html#ns_xcesc" title="Find out namespace of 'xcesc' prefix">xcesc</a>:roles&gt;</div>&lt;/<a href="xcesc.xsd.html#ns_xcesc" title="Find out namespace of 'xcesc' prefix">xcesc</a>:user&gt;</div>&lt;/<a href="xcesc.xsd.html#ns_xcesc" title="Find out namespace of 'xcesc' prefix">xcesc</a>:users&gt;</div>
                <div style="margin-left: 1.5em">&lt;<a href="xcesc.xsd.html#ns_xcesc" title="Find out namespace of 'xcesc' prefix">xcesc</a>:servers&gt;  <span class="occurs">[1]</span> 
                   <div class="other" style="margin-left: 1.5em">&lt;!-- <br/>
                      <a title="Look up 'Key' in glossary" href="xcesc.xsd.html#term_Key">Key</a> Constraint - <strong>
@@ -626,11 +654,14 @@ function viewDocumentation(compDesc, compName, docTextArray) {
          <div id="h88799792_diagram" class="contents">
             <img usemap="#h133093190" src="schemaDiagrams/h133093190.png"/>
             <!--
-            Map ref: file:/home/jmfernandez/projects/GOPHER/skel/docs//schemaDiagrams/h133093190.map--><map name="h133093190">
-               <area shape="rect" alt="h-346960440" coords="803,50,964,90"
-                     href="xcesc.xsd.html_h-346960440.html#h-346960440"/>
+            Map ref: file:/home/jmfernandez/projects/GOPHER/skel/www/docs//schemaDiagrams/h133093190.map--><map name="h133093190">
+               <area shape="rect" alt="h2129128363" coords="803,107,971,132"
+                     href="xcesc.xsd.html_h2129128363.html#h2129128363"/>
 
-               <area shape="rect" alt="h-1105626650" coords="575,675,715,715"
+               <area shape="rect" alt="h1509365260" coords="717,286,993,312"
+                     href="xcesc.xsd.html_h1509365260.html#h1509365260"/>
+
+               <area shape="rect" alt="h-1105626650" coords="575,646,715,686"
                      href="xcesc.xsd.html_h-1105626650.html#h-1105626650"/>
 
             </map>
@@ -656,20 +687,33 @@ function viewDocumentation(compDesc, compName, docTextArray) {
                               <span class="scTag">minOccurs</span>="<span class="scContent">1</span>" <span class="scTag">maxOccurs</span>="<span class="scContent">1</span>"&gt;<div style="margin-left: 1.5em">&lt;<span class="scTag">xsd:element</span> 
                                  <span class="scTag">name</span>="<span class="scContent">user</span>" <span class="scTag">minOccurs</span>="<span class="scContent">0</span>" <span class="scTag">maxOccurs</span>="<span class="scContent">unbounded</span>"&gt;<div style="margin-left: 1.5em">&lt;<span class="scTag">xsd:complexType</span>&gt;<div style="margin-left: 1.5em">&lt;<span class="scTag">xsd:sequence</span> 
                                        <span class="scTag">minOccurs</span>="<span class="scContent">1</span>" <span class="scTag">maxOccurs</span>="<span class="scContent">1</span>"&gt;<div style="margin-left: 1.5em">&lt;<span class="scTag">xsd:element</span> 
-                                          <span class="scTag">name</span>="<span class="scContent">eMail</span>" <span class="scTag">type</span>="<span class="scContent">
-                                             <span class="type">
-                                                <a href="xcesc.xsd.html#ns_xsd" title="Find out namespace of 'xsd' prefix">xsd</a>:string</span>
-                                          </span>" <span class="scTag">minOccurs</span>="<span class="scContent">1</span>" <span class="scTag">maxOccurs</span>="<span class="scContent">unbounded</span>"/&gt;</div>
+                                          <span class="scTag">name</span>="<span class="scContent">eMail</span>" <span class="scTag">minOccurs</span>="<span class="scContent">1</span>" <span class="scTag">maxOccurs</span>="<span class="scContent">unbounded</span>"&gt;<div style="margin-left: 1.5em">&lt;<span class="scTag">xsd:complexType</span>&gt;<div style="margin-left: 1.5em">&lt;<span class="scTag">xsd:simpleContent</span>&gt;<div style="margin-left: 1.5em">&lt;<span class="scTag">xsd:extension</span> 
+                                                   <span class="scTag">base</span>="<span class="scContent">
+                                                      <span class="type">
+                                                         <a href="xcesc.xsd.html#ns_xsd" title="Find out namespace of 'xsd' prefix">xsd</a>:string</span>
+                                                   </span>"&gt;<div style="margin-left: 1.5em">&lt;<span class="scTag">xsd:attributeGroup</span> 
+                                                      <span class="scTag">ref</span>="<span class="scContent">
+                                                         <a href="xcesc.xsd.html#ns_xcesc" title="Find out namespace of 'xcesc' prefix">xcesc</a>:<a title="Jump to &#34;idStatusAttributeGroup&#34; attribute group definition."
+                                                            href="xcesc.xsd.html_h1509365260.html">idStatusAttributeGroup</a>
+                                                      </span>"/&gt;</div>&lt;/<span class="scTag">xsd:extension</span>&gt;</div>&lt;/<span class="scTag">xsd:simpleContent</span>&gt;</div>&lt;/<span class="scTag">xsd:complexType</span>&gt;</div>&lt;/<span class="scTag">xsd:element</span>&gt;</div>
                                        <div style="margin-left: 1.5em">&lt;<span class="scTag">xsd:element</span> 
                                           <span class="scTag">ref</span>="<span class="scContent">
-                                             <a href="xcesc.xsd.html#ns_xcesc" title="Find out namespace of 'xcesc' prefix">xcesc</a>:<a title="Jump to &#34;reference&#34; element declaration."
-                                                href="xcesc.xsd.html_h-346960440.html">reference</a>
-                                          </span>" <span class="scTag">minOccurs</span>="<span class="scContent">0</span>" <span class="scTag">maxOccurs</span>="<span class="scContent">unbounded</span>"/&gt;</div>&lt;/<span class="scTag">xsd:sequence</span>&gt;</div>
-                                    <div style="margin-left: 1.5em">&lt;<span class="scTag">xsd:attribute</span> 
-                                       <span class="scTag">name</span>="<span class="scContent">id</span>" <span class="scTag">type</span>="<span class="scContent">
-                                          <span class="type">
-                                             <a href="xcesc.xsd.html#ns_xsd" title="Find out namespace of 'xsd' prefix">xsd</a>:string</span>
-                                       </span>" <span class="scTag">use</span>="<span class="scContent">required</span>"/&gt;</div>
+                                             <a href="xcesc.xsd.html#ns_xcesc" title="Find out namespace of 'xcesc' prefix">xcesc</a>:<a title="Jump to &#34;references&#34; element declaration."
+                                                href="xcesc.xsd.html_h2129128363.html">references</a>
+                                          </span>" <span class="scTag">minOccurs</span>="<span class="scContent">1</span>" <span class="scTag">maxOccurs</span>="<span class="scContent">1</span>"/&gt;</div>
+                                       <div style="margin-left: 1.5em">&lt;<span class="scTag">xsd:element</span> 
+                                          <span class="scTag">name</span>="<span class="scContent">roles</span>" <span class="scTag">minOccurs</span>="<span class="scContent">1</span>" <span class="scTag">maxOccurs</span>="<span class="scContent">1</span>"&gt;<div style="margin-left: 1.5em">&lt;<span class="scTag">xsd:complexType</span>&gt;<div style="margin-left: 1.5em">&lt;<span class="scTag">xsd:sequence</span> 
+                                                <span class="scTag">minOccurs</span>="<span class="scContent">1</span>" <span class="scTag">maxOccurs</span>="<span class="scContent">1</span>"&gt;<div style="margin-left: 1.5em">&lt;<span class="scTag">xsd:element</span> 
+                                                   <span class="scTag">name</span>="<span class="scContent">role</span>" <span class="scTag">minOccurs</span>="<span class="scContent">0</span>" <span class="scTag">maxOccurs</span>="<span class="scContent">unbounded</span>"&gt;<div style="margin-left: 1.5em">&lt;<span class="scTag">xsd:complexType</span>&gt;<div style="margin-left: 1.5em">&lt;<span class="scTag">xsd:attribute</span> 
+                                                         <span class="scTag">name</span>="<span class="scContent">ref</span>" <span class="scTag">type</span>="<span class="scContent">
+                                                            <span class="type">
+                                                               <a href="xcesc.xsd.html#ns_xsd" title="Find out namespace of 'xsd' prefix">xsd</a>:string</span>
+                                                         </span>" <span class="scTag">use</span>="<span class="scContent">required</span>"/&gt;</div>
+                                                      <div style="margin-left: 1.5em">&lt;<span class="scTag">xsd:attribute</span> 
+                                                         <span class="scTag">name</span>="<span class="scContent">isDenied</span>" <span class="scTag">type</span>="<span class="scContent">
+                                                            <span class="type">
+                                                               <a href="xcesc.xsd.html#ns_xsd" title="Find out namespace of 'xsd' prefix">xsd</a>:boolean</span>
+                                                         </span>" <span class="scTag">use</span>="<span class="scContent">optional</span>" <span class="scTag">default</span>="<span class="scContent">false</span>"/&gt;</div>&lt;/<span class="scTag">xsd:complexType</span>&gt;</div>&lt;/<span class="scTag">xsd:element</span>&gt;</div>&lt;/<span class="scTag">xsd:sequence</span>&gt;</div>&lt;/<span class="scTag">xsd:complexType</span>&gt;</div>&lt;/<span class="scTag">xsd:element</span>&gt;</div>&lt;/<span class="scTag">xsd:sequence</span>&gt;</div>
                                     <div style="margin-left: 1.5em">&lt;<span class="scTag">xsd:attribute</span> 
                                        <span class="scTag">name</span>="<span class="scContent">nickname</span>" <span class="scTag">type</span>="<span class="scContent">
                                           <span class="type">
@@ -680,15 +724,11 @@ function viewDocumentation(compDesc, compName, docTextArray) {
                                           <span class="type">
                                              <a href="xcesc.xsd.html#ns_xsd" title="Find out namespace of 'xsd' prefix">xsd</a>:string</span>
                                        </span>" <span class="scTag">use</span>="<span class="scContent">optional</span>"/&gt;</div>
-                                    <div style="margin-left: 1.5em">&lt;<span class="scTag">xsd:attribute</span> 
-                                       <span class="scTag">name</span>="<span class="scContent">status</span>" <span class="scTag">use</span>="<span class="scContent">required</span>"&gt;<div style="margin-left: 1.5em">&lt;<span class="scTag">xsd:simpleType</span>&gt;<div style="margin-left: 1.5em">&lt;<span class="scTag">xsd:restriction</span> 
-                                             <span class="scTag">base</span>="<span class="scContent">
-                                                <span class="type">
-                                                   <a href="xcesc.xsd.html#ns_xsd" title="Find out namespace of 'xsd' prefix">xsd</a>:string</span>
-                                             </span>"&gt;<div style="margin-left: 1.5em">&lt;<span class="scTag">xsd:enumeration</span> 
-                                                <span class="scTag">value</span>="<span class="scContent">disabled</span>"/&gt;</div>
-                                             <div style="margin-left: 1.5em">&lt;<span class="scTag">xsd:enumeration</span> 
-                                                <span class="scTag">value</span>="<span class="scContent">enabled</span>"/&gt;</div>&lt;/<span class="scTag">xsd:restriction</span>&gt;</div>&lt;/<span class="scTag">xsd:simpleType</span>&gt;</div>&lt;/<span class="scTag">xsd:attribute</span>&gt;</div>
+                                    <div style="margin-left: 1.5em">&lt;<span class="scTag">xsd:attributeGroup</span> 
+                                       <span class="scTag">ref</span>="<span class="scContent">
+                                          <a href="xcesc.xsd.html#ns_xcesc" title="Find out namespace of 'xcesc' prefix">xcesc</a>:<a title="Jump to &#34;idStatusAttributeGroup&#34; attribute group definition."
+                                             href="xcesc.xsd.html_h1509365260.html">idStatusAttributeGroup</a>
+                                       </span>"/&gt;</div>
                                     <div style="margin-left: 1.5em">&lt;<span class="scTag">xsd:attribute</span> 
                                        <span class="scTag">name</span>="<span class="scContent">firstName</span>" <span class="scTag">type</span>="<span class="scContent">
                                           <span class="type">

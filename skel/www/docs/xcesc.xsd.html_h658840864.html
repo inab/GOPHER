@@ -500,8 +500,8 @@ function viewDocumentation(compDesc, compName, docTextArray) {
          <div id="h658840864_logicalDiagram" class="contents">
             <img usemap="#h487433120" src="schemaDiagrams/h487433120.png"/>
             <!--
-            Map ref: file:/home/jmfernandez/projects/GOPHER/skel/docs//schemaDiagrams/h487433120.map--><map name="h487433120">
-               <area shape="rect" alt="h-1080705996" coords="358,372,630,428"
+            Map ref: file:/home/jmfernandez/projects/GOPHER/skel/www/docs//schemaDiagrams/h487433120.map--><map name="h487433120">
+               <area shape="rect" alt="h-1080705996" coords="358,528,630,584"
                      href="xcesc.xsd.html_h-1080705996.html#h-1080705996"/>
 
             </map>
@@ -521,20 +521,35 @@ function viewDocumentation(compDesc, compName, docTextArray) {
          </div>
          <div id="h658840864_xibox" class="contents">
             <div style="margin-left: 0em">&lt;<a href="xcesc.xsd.html#ns_xcesc" title="Find out namespace of 'xcesc' prefix">xcesc</a>:experiment<br/>
+               <span style="margin-left: 0.5em"> name="<span class="type">
+                     <a href="xcesc.xsd.html#ns_xsd" title="Find out namespace of 'xsd' prefix">xsd</a>:string</span> 
+                  <span class="occurs">[1]</span> 
+                  <p class="documentation">'The name (usually the experiment or assessment job ticket), so we can link to it'</p>"</span>
+               <br/>
                <span style="margin-left: 0.5em"> stamp="<span class="type">
                      <a href="xcesc.xsd.html#ns_xsd" title="Find out namespace of 'xsd' prefix">xsd</a>:dateTime</span> 
                   <span class="occurs">[1]</span> 
-                  <p class="documentation">'The experiment\'s timestamp (when it started)'</p>"</span>
+                  <p class="documentation">'The experiment or assessment\'s timestamp (when it started)'</p>"</span>
                <br/>
                <span style="margin-left: 0.5em"> baseStamp="<span class="type">
                      <a href="xcesc.xsd.html#ns_xsd" title="Find out namespace of 'xsd' prefix">xsd</a>:date</span> 
                   <span class="occurs">[1]</span> 
-                  <p class="documentation">'The previous experiment\'s timestamp (used to track changes)'</p>"</span>
+                  <p class="documentation">'The previous experiment or assessment\'s timestamp (used to track changes)'</p>"</span>
+               <br/>
+               <span style="margin-left: 0.5em"> deadline="<span class="type">
+                     <a href="xcesc.xsd.html#ns_xsd" title="Find out namespace of 'xsd' prefix">xsd</a>:dateTime</span> 
+                  <span class="occurs">[1]</span> 
+                  <p class="documentation">'The experiment or assessment\'s deadline (after this one no result is accepted)'</p>"</span>
                <br/>
                <span style="margin-left: 0.5em"> test="<span class="type">
                      <a href="xcesc.xsd.html#ns_xsd" title="Find out namespace of 'xsd' prefix">xsd</a>:boolean</span> 
                   <span class="occurs">[0..1]</span> 
-                  <p class="documentation">'Is it a test experiment?'</p>"</span>&gt; <div class="other" style="margin-left: 1.5em">&lt;!-- <br/>
+                  <p class="documentation">'Is it a test experiment/assessment?'</p>"</span>
+               <br/>
+               <span style="margin-left: 0.5em"> isAssessed="<span class="type">
+                     <a href="xcesc.xsd.html#ns_xsd" title="Find out namespace of 'xsd' prefix">xsd</a>:boolean</span> 
+                  <span class="occurs">[1]</span> 
+                  <p class="documentation">'Has the experiment being officially assessed at least once?'</p>"</span>&gt; <div class="other" style="margin-left: 1.5em">&lt;!-- <br/>
                   <a title="Look up 'Key' in glossary" href="xcesc.xsd.html#term_Key">Key</a> Constraint - <strong>
                      <a name="h-2109709167">target_key</a>
                   </strong>
@@ -564,12 +579,17 @@ function viewDocumentation(compDesc, compName, docTextArray) {
                   <span style="margin-left: 0.5em"> ticket="<span class="type">
                         <a href="xcesc.xsd.html#ns_xsd" title="Find out namespace of 'xsd' prefix">xsd</a>:string</span> 
                      <span class="occurs">[1]</span> 
-                     <p class="documentation">'The unique job ticket'</p>"</span>
+                     <p class="documentation">'The unique evaluator ticket'</p>"</span>
                   <br/>
                   <span style="margin-left: 0.5em"> startStamp="<span class="type">
                         <a href="xcesc.xsd.html#ns_xsd" title="Find out namespace of 'xsd' prefix">xsd</a>:dateTime</span> 
                      <span class="occurs">[1]</span> 
-                     <p class="documentation">'The timestamp of the job submission'</p>"</span>
+                     <p class="documentation">'The timestamp of the evaluation submission'</p>"</span>
+                  <br/>
+                  <span style="margin-left: 0.5em"> lastStamp="<span class="type">
+                        <a href="xcesc.xsd.html#ns_xsd" title="Find out namespace of 'xsd' prefix">xsd</a>:dateTime</span> 
+                     <span class="occurs">[1]</span> 
+                     <p class="documentation">'The timestamp of the last received in time evaluation result'</p>"</span>
                   <br/>
                   <span style="margin-left: 0.5em"> lastMessage="<span class="type">
                         <a href="xcesc.xsd.html#ns_xsd" title="Find out namespace of 'xsd' prefix">xsd</a>:string</span> 
@@ -643,7 +663,7 @@ function viewDocumentation(compDesc, compName, docTextArray) {
          <div id="h658840864_diagram" class="contents">
             <img usemap="#h1013732950" src="schemaDiagrams/h1013732950.png"/>
             <!--
-            Map ref: file:/home/jmfernandez/projects/GOPHER/skel/docs//schemaDiagrams/h1013732950.map--><map name="h1013732950">
+            Map ref: file:/home/jmfernandez/projects/GOPHER/skel/www/docs//schemaDiagrams/h1013732950.map--><map name="h1013732950">
                <area shape="rect" alt="h-1080705996" coords="284,0,424,40"
                      href="xcesc.xsd.html_h-1080705996.html#h-1080705996"/>
 
@@ -652,6 +672,12 @@ function viewDocumentation(compDesc, compName, docTextArray) {
 
                <area shape="rect" alt="h-595513662" coords="882,85,1015,125"
                      href="xcesc.xsd.html_h-595513662.html#h-595513662"/>
+
+               <area shape="rect" alt="h388139290" coords="489,617,800,643"
+                     href="xcesc.xsd.html_h388139290.html#h388139290"/>
+
+               <area shape="rect" alt="h-1789823316" coords="198,653,488,679"
+                     href="xcesc.xsd.html_h-1789823316.html#h-1789823316"/>
 
             </map>
          </div>
@@ -737,36 +763,21 @@ function viewDocumentation(compDesc, compName, docTextArray) {
                                              <span class="type">
                                                 <a href="xcesc.xsd.html#ns_xsd" title="Find out namespace of 'xsd' prefix">xsd</a>:positiveInteger</span>
                                           </span>" <span class="scTag">use</span>="<span class="scContent">required</span>"/&gt;</div>&lt;/<span class="scTag">xsd:complexType</span>&gt;</div>&lt;/<span class="scTag">xsd:element</span>&gt;</div>&lt;/<span class="scTag">xsd:choice</span>&gt;</div>&lt;/<span class="scTag">xsd:sequence</span>&gt;</div>
-                           <div style="margin-left: 1.5em">&lt;<span class="scTag">xsd:attribute</span> 
-                              <span class="scTag">name</span>="<span class="scContent">ticket</span>" <span class="scTag">type</span>="<span class="scContent">
-                                 <span class="type">
-                                    <a href="xcesc.xsd.html#ns_xsd" title="Find out namespace of 'xsd' prefix">xsd</a>:string</span>
-                              </span>" <span class="scTag">use</span>="<span class="scContent">required</span>"/&gt;</div>
-                           <div style="margin-left: 1.5em">&lt;<span class="scTag">xsd:attribute</span> 
-                              <span class="scTag">name</span>="<span class="scContent">startStamp</span>" <span class="scTag">type</span>="<span class="scContent">
-                                 <span class="type">
-                                    <a href="xcesc.xsd.html#ns_xsd" title="Find out namespace of 'xsd' prefix">xsd</a>:dateTime</span>
-                              </span>" <span class="scTag">use</span>="<span class="scContent">required</span>"/&gt;</div>
-                           <div style="margin-left: 1.5em">&lt;<span class="scTag">xsd:attribute</span> 
-                              <span class="scTag">name</span>="<span class="scContent">lastMessage</span>" <span class="scTag">type</span>="<span class="scContent">
-                                 <span class="type">
-                                    <a href="xcesc.xsd.html#ns_xsd" title="Find out namespace of 'xsd' prefix">xsd</a>:string</span>
-                              </span>" <span class="scTag">use</span>="<span class="scContent">optional</span>"/&gt;</div>&lt;/<span class="scTag">xsd:complexType</span>&gt;</div>&lt;/<span class="scTag">xsd:element</span>&gt;</div>&lt;/<span class="scTag">xsd:sequence</span>&gt;</div>
+                           <div style="margin-left: 1.5em">&lt;<span class="scTag">xsd:attributeGroup</span> 
+                              <span class="scTag">ref</span>="<span class="scContent">
+                                 <a href="xcesc.xsd.html#ns_xcesc" title="Find out namespace of 'xcesc' prefix">xcesc</a>:<a title="Jump to &#34;sharedEvaExpAttributesGroup&#34; attribute group definition."
+                                    href="xcesc.xsd.html_h388139290.html">sharedEvaExpAttributesGroup</a>
+                              </span>"/&gt;</div>&lt;/<span class="scTag">xsd:complexType</span>&gt;</div>&lt;/<span class="scTag">xsd:element</span>&gt;</div>&lt;/<span class="scTag">xsd:sequence</span>&gt;</div>
+                  <div style="margin-left: 1.5em">&lt;<span class="scTag">xsd:attributeGroup</span> 
+                     <span class="scTag">ref</span>="<span class="scContent">
+                        <a href="xcesc.xsd.html#ns_xcesc" title="Find out namespace of 'xcesc' prefix">xcesc</a>:<a title="Jump to &#34;sharedJobAttributesGroup&#34; attribute group definition."
+                           href="xcesc.xsd.html_h-1789823316.html">sharedJobAttributesGroup</a>
+                     </span>"/&gt;</div>
                   <div style="margin-left: 1.5em">&lt;<span class="scTag">xsd:attribute</span> 
-                     <span class="scTag">name</span>="<span class="scContent">stamp</span>" <span class="scTag">type</span>="<span class="scContent">
-                        <span class="type">
-                           <a href="xcesc.xsd.html#ns_xsd" title="Find out namespace of 'xsd' prefix">xsd</a>:dateTime</span>
-                     </span>" <span class="scTag">use</span>="<span class="scContent">required</span>"/&gt;</div>
-                  <div style="margin-left: 1.5em">&lt;<span class="scTag">xsd:attribute</span> 
-                     <span class="scTag">name</span>="<span class="scContent">baseStamp</span>" <span class="scTag">type</span>="<span class="scContent">
-                        <span class="type">
-                           <a href="xcesc.xsd.html#ns_xsd" title="Find out namespace of 'xsd' prefix">xsd</a>:date</span>
-                     </span>" <span class="scTag">use</span>="<span class="scContent">required</span>"/&gt;</div>
-                  <div style="margin-left: 1.5em">&lt;<span class="scTag">xsd:attribute</span> 
-                     <span class="scTag">name</span>="<span class="scContent">test</span>" <span class="scTag">type</span>="<span class="scContent">
+                     <span class="scTag">name</span>="<span class="scContent">isAssessed</span>" <span class="scTag">type</span>="<span class="scContent">
                         <span class="type">
                            <a href="xcesc.xsd.html#ns_xsd" title="Find out namespace of 'xsd' prefix">xsd</a>:boolean</span>
-                     </span>" <span class="scTag">use</span>="<span class="scContent">optional</span>" <span class="scTag">default</span>="<span class="scContent">false</span>"/&gt;</div>&lt;/<span class="scTag">xsd:complexType</span>&gt;</div>
+                     </span>" <span class="scTag">use</span>="<span class="scContent">required</span>"/&gt;</div>&lt;/<span class="scTag">xsd:complexType</span>&gt;</div>
                <div style="margin-left: 1.5em">&lt;<span class="scTag">xsd:key</span> 
                   <span class="scTag">name</span>="<span class="scContent">target_key</span>"&gt;<div style="margin-left: 1.5em">&lt;<span class="scTag">xsd:selector</span> 
                      <span class="scTag">xpath</span>="<span class="scContent">xcesc:target</span>"/&gt;</div>

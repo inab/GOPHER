@@ -147,11 +147,16 @@
 				</xsd:element>
 				<xsd:element name="downTime" minOccurs="0" maxOccurs="unbounded">
 					<xsd:annotation>
-						<xsd:documentation><![CDATA[An scheduled downTime. It can contain a reason about the downTime as its content]]></xsd:documentation>
+						<xsd:documentation><![CDATA[An scheduled downTime. It can contain a reason about the downTime as its content.]]></xsd:documentation>
 					</xsd:annotation>
 					<xsd:complexType>
 						<xsd:simpleContent>
 							<xsd:extension base="xsd:string">
+								<xsd:attribute name="id" type="xsd:string" use="required">
+									<xsd:annotation>
+										<xsd:documentation><![CDATA[The XCESC ID for a downTime]]></xsd:documentation>
+									</xsd:annotation>
+								</xsd:attribute>
 								<xsd:attribute name="since" type="xsd:dateTime" use="required">
 									<xsd:annotation>
 										<xsd:documentation><![CDATA[When this downTime starts (inclusive)]]></xsd:documentation>
@@ -159,7 +164,17 @@
 								</xsd:attribute>
 								<xsd:attribute name="until" type="xsd:dateTime" use="optional">
 									<xsd:annotation>
-										<xsd:documentation><![CDATA[When this downTime finished (exclusive). If it is not set, the downTime is *forever*]]></xsd:documentation>
+										<xsd:documentation><![CDATA[When this downTime should finish (exclusive). If it is not set, the downTime is *forever*]]></xsd:documentation>
+									</xsd:annotation>
+								</xsd:attribute>
+								<xsd:attribute name="managerId" type="xsd:string" use="required">
+									<xsd:annotation>
+										<xsd:documentation><![CDATA[The manager Id who last changed this downtime]]></xsd:documentation>
+									</xsd:annotation>
+								</xsd:attribute>
+								<xsd:attribute name="managerName" type="xsd:string" use="optional">
+									<xsd:annotation>
+										<xsd:documentation><![CDATA[The manager name who last changed this downtime]]></xsd:documentation>
 									</xsd:annotation>
 								</xsd:attribute>
 							</xsd:extension>
@@ -555,14 +570,39 @@ ab initio, then the origin of the match must be identified]]></xsd:documentation
 						<xsd:attribute name="place" use="required">
 							<xsd:simpleType>
 								<xsd:restriction base="xsd:string">
-									<xsd:enumeration value="right"></xsd:enumeration>
-									<xsd:enumeration value="partial"></xsd:enumeration>
-									<xsd:enumeration value="under"></xsd:enumeration>
-									<xsd:enumeration value="over"></xsd:enumeration>
-									<xsd:enumeration value="wrong"></xsd:enumeration>
+									<xsd:enumeration value="right">
+										<xsd:annotation>
+											<xsd:documentation><![CDATA[Right place for the annotation, no more, no less]]></xsd:documentation>	
+										</xsd:annotation>
+									</xsd:enumeration>
+									<xsd:enumeration value="partial">
+										<xsd:annotation>
+											<xsd:documentation><![CDATA[Predicted place partially overlaps a right one]]></xsd:documentation>	
+										</xsd:annotation>
+									</xsd:enumeration>
+									<xsd:enumeration value="under">
+										<xsd:annotation>
+											<xsd:documentation><![CDATA[Predicted place is a subset of a right one]]></xsd:documentation>	
+										</xsd:annotation>
+									</xsd:enumeration>
+									<xsd:enumeration value="over">
+										<xsd:annotation>
+											<xsd:documentation><![CDATA[Predicted place is a superset of a right one]]></xsd:documentation>	
+										</xsd:annotation>
+									</xsd:enumeration>
+									<xsd:enumeration value="wrong">
+										<xsd:annotation>
+											<xsd:documentation><![CDATA[Predicted place is wrong or completely misplaced]]></xsd:documentation>	
+										</xsd:annotation>
+									</xsd:enumeration>
 									<xsd:enumeration value="missing">
 										<xsd:annotation>
-											<xsd:documentation><![CDATA[This is a missing annotation]]></xsd:documentation>
+											<xsd:documentation><![CDATA[There was no prediction which matched this place]]></xsd:documentation>
+										</xsd:annotation>
+									</xsd:enumeration>
+									<xsd:enumeration value="NA">
+										<xsd:annotation>
+											<xsd:documentation><![CDATA[The evaluator is not able to assess places]]></xsd:documentation>
 										</xsd:annotation>
 									</xsd:enumeration>
 								</xsd:restriction>
@@ -571,11 +611,36 @@ ab initio, then the origin of the match must be identified]]></xsd:documentation
 						<xsd:attribute name="annotation" use="required">
 							<xsd:simpleType>
 								<xsd:restriction base="xsd:string">
-									<xsd:enumeration value="right"/>
-									<xsd:enumeration value="under"/>
-									<xsd:enumeration value="over"/>
-									<xsd:enumeration value="wrong"/>
-									<xsd:enumeration value="missing"/>
+									<xsd:enumeration value="right">
+										<xsd:annotation>
+											<xsd:documentation><![CDATA[Right annotation, no more, no less]]></xsd:documentation>	
+										</xsd:annotation>
+									</xsd:enumeration>
+									<xsd:enumeration value="under">
+										<xsd:annotation>
+											<xsd:documentation><![CDATA[Annotation is too general]]></xsd:documentation>	
+										</xsd:annotation>
+									</xsd:enumeration>
+									<xsd:enumeration value="over">
+										<xsd:annotation>
+											<xsd:documentation><![CDATA[Annotation is over specific]]></xsd:documentation>	
+										</xsd:annotation>
+									</xsd:enumeration>
+									<xsd:enumeration value="wrong">
+										<xsd:annotation>
+											<xsd:documentation><![CDATA[Annotation is wrong]]></xsd:documentation>	
+										</xsd:annotation>
+									</xsd:enumeration>
+									<xsd:enumeration value="missing">
+										<xsd:annotation>
+											<xsd:documentation><![CDATA[There was no prediction for this annotation, and there should be]]></xsd:documentation>	
+										</xsd:annotation>
+									</xsd:enumeration>
+									<xsd:enumeration value="NA">
+										<xsd:annotation>
+											<xsd:documentation><![CDATA[The evaluator is not able to assess annotations]]></xsd:documentation>
+										</xsd:annotation>
+									</xsd:enumeration>
 								</xsd:restriction>
 							</xsd:simpleType>
 						</xsd:attribute>
@@ -629,12 +694,13 @@ ab initio, then the origin of the match must be identified]]></xsd:documentation
 	
 	<xsd:element name="query">
 		<xsd:annotation>
-			<xsd:documentation><![CDATA[The query which is submitted to the servers]]></xsd:documentation>
+			<xsd:documentation><![CDATA[The query which is submitted to the servers. It can be either a query to a prediction server, or an assessment request to an evaluation server]]></xsd:documentation>
 		</xsd:annotation>
 		<xsd:complexType mixed="true">
-			<xsd:sequence>
-				<xsd:any minOccurs="0" maxOccurs="unbounded" namespace="##any" processContents="lax"/>
-			</xsd:sequence>
+			<xsd:choice>
+				<xsd:any minOccurs="0" maxOccurs="unbounded" namespace="##other" processContents="lax"/>
+				<xsd:element ref="xcesc:target" minOccurs="1" maxOccurs="unbounded"/>
+			</xsd:choice>
 			<xsd:attribute name="queryId" type="xsd:string" use="required">
 				<xsd:annotation>
 					<xsd:documentation><![CDATA[The id of the query (typically, a number)]]></xsd:documentation>
@@ -697,7 +763,7 @@ ab initio, then the origin of the match must be identified]]></xsd:documentation
 					<xsd:documentation><![CDATA[A descriptive line for the query (for instance, from PDB or PDBPre)]]></xsd:documentation>
 				</xsd:annotation>
 			</xsd:attribute>
-			<xsd:attribute name="level">
+			<xsd:attribute name="level" use="optional">
 				<xsd:annotation>
 					<xsd:documentation><![CDATA[The initially estimated complexity score assigned to the query]]></xsd:documentation>
 				</xsd:annotation>
