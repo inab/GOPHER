@@ -10,12 +10,28 @@ use LWP::UserAgent;
 use POSIX qw(setsid);
 use XML::LibXML;
 use XML::LibXML::Common;
+use POSIX qw(strftime);
 
 $|=1;
 
 my($XCESC_NS)='http://www.cnio.es/scombio/xcesc/1.0';
 
+sub getPrintableDate(;$);
 sub launchJob($$);
+
+# this is only a helper function to generate ISO8601 timestamp strings
+sub getPrintableDate(;$) {
+        my($now)= @_;
+        
+        $now=time()  unless(defined($now) && $now ne '');
+        # We need to munge the timezone indicator to add a colon between the hour and minute part
+        my @loc = localtime($now);
+        my $tz = strftime("%z", @loc);
+        $tz =~ s/(\d{2})(\d{2})/$1:$2/;
+
+        # ISO8601
+        return strftime("%Y-%m-%dT%H:%M:%S", @loc) . $tz;
+}
 
 # This is the function where you have to put your service work...
 # First parameter is the callback URI where we have to send each one of the results.
@@ -63,6 +79,7 @@ sub launchJob($$) {
 			# my($match)=$answerDoc->createElementNS($XCESC_NS,'match');
 			# $answer->appendChild($match);
 			# $match->setAttribute('domain','ab-initio');
+			# $match->setAttribute('timestamp',getPrintableDate());
 			
 			# When you want to narrow the scope of the prediction/assessment you have to use
 			# one or more scope elements. For instance:
