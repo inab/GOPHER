@@ -5,6 +5,7 @@ import cgi
 import cgitb
 cgitb.enable()
 from time import gmtime, strftime
+import time
 import quopri
 
 import os
@@ -13,7 +14,7 @@ import signal
 import urllib2
 import xml.dom.minidom
 from xml.dom.minidom import Node
-import time
+from datetime import datetime
 
 XCESC_NS = 'http://www.cnio.es/scombio/xcesc/1.0'
 
@@ -98,6 +99,8 @@ def launchJob(callback, query):
 			match = answerDoc.createElementNS(XCESC_NS,'match')
 			answer.appendChild(match)
 			match.setAttribute('domain','ab-initio')
+			# It is much easier to generate an UTC timestamp in Python than a localized one
+			match.setAttribute('timeStamp',datetime.utcnow().isoformat()+'Z')
 			"""
 			
 			"""

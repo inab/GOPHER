@@ -650,12 +650,13 @@ ab initio, then the origin of the match must be identified]]></xsd:documentation
 			</xsd:sequence>
 			<xsd:attribute name="targetId" use="required" type="xsd:positiveInteger">
 				<xsd:annotation>
-					<xsd:documentation><![CDATA[The id of a job's answer from the participants point of view]]></xsd:documentation>
+					<xsd:documentation><![CDATA[The id of a job's answer from the participants point of view.
+i.e. The value of the targetId attribute from the query element inside the arriving target element being assessed.]]></xsd:documentation>
 				</xsd:annotation>
 			</xsd:attribute>
 			<xsd:attribute  name="timeStamp" use='optional' type="xsd:dateTime">
 				<xsd:annotation>
-					<xsd:documentation><![CDATA[The timestamp assigned to this match once it arrives to the server]]></xsd:documentation>
+					<xsd:documentation><![CDATA[The timestamp of this assessment from the point of view of the evaluator]]></xsd:documentation>
 				</xsd:annotation>
 			</xsd:attribute>
 		</xsd:complexType>
