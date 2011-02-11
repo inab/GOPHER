@@ -49,14 +49,14 @@ def print_http_headers(status=None,headers={},output=None):
 		print >> output , quopri.encodestring(k+": "+v)
 	print >> output
 
-def launchJob(callback, query):
+def launchEvaluationJob(callback, query):
 	"""
-		This is the function where you have to put your service work...
+		This is the function where you have to put your results evaluation work...
 		First parameter is the callback URI where we have to send each one of the results.
-		Second parameter is the xcesc:query XML fragment, with all the details of the job.
+		Second parameter is the xcesc:query XML fragment, with all the details needed to start an assessment.
 		As it is an asynchronous work, you should use here your favourite queue system (SGE, NQS, etc...).
 		This example only uses fork, which could saturate the server with a DoS attack.
-		If the job is accepted, it returns 1, otherwise it returns None.
+		If the assessment job is accepted, it returns 1, otherwise it returns None.
 	"""
 	
 	# We have to ignore pleas from the children
@@ -98,50 +98,74 @@ def launchJob(callback, query):
 			answer.setAttribute('message','Something happened')
 			"""
 			
-			# Here the service must do the job, whose results are reflected on 0 or more
-			# match elements. As this is a sample service, no match is appended based on
-			# input query, because it means 'no result'.
+			# Here the evaluation service must do the assessment job, whose results are reflected
+			# on 0 or more jobEvaluation elements. As this is a sample service, no match is
+			# appended based on input query, because it means 'no result'.
 			
-			"""
-			# A match is as easy as:
-			match = answerDoc.createElementNS(XCESC_NS,'match')
-			answer.appendChild(match)
-			match.setAttribute('domain','ab-initio')
-			# It is much easier to generate an UTC timestamp in Python than a localized one
-			match.setAttribute('timeStamp',datetime.utcnow().isoformat()+'Z')
-			"""
-			
-			"""
-			# When you want to narrow the scope of the prediction/assessment you have to use
-			# one or more scope elements. For instance:
-			scope = answerDoc.createElementNS(XCESC_NS,'scope')
-			match.appendChild(scope)
-			scope.setAttribute('from',1)
-			scope.setAttribute('to',20)
-			"""
-			
-			# And the results, which depending on the kind of prediction or assessment
-			# will be one or more term elements, or one or more result elements
-			
-			"""
-			# An example of annotation/assessment with term elements would be
-			term = answerDoc.createElementNS(XCESC_NS,'term')
-			match.appendChild(term)
-			term.setAttribute('namespace','GO')
-			term.setAttribute('publicId','GO:0004174')
-			term.setAttribute('score',100)
-			term.setAttribute('p-value',0.5)
-			"""
-			
-			"""
-			#
-			# An example of annotation/assessment with result elements would be
-			result = answerDoc.createElementNS(XCESC_NS,'result')
-			match.appendChild(result)
-			result.setAttribute('score',50)
-			result.setAttribute('p-value',0.1)
-			result.appendChild(answerDoc.createCDATASection('This could be, for instance, a PDB'))
-			"""
+			for target in query.childeNodes():
+				if target.nodeType == Node.ELEMENT_NODE and query.localName == 'target' and query.namespaceURI == XCESC_NS:
+					jobEvaluation = answerDoc.createElementNS(XCESC_NS,'jobEvaluation')
+					answer.appendChild(jobEvaluation)
+					jobEvaluation.setAttribute('timeStamp',datetime.utcnow().isoformat()+'Z')
+					queryId = None
+					
+					for match in target.childNodes():
+						if match.nodeType == Node.ELEMENT_NODE and match.namespaceURI == XCESC_NS:
+							if match.localName == 'query' and match.hasAttribute('queryId'):
+								queryId = match.getAttribute('queryId')
+								jobEvaluation.setAttribute('targetId',queryId)
+							elif queryId is not None and match.localName == 'match':
+								# An evaluation match is as easy as:
+								evaluation = answerDoc.createElementNS(XCESC_NS,'evaluation')
+								jobEvaluation.appendChild(evaluation)
+								
+								"""
+								# If you want to include the raw report, do the next
+								report = answerDoc.createElementNS(XCESC_NS,'report')
+								evaluation.appendChild(report)
+								report.appendChild(answerDoc.createCDATASection('This could be, for instance, the raw output of a program'))
+								"""
+								
+								"""
+								# When you have been able to assess the quality of the place where the prediction/assessment is
+								# you use the placeQuality element
+								placeQuality = answerDoc.createElementNS(XCESC_NS,'placeQuality')
+								evaluation.appendChild(placeQuality)
+								# Raw score (it could be an e-value, for instance)
+								placeQuality.setAttribute('score',1)
+								# Normalized p-value
+								placeQuality.setAttribute('p-value',0.4)
+								# And the subjective appreciation: right, partial, under, over, wrong, missing
+								placeQuality.appendChild(answerDoc.createTextNode('under'))
+								"""
+								
+								"""
+								# When you have been able to assess the quality of the annotation where
+								# the prediction/assessment is, you use the annotationQuality element
+								annotationQuality = answerDoc.createElementNS(XCESC_NS,'annotationQuality')
+								evaluation.appendChild(annotationQuality)
+								# Raw score (it could be an e-value or other kind of native score, for instance)
+								annotationQuality.setAttribute('score',2)
+								# Normalized p-value
+								annotationQuality.setAttribute('p-value',0.1)
+								# And the subjective appreciation: right, under, over, wrong, missing
+								annotationQuality.appendChild(answerDoc.createTextNode('right'))
+								"""
+								
+								"""
+								# Optional custom appreciations from any namespace (zero or more)
+								term = answerDoc.createElementNS(XCESC_NS,'term')
+								evaluation.appendChild(term)
+								term.setAttribute('namespace','GO')
+								term.setAttribute('id','GO:12345')
+								# Raw score (it could be an e-value or other kind of native score, for instance)
+								term.setAttribute('score',2)
+								# Normalized p-value
+								term.setAttribute('p-value',0.1)
+								"""
+								
+								# And a copy of the match being evaluated
+								evaluation.appendChild(answerDoc.importNode(match), True)
 			
 			# Once the work has finished, results are sent to the GOPHER server.
 			# The user agent is completely optional!!!!
@@ -198,7 +222,7 @@ else:
 				
 				for query in el.childNodes():
 					if query.nodeType == Node.ELEMENT_NODE and query.localName == 'query' and query.namespaceURI == XCESC_NS and query.hasAttribute('queryId'):
-						if launchJob(callback,query):
+						if launchEvaluationJob(callback,query):
 							errstate = 'Accepted'
 					
 #				doc.writexml(writer=sys.stdout)

@@ -60,14 +60,34 @@ get its SVG scalable version). A more formal definition of the protocol will be 
 <p>The XML messages, and in general, the XML content of the database maintained by an XCESC
 instance is based on the same XML Schema definition. <a href="xcesc.xsd" target="_blank">xcesc.xsd is available
 here</a>, and the documentation of xcesc.xsd <a href="xcesc.xsd.html" target="_blank">is
-available as a set of HTML pages here</a>
+available as a set of HTML pages here</a>. Message samples are available below:
 </p>
-<p>A couple of examples of assessment participant services are also available (click <a
-href="sampleGOPHERservice.pl">sampleGOPHERService.pl</a> or <a
-href="sampleGOPHERservice.py">sampleGOPHERService.py</a> to download any of them). Although they are simple
-CGIs written in Perl and Python it is easy to translate the concept to other popular server languages, like a Java
-Servlet, a PHP page, Ruby On Rails, etc... Also, it is only a template, because many
-services require too many resources and too much time to be run online. Developers
+<div align="center">
+	<table style="text-align:center;border: 1px black solid">
+		<tr style="background-color: lightgray">
+			<th>Role</th>
+			<th>Sample Input</th>
+			<th>Sample Service Programs</th>
+			<th>Sample Output</th>
+		</tr>
+		<tr style="vertical-align:middle">
+			<td>Participant</td>
+			<td><a href="samplePredInput.xml" target="_blank">samplePredInput.xml</a></td>
+			<td><a href="sampleGOPHERservice.pl" target="_blank">sampleGOPHERservice.pl</a><br><a href="sampleGOPHERservice.py" target="_blank">sampleGOPHERservice.py</a></td>
+			<td><a href="samplePredOutput.xml" target="_blank">samplePredOutput.xml</a></td>
+		</tr>
+		<tr style="vertical-align:middle">
+			<td>Evaluator</td>
+			<td><a href="sampleAssessInput.xml" target="_blank">sampleAssessInput.xml</a></td>
+			<td><a href="sampleGOPHERevaluator.pl" target="_blank">sampleGOPHERevaluator.pl</a><br><a href="sampleGOPHERevaluator.py" target="_blank">sampleGOPHERevaluator.py</a></td>
+			<td><a href="sampleAssessOutput.xml" target="_blank">sampleAssessOutput.xml</a></td>
+		</tr>
+	</table>
+</div>
+<p>Above you also have a couple of examples of participants and evaluators services. Although the sample programs
+are simple CGIs written in Perl and Python it is easy to translate the concept to other popular server languages,
+like a Java Servlet, a PHP page, Ruby On Rails, etc... Also, these programs are only templates, because many
+services will require too many resources and too much time to be run online. Developers
 will be able to write custom versions of the template to integrate with their internal services
 infrastructure, such as running the jobs in separate machines, putting the jobs in a software and
 jobs queue system, putting the jobs in a grid environment, ...</p>
