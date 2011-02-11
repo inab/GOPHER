@@ -183,7 +183,7 @@ if(defined($hasQueryDoc)) {
 					);
 					
 					# This is the function to implement
-					$errstate='Accepted'  if(launchJob($query,$callback));
+					$errstate='Accepted'  if(launchJob($callback,$query));
 				}
 			} else {
 				$errstate='XML Document does not contain a callback!';
