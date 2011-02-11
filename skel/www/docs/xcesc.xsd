@@ -475,6 +475,16 @@ When an e-mail is disabled, it is not used to send the user notifications]]></xs
 		</xsd:attribute>
 	</xsd:attributeGroup>
 
+	<xsd:element name="term">
+		<xsd:annotation>
+			<xsd:documentation><![CDATA[An annotated element with a score]]></xsd:documentation>
+		</xsd:annotation>
+		<xsd:complexType>
+			<xsd:attributeGroup ref="xcesc:namespaceAttributesGroup"/>
+			<xsd:attributeGroup ref="xcesc:scoreAttributesGroup"/>
+		</xsd:complexType>
+	</xsd:element>
+	
 	<xsd:element name="match">
 		<xsd:annotation>
 			<xsd:documentation><![CDATA[A match/result found by the server]]></xsd:documentation>
@@ -512,15 +522,7 @@ It depends on the units system and it is always an inclusive limit.]]></xsd:docu
 					</xsd:complexType>
 				</xsd:element>
 				<xsd:choice>
-					<xsd:element name="term" minOccurs="1" maxOccurs="unbounded">
-						<xsd:annotation>
-							<xsd:documentation><![CDATA[An annotated element]]></xsd:documentation>
-						</xsd:annotation>
-						<xsd:complexType>
-							<xsd:attributeGroup ref="xcesc:namespaceAttributesGroup"/>
-							<xsd:attributeGroup ref="xcesc:scoreAttributesGroup"/>
-						</xsd:complexType>
-					</xsd:element>
+					<xsd:element ref="xcesc:term" minOccurs="1" maxOccurs="unbounded"/>
 					<xsd:element name="result" minOccurs="1" maxOccurs="unbounded">
 						<xsd:annotation>
 							<xsd:documentation><![CDATA[An structured result]]></xsd:documentation>
@@ -553,98 +555,141 @@ ab initio, then the origin of the match must be identified]]></xsd:documentation
 		</xsd:complexType>
 	</xsd:element>
 	
+	<xsd:simpleType name="placeQualityEnum">
+		<xsd:annotation>
+			<xsd:documentation><![CDATA[Simple type created to enumerate the subjective place quality values]]></xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:string">
+			<xsd:enumeration value="right">
+				<xsd:annotation>
+					<xsd:documentation><![CDATA[Right place for the annotation, no more, no less]]></xsd:documentation>	
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="partial">
+				<xsd:annotation>
+					<xsd:documentation><![CDATA[Predicted place partially overlaps a right one]]></xsd:documentation>	
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="under">
+				<xsd:annotation>
+					<xsd:documentation><![CDATA[Predicted place is a subset of a right one]]></xsd:documentation>	
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="over">
+				<xsd:annotation>
+					<xsd:documentation><![CDATA[Predicted place is a superset of a right one]]></xsd:documentation>	
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="wrong">
+				<xsd:annotation>
+					<xsd:documentation><![CDATA[Predicted place is wrong or completely misplaced]]></xsd:documentation>	
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="missing">
+				<xsd:annotation>
+					<xsd:documentation><![CDATA[There was no prediction which matched this place]]></xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="NA">
+				<xsd:annotation>
+					<xsd:documentation><![CDATA[The evaluator is not able to assess places]]></xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+		</xsd:restriction>
+	</xsd:simpleType>
+	
+	<xsd:simpleType name="annotationQualityEnum">
+		<xsd:annotation>
+			<xsd:documentation><![CDATA[Simple type created to enumerate the subjective annotation quality values]]></xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:string">
+			<xsd:enumeration value="right">
+				<xsd:annotation>
+					<xsd:documentation><![CDATA[Right annotation, no more, no less]]></xsd:documentation>	
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="under">
+				<xsd:annotation>
+					<xsd:documentation><![CDATA[Annotation is too general]]></xsd:documentation>	
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="over">
+				<xsd:annotation>
+					<xsd:documentation><![CDATA[Annotation is over specific]]></xsd:documentation>	
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="wrong">
+				<xsd:annotation>
+					<xsd:documentation><![CDATA[Annotation is wrong]]></xsd:documentation>	
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="missing">
+				<xsd:annotation>
+					<xsd:documentation><![CDATA[There was no prediction for this annotation, and there should be]]></xsd:documentation>	
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="NA">
+				<xsd:annotation>
+					<xsd:documentation><![CDATA[The evaluator is not able to assess annotations]]></xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+		</xsd:restriction>
+	</xsd:simpleType>
+		
 	<xsd:element name="jobEvaluation">
 		<xsd:annotation>
 			<xsd:documentation><![CDATA[The evaluation of each one of the jobs done by the partipant being assessed]]></xsd:documentation>
 		</xsd:annotation>
 		<xsd:complexType>
 			<xsd:sequence minOccurs="1" maxOccurs="1">
-				<xsd:element name="matchEvaluation" minOccurs="0" maxOccurs="unbounded">
+				<xsd:element name="evaluation" minOccurs="0" maxOccurs="unbounded">
+					<xsd:annotation>
+						<xsd:documentation><![CDATA[Each piece to be assessed from this job]]></xsd:documentation>
+					</xsd:annotation>
 					<xsd:complexType>
 						<xsd:sequence minOccurs="1" maxOccurs="1">
-							<xsd:element name="report">
-								
+							<xsd:element name="report" minOccurs="0" maxOccurs="1">
+								<xsd:annotation>
+									<xsd:documentation><![CDATA[This It should contain native output report]]></xsd:documentation>
+								</xsd:annotation>
 							</xsd:element>
-							<xsd:element ref="xcesc:match" minOccurs="0" maxOccurs="unbounded"/>
+							<xsd:element name="placeQuality" minOccurs="0" maxOccurs="1">
+								<xsd:annotation>
+									<xsd:documentation><![CDATA[Assessment about the place of the annotation (the piece to be assessed)]]></xsd:documentation>
+								</xsd:annotation>
+								<xsd:complexType>
+									<xsd:simpleContent>
+										<xsd:extension base="xcesc:placeQualityEnum">
+											<xsd:attributeGroup ref="xcesc:scoreAttributesGroup"/>
+										</xsd:extension>
+									</xsd:simpleContent>
+								</xsd:complexType>
+							</xsd:element>
+							<xsd:element name="annotationQuality" minOccurs="0" maxOccurs="1">
+								<xsd:annotation>
+									<xsd:documentation><![CDATA[Assessment about the quality of the annotation (the piece to be assessed)]]></xsd:documentation>
+								</xsd:annotation>
+								<xsd:complexType>
+									<xsd:simpleContent>
+										<xsd:extension base="xcesc:annotationQualityEnum">
+											<xsd:attributeGroup ref="xcesc:scoreAttributesGroup"/>
+										</xsd:extension>
+									</xsd:simpleContent>
+								</xsd:complexType>
+							</xsd:element>
+							<xsd:element ref="xcesc:term" minOccurs="0" maxOccurs="unbounded">
+								<xsd:annotation>
+									<xsd:documentation><![CDATA[These terms can help to annotate the assessment using a ontology (it should RDF, I know)]]></xsd:documentation>
+								</xsd:annotation>
+							</xsd:element>
+							<xsd:choice>
+								<xsd:annotation>
+									<xsd:documentation><![CDATA[We can even assess other evaluators]]></xsd:documentation>
+								</xsd:annotation>
+								<xsd:element ref="xcesc:match" minOccurs="0" maxOccurs="1"/>
+								<xsd:element ref="xcesc:jobEvaluation" minOccurs="0" maxOccurs="1"/>
+							</xsd:choice>
 						</xsd:sequence>
-						<xsd:attribute name="place" use="required">
-							<xsd:simpleType>
-								<xsd:restriction base="xsd:string">
-									<xsd:enumeration value="right">
-										<xsd:annotation>
-											<xsd:documentation><![CDATA[Right place for the annotation, no more, no less]]></xsd:documentation>	
-										</xsd:annotation>
-									</xsd:enumeration>
-									<xsd:enumeration value="partial">
-										<xsd:annotation>
-											<xsd:documentation><![CDATA[Predicted place partially overlaps a right one]]></xsd:documentation>	
-										</xsd:annotation>
-									</xsd:enumeration>
-									<xsd:enumeration value="under">
-										<xsd:annotation>
-											<xsd:documentation><![CDATA[Predicted place is a subset of a right one]]></xsd:documentation>	
-										</xsd:annotation>
-									</xsd:enumeration>
-									<xsd:enumeration value="over">
-										<xsd:annotation>
-											<xsd:documentation><![CDATA[Predicted place is a superset of a right one]]></xsd:documentation>	
-										</xsd:annotation>
-									</xsd:enumeration>
-									<xsd:enumeration value="wrong">
-										<xsd:annotation>
-											<xsd:documentation><![CDATA[Predicted place is wrong or completely misplaced]]></xsd:documentation>	
-										</xsd:annotation>
-									</xsd:enumeration>
-									<xsd:enumeration value="missing">
-										<xsd:annotation>
-											<xsd:documentation><![CDATA[There was no prediction which matched this place]]></xsd:documentation>
-										</xsd:annotation>
-									</xsd:enumeration>
-									<xsd:enumeration value="NA">
-										<xsd:annotation>
-											<xsd:documentation><![CDATA[The evaluator is not able to assess places]]></xsd:documentation>
-										</xsd:annotation>
-									</xsd:enumeration>
-								</xsd:restriction>
-							</xsd:simpleType>
-						</xsd:attribute>
-						<xsd:attribute name="annotation" use="required">
-							<xsd:simpleType>
-								<xsd:restriction base="xsd:string">
-									<xsd:enumeration value="right">
-										<xsd:annotation>
-											<xsd:documentation><![CDATA[Right annotation, no more, no less]]></xsd:documentation>	
-										</xsd:annotation>
-									</xsd:enumeration>
-									<xsd:enumeration value="under">
-										<xsd:annotation>
-											<xsd:documentation><![CDATA[Annotation is too general]]></xsd:documentation>	
-										</xsd:annotation>
-									</xsd:enumeration>
-									<xsd:enumeration value="over">
-										<xsd:annotation>
-											<xsd:documentation><![CDATA[Annotation is over specific]]></xsd:documentation>	
-										</xsd:annotation>
-									</xsd:enumeration>
-									<xsd:enumeration value="wrong">
-										<xsd:annotation>
-											<xsd:documentation><![CDATA[Annotation is wrong]]></xsd:documentation>	
-										</xsd:annotation>
-									</xsd:enumeration>
-									<xsd:enumeration value="missing">
-										<xsd:annotation>
-											<xsd:documentation><![CDATA[There was no prediction for this annotation, and there should be]]></xsd:documentation>	
-										</xsd:annotation>
-									</xsd:enumeration>
-									<xsd:enumeration value="NA">
-										<xsd:annotation>
-											<xsd:documentation><![CDATA[The evaluator is not able to assess annotations]]></xsd:documentation>
-										</xsd:annotation>
-									</xsd:enumeration>
-								</xsd:restriction>
-							</xsd:simpleType>
-						</xsd:attribute>
-						<xsd:attributeGroup ref="xcesc:scoreAttributesGroup"></xsd:attributeGroup>
 					</xsd:complexType>
 				</xsd:element>
 			</xsd:sequence>
