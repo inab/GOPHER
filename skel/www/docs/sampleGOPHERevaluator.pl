@@ -1,6 +1,7 @@
 #!/usr/bin/perl -W
 
-# Sample GOPHER service
+# $Id$
+# Sample GOPHER evaluator
 # This code takes as input the query, and it later sends the results 
 
 use strict;

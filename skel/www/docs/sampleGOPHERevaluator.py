@@ -1,6 +1,10 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+# $Id$
+# Sample GOPHER evaluator
+# This code takes as input the query, and it later sends the results 
+
 import sys
 import os
 
