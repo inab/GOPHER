@@ -502,25 +502,6 @@ function viewDocumentation(compDesc, compName, docTextArray) {
       </table>
       <div class="sample box">
          <div>
-            <input type="button" id="h-595513662_logicalDiagram_button" class="control"
-                   onclick="switchState('h-595513662_logicalDiagram'); return false;"
-                   style="display: none"/> 
-            <span class="caption">Logical Diagram</span>
-         </div>
-         <div id="h-595513662_logicalDiagram" class="contents">
-            <img usemap="#h1788386538" src="schemaDiagrams/h1788386538.png"/>
-            <!--
-            Map ref: file:/home/jmfernandez/projects/GOPHER/skel/www/docs//schemaDiagrams/h1788386538.map--><map name="h1788386538">
-</map>
-         </div>
-         <script type="text/javascript">
-<!--
-          setState('h-595513662_logicalDiagram', false);
-// -->
-</script>
-      </div>
-      <div class="sample box">
-         <div>
             <input type="button" id="h-595513662_xibox_button" class="control"
                    onclick="switchState('h-595513662_xibox'); return false;"
                    style="display: none"/> 
@@ -537,26 +518,9 @@ function viewDocumentation(compDesc, compName, docTextArray) {
                      <a href="xcesc.xsd.html#ns_xsd" title="Find out namespace of 'xsd' prefix">xsd</a>:dateTime</span> 
                   <span class="occurs">[0..1]</span> 
                   <p class="documentation">'The timestamp assigned to this match once it arrives to the server'</p>"</span>&gt; <br/>
-               <div style="margin-left: 1.5em">&lt;<a href="xcesc.xsd.html#ns_xcesc" title="Find out namespace of 'xcesc' prefix">xcesc</a>:scope<br/>
-                  <span style="margin-left: 0.5em"> label="<span class="type">
-                        <a href="xcesc.xsd.html#ns_xsd" title="Find out namespace of 'xsd' prefix">xsd</a>:string</span> 
-                     <span class="occurs">[0..1]</span> 
-                     <p class="documentation">'This attribute is useful for structured queries'</p>"</span>
-                  <br/>
-                  <span style="margin-left: 0.5em"> from="<span class="type">
-                        <a href="xcesc.xsd.html#ns_xsd" title="Find out namespace of 'xsd' prefix">xsd</a>:string</span> 
-                     <span class="occurs">[1]</span> 
-                     <p class="documentation">'Where the scope begins, relative to the query. It depends on the units system and it is always an inclusive limit.'</p>"</span>
-                  <br/>
-                  <span style="margin-left: 0.5em"> to="<span class="type">
-                        <a href="xcesc.xsd.html#ns_xsd" title="Find out namespace of 'xsd' prefix">xsd</a>:string</span> 
-                     <span class="occurs">[0..1]</span> 
-                     <p class="documentation">'Where the scope ends, relative to the query. It depends on the units system and it is always an inclusive limit.'</p>"</span>
-                  <br/>
-                  <span style="margin-left: 0.5em"> units="<span class="type">
-                        <a href="xcesc.xsd.html#ns_xsd" title="Find out namespace of 'xsd' prefix">xsd</a>:string</span> 
-                     <span class="occurs">[0..1]</span> 
-                     <p class="documentation">'The units system, sometimes related to from and to attributes from scope elements, based on the query'</p>"</span>/&gt;  <span class="occurs">[0..*]</span> 
+               <div style="margin-left: 1.5em">&lt;<a href="xcesc.xsd.html#ns_xcesc" title="Find out namespace of 'xcesc' prefix">xcesc</a>:<a title="Jump to &#34;scope&#34; element declaration."
+                     href="xcesc.xsd.html_h-589917359.html">scope</a>&gt; ... &lt;/<a href="xcesc.xsd.html#ns_xcesc" title="Find out namespace of 'xcesc' prefix">xcesc</a>:<a title="Jump to &#34;scope&#34; element declaration."
+                     href="xcesc.xsd.html_h-589917359.html">scope</a>&gt; <span class="occurs">[0..*]</span> 
                   <p class="documentation">'The match scope, in its corresponding units. As the scope can be sparse, more than one scope element can be specified'</p>
                </div>
                <span class="group" style="margin-left: 1.5em">Start <a title="Look up 'Choice' in glossary" href="xcesc.xsd.html#term_Choice">Choice</a> 
@@ -604,10 +568,10 @@ function viewDocumentation(compDesc, compName, docTextArray) {
             <img usemap="#h1115066484" src="schemaDiagrams/h1115066484.png"/>
             <!--
             Map ref: file:/home/jmfernandez/projects/GOPHER/skel/www/docs//schemaDiagrams/h1115066484.map--><map name="h1115066484">
-               <area shape="rect" alt="h-573187121" coords="321,144,447,184"
+               <area shape="rect" alt="h-573187121" coords="321,171,447,211"
                      href="xcesc.xsd.html_h-573187121.html#h-573187121"/>
 
-               <area shape="rect" alt="h1444303858" coords="491,245,753,271"
+               <area shape="rect" alt="h1444303858" coords="491,308,753,334"
                      href="xcesc.xsd.html_h1444303858.html#h1444303858"/>
 
             </map>
@@ -628,26 +592,10 @@ function viewDocumentation(compDesc, compName, docTextArray) {
          <div id="h-595513662_scbox" class="contents">
             <div style="margin-left: 0em">&lt;<span class="scTag">xsd:element</span> 
                <span class="scTag">name</span>="<span class="scContent">match</span>"&gt;<div style="margin-left: 1.5em">&lt;<span class="scTag">xsd:complexType</span>&gt;<div style="margin-left: 1.5em">&lt;<span class="scTag">xsd:sequence</span>&gt;<div style="margin-left: 1.5em">&lt;<span class="scTag">xsd:element</span> 
-                        <span class="scTag">name</span>="<span class="scContent">scope</span>" <span class="scTag">minOccurs</span>="<span class="scContent">0</span>" <span class="scTag">maxOccurs</span>="<span class="scContent">unbounded</span>"&gt;<div style="margin-left: 1.5em">&lt;<span class="scTag">xsd:complexType</span>&gt;<div style="margin-left: 1.5em">&lt;<span class="scTag">xsd:attribute</span> 
-                              <span class="scTag">name</span>="<span class="scContent">label</span>" <span class="scTag">type</span>="<span class="scContent">
-                                 <span class="type">
-                                    <a href="xcesc.xsd.html#ns_xsd" title="Find out namespace of 'xsd' prefix">xsd</a>:string</span>
-                              </span>" <span class="scTag">use</span>="<span class="scContent">optional</span>"/&gt;</div>
-                           <div style="margin-left: 1.5em">&lt;<span class="scTag">xsd:attribute</span> 
-                              <span class="scTag">name</span>="<span class="scContent">from</span>" <span class="scTag">type</span>="<span class="scContent">
-                                 <span class="type">
-                                    <a href="xcesc.xsd.html#ns_xsd" title="Find out namespace of 'xsd' prefix">xsd</a>:string</span>
-                              </span>" <span class="scTag">use</span>="<span class="scContent">required</span>"/&gt;</div>
-                           <div style="margin-left: 1.5em">&lt;<span class="scTag">xsd:attribute</span> 
-                              <span class="scTag">name</span>="<span class="scContent">to</span>" <span class="scTag">type</span>="<span class="scContent">
-                                 <span class="type">
-                                    <a href="xcesc.xsd.html#ns_xsd" title="Find out namespace of 'xsd' prefix">xsd</a>:string</span>
-                              </span>" <span class="scTag">use</span>="<span class="scContent">optional</span>"/&gt;</div>
-                           <div style="margin-left: 1.5em">&lt;<span class="scTag">xsd:attribute</span> 
-                              <span class="scTag">name</span>="<span class="scContent">units</span>" <span class="scTag">type</span>="<span class="scContent">
-                                 <span class="type">
-                                    <a href="xcesc.xsd.html#ns_xsd" title="Find out namespace of 'xsd' prefix">xsd</a>:string</span>
-                              </span>" <span class="scTag">use</span>="<span class="scContent">optional</span>" <span class="scTag">default</span>="<span class="scContent">residues</span>"/&gt;</div>&lt;/<span class="scTag">xsd:complexType</span>&gt;</div>&lt;/<span class="scTag">xsd:element</span>&gt;</div>
+                        <span class="scTag">ref</span>="<span class="scContent">
+                           <a href="xcesc.xsd.html#ns_xcesc" title="Find out namespace of 'xcesc' prefix">xcesc</a>:<a title="Jump to &#34;scope&#34; element declaration."
+                              href="xcesc.xsd.html_h-589917359.html">scope</a>
+                        </span>" <span class="scTag">minOccurs</span>="<span class="scContent">0</span>" <span class="scTag">maxOccurs</span>="<span class="scContent">unbounded</span>"/&gt;</div>
                      <div style="margin-left: 1.5em">&lt;<span class="scTag">xsd:choice</span>&gt;<div style="margin-left: 1.5em">&lt;<span class="scTag">xsd:element</span> 
                            <span class="scTag">ref</span>="<span class="scContent">
                               <a href="xcesc.xsd.html#ns_xcesc" title="Find out namespace of 'xcesc' prefix">xcesc</a>:<a title="Jump to &#34;term&#34; element declaration."

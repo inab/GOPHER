@@ -181,7 +181,7 @@ def launchEvaluationJob(callback, query):
 				# Success or ill formed request
 				try:
 					f = urllib2.urlopen(req)
-					data = u.read()
+					data = f.read()
 					break
 				except urllib2.HTTPError, e:
 					# If it is the second, you should write to

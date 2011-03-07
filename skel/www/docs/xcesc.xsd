@@ -484,6 +484,44 @@ When an e-mail is disabled, it is not used to send the user notifications]]></xs
 			<xsd:attributeGroup ref="xcesc:scoreAttributesGroup"/>
 		</xsd:complexType>
 	</xsd:element>
+
+	<xsd:element name="scope">
+		<xsd:annotation>
+			<xsd:documentation><![CDATA[The match scope, in its corresponding units.
+As the scope can be sparse, more than one scope element can be specified]]></xsd:documentation>
+		</xsd:annotation>
+		<xsd:complexType>
+			<xsd:sequence minOccurs="1" maxOccurs="1">
+				<xsd:element ref="xcesc:term" minOccurs="0" maxOccurs="unbounded">
+					<xsd:annotation>
+						<xsd:documentation><![CDATA[This scope can have associated specific annotations]]></xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+			</xsd:sequence>
+			<xsd:attribute name="label" use="optional" type="xsd:string">
+				<xsd:annotation>
+					<xsd:documentation><![CDATA[This attribute is useful for structured queries]]></xsd:documentation>
+				</xsd:annotation>
+			</xsd:attribute>
+			<xsd:attribute name="from" use="required" type="xsd:string">
+				<xsd:annotation>
+					<xsd:documentation><![CDATA[Where the scope begins, relative to the query.
+It depends on the units system and it is always an inclusive limit.]]></xsd:documentation>
+				</xsd:annotation>
+			</xsd:attribute>
+			<xsd:attribute name="to" use="optional" type="xsd:string">
+				<xsd:annotation>
+					<xsd:documentation><![CDATA[Where the scope ends, relative to the query.
+It depends on the units system and it is always an inclusive limit.]]></xsd:documentation>
+				</xsd:annotation>
+			</xsd:attribute>
+			<xsd:attribute name="units" use="optional" type="xsd:string" default="residues">
+				<xsd:annotation>
+					<xsd:documentation><![CDATA[The units system, sometimes related to from and to attributes from scope elements, based on the query]]></xsd:documentation>
+				</xsd:annotation>
+			</xsd:attribute>
+		</xsd:complexType>
+	</xsd:element>
 	
 	<xsd:element name="match">
 		<xsd:annotation>
@@ -491,35 +529,11 @@ When an e-mail is disabled, it is not used to send the user notifications]]></xs
 		</xsd:annotation>
 		<xsd:complexType>
 			<xsd:sequence>
-				<xsd:element name="scope" minOccurs="0" maxOccurs="unbounded">
+				<xsd:element ref="xcesc:scope" minOccurs="0" maxOccurs="unbounded">
 					<xsd:annotation>
 						<xsd:documentation><![CDATA[The match scope, in its corresponding units.
 As the scope can be sparse, more than one scope element can be specified]]></xsd:documentation>
 					</xsd:annotation>
-					<xsd:complexType>
-						<xsd:attribute name="label" use="optional" type="xsd:string">
-							<xsd:annotation>
-								<xsd:documentation><![CDATA[This attribute is useful for structured queries]]></xsd:documentation>
-							</xsd:annotation>
-						</xsd:attribute>
-						<xsd:attribute name="from" use="required" type="xsd:string">
-							<xsd:annotation>
-								<xsd:documentation><![CDATA[Where the scope begins, relative to the query.
-It depends on the units system and it is always an inclusive limit.]]></xsd:documentation>
-							</xsd:annotation>
-						</xsd:attribute>
-						<xsd:attribute name="to" use="optional" type="xsd:string">
-							<xsd:annotation>
-								<xsd:documentation><![CDATA[Where the scope ends, relative to the query.
-It depends on the units system and it is always an inclusive limit.]]></xsd:documentation>
-							</xsd:annotation>
-						</xsd:attribute>
-						<xsd:attribute name="units" use="optional" type="xsd:string" default="residues">
-							<xsd:annotation>
-								<xsd:documentation><![CDATA[The units system, sometimes related to from and to attributes from scope elements, based on the query]]></xsd:documentation>
-							</xsd:annotation>
-						</xsd:attribute>
-					</xsd:complexType>
 				</xsd:element>
 				<xsd:choice>
 					<xsd:element ref="xcesc:term" minOccurs="1" maxOccurs="unbounded"/>
@@ -676,6 +690,12 @@ ab initio, then the origin of the match must be identified]]></xsd:documentation
 										</xsd:extension>
 									</xsd:simpleContent>
 								</xsd:complexType>
+							</xsd:element>
+							<xsd:element ref="xcesc:scope" minOccurs="0" maxOccurs="unbounded">
+								<xsd:annotation>
+									<xsd:documentation><![CDATA[The match scope, in its corresponding units.
+As the scope can be sparse, more than one scope element can be specified]]></xsd:documentation>
+								</xsd:annotation>
 							</xsd:element>
 							<xsd:element ref="xcesc:term" minOccurs="0" maxOccurs="unbounded">
 								<xsd:annotation>
