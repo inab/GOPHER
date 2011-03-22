@@ -502,6 +502,28 @@ function viewDocumentation(compDesc, compName, docTextArray) {
       </table>
       <div class="sample box">
          <div>
+            <input type="button" id="h-595513662_logicalDiagram_button" class="control"
+                   onclick="switchState('h-595513662_logicalDiagram'); return false;"
+                   style="display: none"/> 
+            <span class="caption">Logical Diagram</span>
+         </div>
+         <div id="h-595513662_logicalDiagram" class="contents">
+            <img usemap="#h1788386538" src="schemaDiagrams/h1788386538.png"/>
+            <!--
+            Map ref: file:/home/jmfernandez/projects/GOPHER/skel/www/docs//schemaDiagrams/h1788386538.map--><map name="h1788386538">
+               <area shape="rect" alt="h-589917359" coords="358,104,630,160"
+                     href="xcesc.xsd.html_h-589917359.html#h-589917359"/>
+
+            </map>
+         </div>
+         <script type="text/javascript">
+<!--
+          setState('h-595513662_logicalDiagram', false);
+// -->
+</script>
+      </div>
+      <div class="sample box">
+         <div>
             <input type="button" id="h-595513662_xibox_button" class="control"
                    onclick="switchState('h-595513662_xibox'); return false;"
                    style="display: none"/> 
@@ -517,7 +539,7 @@ function viewDocumentation(compDesc, compName, docTextArray) {
                <span style="margin-left: 0.5em"> timeStamp="<span class="type">
                      <a href="xcesc.xsd.html#ns_xsd" title="Find out namespace of 'xsd' prefix">xsd</a>:dateTime</span> 
                   <span class="occurs">[0..1]</span> 
-                  <p class="documentation">'The timestamp assigned to this match once it arrives to the server'</p>"</span>&gt; <br/>
+                  <p class="documentation">'The timestamp assigned to the element either in origin or destination'</p>"</span>&gt; <br/>
                <div style="margin-left: 1.5em">&lt;<a href="xcesc.xsd.html#ns_xcesc" title="Find out namespace of 'xcesc' prefix">xcesc</a>:<a title="Jump to &#34;scope&#34; element declaration."
                      href="xcesc.xsd.html_h-589917359.html">scope</a>&gt; ... &lt;/<a href="xcesc.xsd.html#ns_xcesc" title="Find out namespace of 'xcesc' prefix">xcesc</a>:<a title="Jump to &#34;scope&#34; element declaration."
                      href="xcesc.xsd.html_h-589917359.html">scope</a>&gt; <span class="occurs">[0..*]</span> 
@@ -615,11 +637,11 @@ function viewDocumentation(compDesc, compName, docTextArray) {
                         <span class="type">
                            <a href="xcesc.xsd.html#ns_xsd" title="Find out namespace of 'xsd' prefix">xsd</a>:string</span>
                      </span>" <span class="scTag">use</span>="<span class="scContent">required</span>"/&gt;</div>
-                  <div style="margin-left: 1.5em">&lt;<span class="scTag">xsd:attribute</span> 
-                     <span class="scTag">name</span>="<span class="scContent">timeStamp</span>" <span class="scTag">type</span>="<span class="scContent">
-                        <span class="type">
-                           <a href="xcesc.xsd.html#ns_xsd" title="Find out namespace of 'xsd' prefix">xsd</a>:dateTime</span>
-                     </span>" <span class="scTag">use</span>="<span class="scContent">optional</span>"/&gt;</div>&lt;/<span class="scTag">xsd:complexType</span>&gt;</div>&lt;/<span class="scTag">xsd:element</span>&gt;</div>
+                  <div style="margin-left: 1.5em">&lt;<span class="scTag">xsd:attributeGroup</span> 
+                     <span class="scTag">ref</span>="<span class="scContent">
+                        <a href="xcesc.xsd.html#ns_xcesc" title="Find out namespace of 'xcesc' prefix">xcesc</a>:<a title="Jump to &#34;timeStampGroup&#34; attribute group definition."
+                           href="xcesc.xsd.html_h1172978085.html">timeStampGroup</a>
+                     </span>"/&gt;</div>&lt;/<span class="scTag">xsd:complexType</span>&gt;</div>&lt;/<span class="scTag">xsd:element</span>&gt;</div>
          </div>
          <script type="text/javascript">
 <!--

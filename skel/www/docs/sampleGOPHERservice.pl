@@ -46,6 +46,9 @@ sub launchJob($$) {
 	# We have to ignore pleas from the children
 	$SIG{CHLD}='IGNORE';
 	
+	# The variable which will contain the return value (the jobId or undef)
+	my $retval = undef;
+	
 	my($pid)=fork();
 	
 	if(defined($pid)) {
@@ -135,12 +138,12 @@ sub launchJob($$) {
 			exit(0);
 		} else {
 			# This is the parent, which has to do nothing...
-			return 1;
+			$retval = $query->getAttribute('queryId');
 		}
-	} else {
-		# No job, no party!
-		return undef;
 	}
+	# No job, no party ($retval == undef)!
+	
+	return $retval;
 }
 
 my($c)=CGI->new();
@@ -148,6 +151,7 @@ my $hasQueryDoc = undef;
 my($doc)=undef;
 my($errstate)=undef;
 my($httpcode)=202;
+my @acceptedList=();
 
 # First, let's catch params
 foreach my $param ($c->param()) {
@@ -184,7 +188,12 @@ if(defined($hasQueryDoc)) {
 					);
 					
 					# This is the function to implement
-					$errstate='Accepted'  if(launchJob($callback,$query));
+					my $queryId = launchJob($callback,$query);
+					
+					if(defined($queryId)) {
+						$errstate='Accepted';
+						push(@acceptedList,$queryId);
+					}
 				}
 			} else {
 				$errstate='XML Document does not contain a callback!';
@@ -206,4 +215,18 @@ if(!defined($errstate)) {
 	$httpcode=400;
 }
 
-print $c->header(-status=>"$httpcode $errstate"),"<html><head><title>$httpcode $errstate</title></head><body><div align='center'><h1>$httpcode $errstate</h1></div></body></html>";
+if($httpcode == 202) {
+	my($acceptedDoc)=XML::LibXML::Document->new('1.0','UTF-8');
+	my($acceptedQueries)=$answerDoc->createElementNS($XCESC_NS,'acceptedQueries');
+	$acceptedDoc->setDocumentElement($acceptedQueries);
+	$acceptedQueries->setAttribute('timeStamp',getPrintableDate());
+
+	foreach my $queryId (@acceptedList) {
+		my($accepted)=$acceptedDoc->createElementNS($XCESC_NS,'accepted');
+		$accepted->setAttribute('queryId',$queryId);
+		$acceptedQueries->appendChild($accepted);
+	}
+	print $c->header(-status=>"$httpcode $errstate",-type=>'application/xml'),$acceptedDoc->serialize(0);
+} else {
+	print $c->header(-status=>"$httpcode $errstate"),"<html><head><title>$httpcode $errstate</title></head><body><div align='center'><h1>$httpcode $errstate</h1></div></body></html>";
+}

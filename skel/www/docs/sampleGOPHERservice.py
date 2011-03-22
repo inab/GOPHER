@@ -65,6 +65,10 @@ def launchJob(callback, query):
 	
 	# We have to ignore pleas from the children
 	signal.signal(signal.SIGCHLD,signal.SIG_IGN)
+	
+	# The variable which will contain the return value (the jobId or None)
+	retval = None
+	
 	try:
 		pid = os.fork()
 		
@@ -176,23 +180,23 @@ def launchJob(callback, query):
 			sys.exit(0)
 		else:
 			# This is the parent, which has to do nothing...
-			return True
+			retval = query.getAttribute('queryId')
 	except:
-		# No job, no party!
-		return None
+		# No job, no party (retval == None)!
+		retval = None
 	
-	return True
+	return retval
 
 
 form = cgi.FieldStorage(headers={"content-type": ""})
 
 errstate = None
 httpcode = 202
+acceptedList = []
 if form.file is None:
 	errstate = "Empty Query Message"
 	httpcode = 400
 else:
-	print_http_headers(headers={"Content-Type": "application/xml"})
 	try:
 		doc = xml.dom.minidom.parse(form.file)
 		el = doc.documentElement
@@ -202,9 +206,11 @@ else:
 				
 				for query in el.childNodes():
 					if query.nodeType == Node.ELEMENT_NODE and query.localName == 'query' and query.namespaceURI == XCESC_NS and query.hasAttribute('queryId'):
-						if launchJob(callback,query):
+						queryId = launchJob(callback,query)
+						if queryId is not None:
 							errstate = 'Accepted'
-					
+							acceptedList.append(queryId)
+				
 #				doc.writexml(writer=sys.stdout)
 			else:
 				errstate = 'XML Document does not contain a callback!'
@@ -220,6 +226,20 @@ if errstate is None:
 	errstate = 'No query has been accepted'
 	httpcode = 400
 
-print_http_headers(status = "%s %s" % (httpcode,errstate))
-print "<html><head><title>%s %s</title></head><body><div align='center'><h1>%s %s</h1></div></body></html>" % (httpcode, errstate, httpcode, errstate)
-
+if httpcode == 202:
+	domImplementation = xml.dom.minidom.getDOMImplementation()
+	
+	acceptedDoc = domImplementation.createDocument(XCESC_NS, 'acceptedQueries', None)
+	acceptedQueries = acceptedDoc.documentElement
+	acceptedQueries.setAttribute('timeStamp',datetime.utcnow().isoformat()+'Z')
+	
+	for queryId in acceptedList:
+		accepted = acceptedDoc.createElementNS(XSCESC_NS,'accepted')
+		accepted.setAttribute('queryId',queryId)
+		acceptedQueries.appendChild(accepted)
+	
+	print_http_headers(status = "%s %s" % (httpcode,errstate),headers = {'Content-Type': 'application/xml'})
+	acceptedDoc.writexml(writer=sys.stdout,encoding="UTF-8")
+else:
+	print_http_headers(status = "%s %s" % (httpcode,errstate))
+	print "<html><head><title>%s %s</title></head><body><div align='center'><h1>%s %s</h1></div></body></html>" % (httpcode, errstate, httpcode, errstate)

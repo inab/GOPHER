@@ -11,7 +11,7 @@
 	elementFormDefault="qualified">
 
 	<xsd:annotation>
-		<xsd:documentation><![CDATA[XCESC XML Schema, made by José María Fernández González (C) 2008-2009]]></xsd:documentation>
+		<xsd:documentation><![CDATA[XCESC XML Schema, made by José María Fernández González (C) 2008-2011]]></xsd:documentation>
 	</xsd:annotation>
 	
 	<xsd:import namespace="http://www.cnio.es/scombio/xcesc/1.0/xquery/systemManagement" schemaLocation="systemManagement.xsd">
@@ -523,6 +523,14 @@ It depends on the units system and it is always an inclusive limit.]]></xsd:docu
 		</xsd:complexType>
 	</xsd:element>
 	
+	<xsd:attributeGroup name="timeStampGroup">
+		<xsd:attribute  name="timeStamp" use='optional' type="xsd:dateTime">
+			<xsd:annotation>
+				<xsd:documentation><![CDATA[The timestamp assigned to the element either in origin or destination]]></xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+	</xsd:attributeGroup>
+	
 	<xsd:element name="match">
 		<xsd:annotation>
 			<xsd:documentation><![CDATA[A match/result found by the server]]></xsd:documentation>
@@ -561,11 +569,11 @@ For instance, if a server is hybrid, in the sense it is able to generate predict
 ab initio, then the origin of the match must be identified]]></xsd:documentation>
 				</xsd:annotation>
 			</xsd:attribute>
-			<xsd:attribute  name="timeStamp" use='optional' type="xsd:dateTime">
+			<xsd:attributeGroup ref="xcesc:timeStampGroup">
 				<xsd:annotation>
 					<xsd:documentation><![CDATA[The timestamp assigned to this match once it arrives to the server]]></xsd:documentation>
 				</xsd:annotation>
-			</xsd:attribute>
+			</xsd:attributeGroup>
 		</xsd:complexType>
 	</xsd:element>
 	
@@ -719,11 +727,11 @@ As the scope can be sparse, more than one scope element can be specified]]></xsd
 i.e. The value of the targetId attribute from the query element inside the arriving target element being assessed.]]></xsd:documentation>
 				</xsd:annotation>
 			</xsd:attribute>
-			<xsd:attribute  name="timeStamp" use='optional' type="xsd:dateTime">
+			<xsd:attributeGroup ref="xcesc:timeStampGroup">
 				<xsd:annotation>
 					<xsd:documentation><![CDATA[The timestamp of this assessment from the point of view of the evaluator]]></xsd:documentation>
 				</xsd:annotation>
-			</xsd:attribute>
+			</xsd:attributeGroup>
 		</xsd:complexType>
 	</xsd:element>
 	
@@ -758,6 +766,14 @@ i.e. The value of the targetId attribute from the query element inside the arriv
 		</xsd:complexType>
 	</xsd:element>
 	
+	<xsd:attributeGroup name="queryIdGroup">
+		<xsd:attribute name="queryId" type="xsd:string" use="required">
+			<xsd:annotation>
+				<xsd:documentation><![CDATA[The id of the query (typically, a number)]]></xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+	</xsd:attributeGroup>
+	
 	<xsd:element name="query">
 		<xsd:annotation>
 			<xsd:documentation><![CDATA[The query which is submitted to the servers. It can be either a query to a prediction server, or an assessment request to an evaluation server]]></xsd:documentation>
@@ -767,11 +783,11 @@ i.e. The value of the targetId attribute from the query element inside the arriv
 				<xsd:any minOccurs="0" maxOccurs="unbounded" namespace="##other" processContents="lax"/>
 				<xsd:element ref="xcesc:target" minOccurs="1" maxOccurs="unbounded"/>
 			</xsd:choice>
-			<xsd:attribute name="queryId" type="xsd:string" use="required">
+			<xsd:attributeGroup ref="xcesc:queryIdGroup">
 				<xsd:annotation>
 					<xsd:documentation><![CDATA[The id of the query (typically, a number)]]></xsd:documentation>
 				</xsd:annotation>
-			</xsd:attribute>
+			</xsd:attributeGroup>
 		</xsd:complexType>
 	</xsd:element>
 	
@@ -798,7 +814,28 @@ i.e. The value of the targetId attribute from the query element inside the arriv
 		</xsd:complexType>
 	</xsd:element>
 	
-	
+	<xsd:element name="acceptedQueries">
+		<xsd:annotation>
+			<xsd:documentation><![CDATA[The set of accepted queries]]></xsd:documentation>
+		</xsd:annotation>
+		<xsd:complexType>
+			<xsd:sequence minOccurs="1" maxOccurs="1">
+				<xsd:element name="accepted">
+					<xsd:annotation>
+						<xsd:documentation><![CDATA[An accepted query]]></xsd:documentation>
+					</xsd:annotation>
+					<xsd:complexType>
+						<xsd:attributeGroup ref="xcesc:queryIdGroup"></xsd:attributeGroup>
+					</xsd:complexType>
+				</xsd:element>
+			</xsd:sequence>
+			<xsd:attributeGroup ref="xcesc:timeStampGroup">
+				<xsd:annotation>
+					<xsd:documentation><![CDATA[The timestamp assigned by the server which has accepted these prediction or evaluation queries]]></xsd:documentation>
+				</xsd:annotation>
+			</xsd:attributeGroup>
+		</xsd:complexType>
+	</xsd:element>
 	
 	<xsd:element name="target">
 		<xsd:complexType>
