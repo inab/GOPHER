@@ -60,7 +60,7 @@ def launchEvaluationJob(callback, query):
 		Second parameter is the xcesc:query XML fragment, with all the details needed to start an assessment.
 		As it is an asynchronous work, you should use here your favourite queue system (SGE, NQS, etc...).
 		This example only uses fork, which could saturate the server with a DoS attack.
-		If the assessment job is accepted, it returns 1, otherwise it returns None.
+		If the assessment job is accepted, it returns the queryId, otherwise it returns None.
 	"""
 	
 	# We have to ignore pleas from the children
@@ -110,8 +110,8 @@ def launchEvaluationJob(callback, query):
 			# on 0 or more jobEvaluation elements. As this is a sample service, no match is
 			# appended based on input query, because it means 'no result'.
 			
-			for target in query.childeNodes():
-				if target.nodeType == Node.ELEMENT_NODE and query.localName == 'target' and query.namespaceURI == XCESC_NS:
+			for target in query.childNodes():
+				if target.nodeType == Node.ELEMENT_NODE and target.localName == 'target' and target.namespaceURI == XCESC_NS:
 					jobEvaluation = answerDoc.createElementNS(XCESC_NS,'jobEvaluation')
 					answer.appendChild(jobEvaluation)
 					jobEvaluation.setAttribute('timeStamp',datetime.utcnow().isoformat()+'Z')

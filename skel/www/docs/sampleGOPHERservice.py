@@ -60,7 +60,7 @@ def launchJob(callback, query):
 		Second parameter is the xcesc:query XML fragment, with all the details of the job.
 		As it is an asynchronous work, you should use here your favourite queue system (SGE, NQS, etc...).
 		This example only uses fork, which could saturate the server with a DoS attack.
-		If the job is accepted, it returns 1, otherwise it returns None.
+		If the job is accepted, it returns the queryId, otherwise it returns None.
 	"""
 	
 	# We have to ignore pleas from the children
