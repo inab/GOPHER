@@ -62,7 +62,8 @@ fi
 
 #cp "${VAPORDIRS}"/mime-types.xml "${EXIST_HOME}"
 
-EXISTPID=$(pgrep -f "exist.home=${EXIST_HOME} ")
+# EXISTPID=$(pgrep -f "exist.home=${EXIST_HOME} ")
+EXISTPID=$(ps aux|grep -F "exist.home=${EXIST_HOME} " | grep -vF grep | tr -s ' ' ' '| cut -f 2 -d ' ')
 case "$status" in
 	start|startnw)
 		if [ -n "$EXISTPID" ] ; then
