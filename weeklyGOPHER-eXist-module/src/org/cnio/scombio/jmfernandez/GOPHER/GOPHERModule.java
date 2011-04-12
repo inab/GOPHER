@@ -3,6 +3,9 @@
  */
 package org.cnio.scombio.jmfernandez.GOPHER;
 
+import java.util.Map;
+import java.util.List;
+
 import org.exist.xquery.AbstractInternalModule;
 import org.exist.xquery.FunctionDef;
 
@@ -27,14 +30,13 @@ public class GOPHERModule
 	};
 	
 	
-	public GOPHERModule() {
-		super(functions);
+	public GOPHERModule(Map<String, List<? extends Object>> parameters) {
+		super(functions,parameters,true);
 	}
 	
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.AbstractInternalModule#getDefaultPrefix()
 	 */
-	@Override
 	public String getDefaultPrefix() {
 		return PREFIX;
 	}
@@ -42,7 +44,6 @@ public class GOPHERModule
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.AbstractInternalModule#getNamespaceURI()
 	 */
-	@Override
 	public String getNamespaceURI() {
 		return NAMESPACE_URI;
 	}
@@ -55,7 +56,7 @@ public class GOPHERModule
 	}
 
 	public String getReleaseVersion() {
-		return "&ge; eXist-1.4";
+		return "&ge; eXist-1.5";
 	}
 
 }

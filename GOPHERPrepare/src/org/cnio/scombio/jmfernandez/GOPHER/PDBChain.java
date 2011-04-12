@@ -274,8 +274,8 @@ public class PDBChain {
 			StringBuilder piece=new StringBuilder();
 			for(String ires: residues) {
 				if(ires.length()==3) {
-				// Por definici髇 en PDB, los amino醕idos se expresan
-				// en c骴igos de 3 letras
+				// Por definici贸n en PDB, los amino谩cidos se expresan
+				// en c贸digos de 3 letras
 					if(toOneAA.containsKey(ires)) {
 						piece.append(toOneAA.get(ires));
 					} else if(notAA.contains(ires)) {
@@ -291,7 +291,7 @@ public class PDBChain {
 						LOG.warning("Unknown aminoacid '"+ires+"' in "+getName()+"!!!");
 					}
 				//} else if(length($ires)==1) {
-				//	# Y los nucle髏idos en c骴igos de una letra
+				//	# Y los nucle贸tidos en c贸digos de una letra
 				//	$localseq=undef;
 				//	last;
 				} else {
@@ -326,8 +326,8 @@ public class PDBChain {
 			for(PDBRes pres: residues) {
 				String ires = pres.res;
 				if(ires.length()==3) {
-				// Por definici髇 en PDB, los amino醕idos se expresan
-				// en c骴igos de 3 letras
+				// Por definici贸n en PDB, los amino谩cidos se expresan
+				// en c贸digos de 3 letras
 					char oneAmino;
 					if(toOneAA.containsKey(ires)) {
 						oneAmino=toOneAA.get(ires);
@@ -346,7 +346,7 @@ public class PDBChain {
 					piece.append(oneAmino);
 					pieceList.add(new PDBAmino(oneAmino,pres));
 				//} else if(length($ires)==1) {
-				//	# Y los nucle髏idos en c骴igos de una letra
+				//	# Y los nucle贸tidos en c贸digos de una letra
 				//	$localseq=undef;
 				//	last;
 				} else {
@@ -602,8 +602,8 @@ public class PDBChain {
 			}
 			
 			char aminochar=PDBAmino.UnknownAmino;
-		// Por definici髇 en PDB, los amino醕idos se expresan
-		// en c骴igos de 3 letras
+		// Por definici贸n en PDB, los amino谩cidos se expresan
+		// en c贸digos de 3 letras
 			if(toOneAA.containsKey(res)) {
 				aminochar = toOneAA.get(res);
 			} else if(notAA.contains(res)) {
@@ -626,7 +626,7 @@ public class PDBChain {
 			
 			good=true;
 		//} else if(length($ires)==1) {
-		//	# Y los nucle髏idos en c骴igos de una letra
+		//	# Y los nucle贸tidos en c贸digos de una letra
 		//	$localseq=undef;
 		//	last;
 		}

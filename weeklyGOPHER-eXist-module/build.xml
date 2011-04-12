@@ -20,7 +20,7 @@ weeklyGOPHER-eXist-module glue classes by jmfernandez Ant script</description>
 	<available file="${PDBSeq.jar}" property="PDBSeq.archive.present"/>
 
 	<property name="eXist.dir.rel" value="eXist"/>
-	<property name="eXist.dir" location="${ant.file.dir}/${eXist.dir.rel}"/>
+	<property name="eXist.dir" location="${ant.file.dir.parent}/external/${eXist.dir.rel}"/>
 	
 	<property name="eXist.jar.rel" value="exist.jar"/>
 	<property name="eXist.jar" location="${eXist.dir}/${eXist.jar.rel}"/>
