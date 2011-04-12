@@ -14,9 +14,23 @@ import module namespace xmldb="http://exist-db.org/xquery/xmldb";
 import module namespace mgmt = 'http://www.cnio.es/scombio/xcesc/1.0/xquery/systemManagement' at 'xmldb:exist:///db/XCESC-logic/systemManagement.xqm';
 import module namespace login = 'http://www.cnio.es/scombio/xcesc/1.0/xquery/login' at 'xmldb:exist:///db/XCESC-logic/gui-login.xqm';
 
+declare variable $TEMPLATE_POSTFIX as xs:string := '-template';
+declare variable $SERVERS_PATH_KEY as xs:string := '/servers';
+declare variable $SERVERS_TEMPLATE_PATH_KEY as xs:string := concat($SERVERS_PATH_KEY,$TEMPLATE_POSTFIX);
+declare variable $USERS_PATH_KEY as xs:string := '/users';
+declare variable $USERS_TEMPLATE_PATH_KEY as xs:string := concat($USERS_PATH_KEY,$TEMPLATE_POSTFIX);
+
 let $path := request:get-path-info()
 let $user-id := session:get-attribute($login:XCESC_USER_ID_KEY)
-let $res := if(session:exists() and exists($user-id)) then (
+let $res := if($path eq $SERVERS_TEMPLATE_PATH_KEY) then (
+	200
+	,
+	mgmt:servers-template()
+) else if($path eq $USERS_TEMPLATE_PATH_KEY) then (
+	200
+	,
+	mgmt:user-template()
+) else if(session:exists() and exists($user-id)) then (
 	if($path eq '') then (
 		let $logo := util:log-app('error','xcesc.cron',string-join((xmldb:get-current-user(),$user-id,session:get-attribute('user'),session:get-attribute('password'),session:get-attribute-names()),' '))
 		return (
@@ -24,17 +38,25 @@ let $res := if(session:exists() and exists($user-id)) then (
 			,
 			mgmt:getRestrictedInfoFromId($user-id)
 		)
-	) else if($path eq '/users') then (
+	) else if($path eq $USERS_PATH_KEY) then (
 		200
 		,
 		mgmt:getRestrictedUserListFromId($user-id)
+	) else if($path eq $SERVERS_PATH_KEY) then (
+		200
+		,
+		mgmt:getRestrictedServerListFromId($user-id)
 	) else (
 		400
 	)
-) else if($path eq '/users') then (
+) else if($path eq $USERS_PATH_KEY) then (
 	200
 	,
-	mgmt:user-template()
+	mgmt:empty-user-template()
+) else if($path eq $SERVERS_PATH_KEY) then (
+	200
+	,
+	mgmt:empty-servers-template()
 ) else (
 	401
 )
