@@ -97,5 +97,12 @@ declare function gui:get-rel-gui-path() as xs:string {
 
 (: Getting the relative base path of the Atomic Wiki installation :)
 declare function gui:get-public-base-URI() as xs:string {
-	$mgmt:publicBaseURI
+	if(request:exists()) then (
+		let $forwarded-host-port := tokenize(request:get-header('X-Forwarded-Host'),', *')[last()]
+		let $host := if(exists($forwarded-host-port)) then tokenize($forwarded-host-port,':')[1] else request:get-server-name()
+		let $port0 := if(exists($forwarded-host-port)) then tokenize($forwarded-host-port,':')[last()] else string(request:get-server-port())
+		let $port := if(empty($port0)) then $mgmt:publicServerPort else $port0
+		return concat(if($port eq '443') then 'https' else 'http','://',$host,if(not($port = ('80','443'))) then concat(':',$port) else '',$mgmt:publicBasePath)
+	) else
+		$mgmt:publicBaseURI
 };
