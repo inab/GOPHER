@@ -29,6 +29,7 @@ declare function login:generate-nonce($realm as xs:string,$nonce as xs:string)
 	(: No session, no party :)
 	session:invalidate(),
 	session:create(),
+	session:set-max-inactive-interval(180),
 	session:set-attribute($login:NONCE_KEY,$nonce),
 	session:set-attribute($login:REALM_KEY,$realm),
 	response:set-header('XCESC-auth',
