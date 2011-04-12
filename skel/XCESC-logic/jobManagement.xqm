@@ -153,8 +153,6 @@ declare function job:doRound($currentRound as xs:string,$storedExperiment as ele
 {
 	(: Fourth, get online servers based on currentDateTime :)
 	let $querySet:=$storedExperiment//xcesc:query
-	let $jobs:=	for $job in $querySet
-		return <xcesc:job targetId="{$job/@queryId}" status="submitted"/>
 	(: Fifth, submit jobs!!!! :)
 	let $basePobox := string-join(($job:poboxURI,$currentRound),'/')
 	for $onlineServer in $onlineServers
@@ -163,13 +161,19 @@ declare function job:doRound($currentRound as xs:string,$storedExperiment as ele
 		let $queries := <xcesc:queries callback="{$poboxURI}">{$querySet}</xcesc:queries>
 		let $sendDateTime:=current-dateTime()
 		let $ret:=httpclient:post($onlineServer/@uri,$queries,false(),())
+		let $acceptedQueries := $ret/httpclient:body/*[1]
+		let $startDateTime := if(exists($acceptedQueries/@timeStamp)) then
+				$acceptedQueries/@timeStamp/string()
+			else
+				$sendDateTime 
 	return (
 		(: (# exist:batch-transaction #) { :)
-			upd:insertInto($storedExperiment,<xcesc:participant ticket="{$ticketId}" startStamp="{$sendDateTime}">
+			upd:insertInto($storedExperiment,<xcesc:participant ticket="{$ticketId}" startStamp="{$startDateTime}">
 				{$onlineServer}
 				{
 					if($ret/@statusCode eq '200' or $ret/@statusCode eq '202') then
-						$jobs
+						for $accepted in $querySet[@queryId = $acceptedQueries//@queryId]
+							return <xcesc:job targetId="{$accepted/@queryId}" status="submitted"/>
 					else
 						<xcesc:errorMessage statusCode="$ret/@statusCode">{$ret/httpclient:body/*}</xcesc:errorMessage>
 				}
@@ -252,10 +256,10 @@ declare function job:joinResults($round as xs:string,$ticket as xs:string,$times
 				return
 					if(exists($partElem)) then (
 						(
-						for $answer in $answers//xcesc:answer
+						for $answer in $answers/xcesc:answer
 							let $matches:= (
 								(: Match fixing and isolation :)
-								for $match in $answer//xcesc:match
+								for $match in $answer/xcesc:match
 								return <xcesc:match domain="{$match/@domain}" timeStamp="{$timestamp}">{$match/node()}</xcesc:match>
 							)
 						return
@@ -305,10 +309,10 @@ declare function job:joinAssessments($round as xs:string,$assessmentTicket as xs
 				return
 					if(exists($evalElem)) then (
 						(
-						for $answer in $answers//xcesc:answer
+						for $answer in $answers/xcesc:answer
 							let $matches:= (
 								(: Match fixing and isolation :)
-								for $match in $answer//xcesc:jobEvaluation
+								for $match in $answer/xcesc:jobEvaluation
 								return <xcesc:jobEvaluation targetId="{$match/@targetId}" timeStamp="{$timestamp}">{$match/node()}</xcesc:jobEvaluation>
 							)
 						return
@@ -373,8 +377,6 @@ declare function job:doAssessment($currentAssessment as xs:string,$round as xs:s
 					</xcesc:target>
 			}</xcesc:query>
 	)
-	let $jobs:=	for $job in $targetSet
-		return <xcesc:job targetId="{$job/@queryId}" status="submitted"/>
 	(: Fifth, submit jobs!!!! :)
 	let $basePobox := string-join(($job:evaURI,$round,$currentAssessment),'/')
 	for $onlineServer in $onlineServers
@@ -383,13 +385,19 @@ declare function job:doAssessment($currentAssessment as xs:string,$round as xs:s
 		let $queries := <xcesc:queries callback="{$poboxURI}">{$targetSet}</xcesc:queries>
 		let $sendDateTime:=current-dateTime()
 		let $ret:=httpclient:post($onlineServer/@uri,$queries,false(),())
+		let $acceptedQueries := $ret/httpclient:body/*[1]
+		let $startDateTime := if(exists($acceptedQueries/@timeStamp)) then
+				$acceptedQueries/@timeStamp/string()
+			else
+				$sendDateTime 
 	return (
 		(: (# exist:batch-transaction #) { :)
-			upd:insertInto($storedAssessment , <xcesc:evaluator ticket="{$ticketId}" startStamp="{$sendDateTime}">
+			upd:insertInto($storedAssessment , <xcesc:evaluator ticket="{$ticketId}" startStamp="{$startDateTime}">
 				{$onlineServer}
 				{
 					if($ret/@statusCode eq '200' or $ret/@statusCode eq '202') then
-						$jobs
+						for $accepted in $storedExperiment//xcesc:participant[@ticket = $acceptedQueries//@queryId]
+							return <xcesc:job targetId="{$accepted/@ticket}" status="submitted"/>
 					else
 						<xcesc:errorMessage statusCode="$ret/@statusCode">{$ret/httpclient:body/*}</xcesc:errorMessage>
 				}
