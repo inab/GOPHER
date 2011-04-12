@@ -10,13 +10,11 @@ import module namespace httpclient="http://exist-db.org/xquery/httpclient";
 
 (:
 declare variable $atom:uri := concat($mgmt:publicBaseURI, "/atom/summary/wiki/blogs/eXist/");
-:)
 declare variable $atom:host := 'http://localhost:8088';
-(:
 declare variable $atom:host := $mgmt:publicBaseURI;
+declare variable $atom:uri := concat($atom:host, "/atom/summary/wiki/blogs/Atomic/");
 :)
 
-declare variable $atom:uri := concat($atom:host, "/atom/summary/wiki/blogs/Atomic/");
 
 declare option exist:serialize "method=text media-type=application/json";
 
@@ -45,6 +43,16 @@ let $callback := if(empty($callback0) or $callback0[1] eq '' or matches($callbac
 ) else (
 	$callback0[1]
 )
+let $host := '127.0.0.1'
+let $port := string(request:get-server-port())
+(:
+let $forwarded-host-port := tokenize(request:get-header('X-Forwarded-Host'),', *')[last()]
+let $host := if(exists($forwarded-host-port)) then tokenize($forwarded-host-port,':')[1] else request:get-server-name()
+let $port0 := if(exists($forwarded-host-port)) then tokenize($forwarded-host-port,':')[last()] else string(request:get-server-port())
+let $port := if(empty($port0)) then $mgmt:publicServerPort else $port0
+:)
+let $atom:host := concat(if($port eq '443') then 'https' else 'http','://',$host,if(not($port = ('80','443'))) then concat(':',$port) else '')
+let $atom:uri := concat($atom:host, "/atom/summary/wiki/blogs/Atomic/")
 let $uri := xs:anyURI($atom:uri)
 (:
 let $response := doc($uri)
