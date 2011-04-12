@@ -1,14 +1,32 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:xf="http://www.w3.org/2002/xforms" xmlns:ev="http://www.w3.org/2001/xml-events">
+<xsl:stylesheet version="1.0"
+	exclude-result-prefixes="xsl xhtml"
+	xmlns:xcesc="http://www.cnio.es/scombio/xcesc/1.0"
+	xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+	xmlns:xhtml="http://www.w3.org/1999/xhtml"
+	xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:xf="http://www.w3.org/2002/xforms"
+	xmlns:ev="http://www.w3.org/2001/xml-events"
+	xmlns="http://www.w3.org/1999/xhtml"
+>
 	<xsl:param name="xslt.xcesc_template_path"/>
 	<xsl:param name="xslt.xcesc_project_name"/>
 	
 	<xsl:variable name="template" select="document($xslt.xcesc_template_path)/xhtml:html"/>
 	
-	<xsl:output method="xml"/>
+	<xsl:output method="xhtml"/>
+	
+	<xsl:template match="/">
+		<xsl:copy-of select="processing-instruction()|comment()"/>
+		<html>
+			<xsl:copy-of select="$template/@*"/>
+			<xsl:copy-of select="xhtml:html/@*"/>
+			<xsl:apply-templates select="xhtml:html"/>
+		</html>
+	</xsl:template>
 	
 	<xsl:template match="xhtml:html">
-		<html xmlns="http://www.w3.org/1999/xhtml" xmlns:xf="http://www.w3.org/2002/xforms" xmlns:ev="http://www.w3.org/2001/xml-events">
 			<head>
 				<xsl:copy-of select="$template/xhtml:head/@*"/>
 				<title><xsl:value-of select="$xslt.xcesc_project_name"/> - <xsl:value-of select="xhtml:head/xhtml:title"/></title>
@@ -26,7 +44,6 @@
 					<xsl:with-param name="content" select="."/>
 				</xsl:apply-templates>
 			</body>
-		</html>
 	</xsl:template>
 	
 	<!-- Due some bugs in eXist <=> Saxon interaction, we need these templates -->
@@ -34,7 +51,7 @@
 		<xsl:param name="content"/>
 		<xsl:copy>
 			<xsl:apply-templates select="@*" mode="copy"/>
-			<h2 xmlns="http://www.w3.org/1999/xhtml" class="doctitle"><xsl:copy-of select="$content//xhtml:div[@id = 'title']/node()"/></h2>
+			<h2 class="doctitle"><xsl:copy-of select="$content//xhtml:div[@id = 'title']/node()"/></h2>
 		</xsl:copy>
 	</xsl:template>
 
