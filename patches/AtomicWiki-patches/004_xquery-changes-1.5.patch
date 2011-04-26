@@ -1,0 +1,71 @@
+Index: xquery/src/org/exist/atomic/atom.xql
+===================================================================
+--- xquery/src/org/exist/atomic/atom.xql	(revision 113)
++++ xquery/src/org/exist/atomic/atom.xql	(working copy)
+@@ -145,7 +145,7 @@
+ };
+ 
+ declare function atom:delete($credentials as xs:string+, $feed1 as xs:string, $id as xs:string) {
+-    let $commentUri := xs:anyURI(concat(cfg:get-atom-uri(), '/edit/', $feed1, '/', util:md5($id), '/'))
++    let $commentUri := xs:anyURI(concat(cfg:get-atom-uri(), '/edit/', $feed1, '/', util:hash($id,'MD5'), '/'))
+     let $log := util:log("DEBUG", ("$commentUri: ", $commentUri))
+     let $deleted :=
+         httpclient:delete($commentUri, false(), atom:get-headers($credentials))
+@@ -178,7 +178,7 @@
+     let $oldUri := xs:anyURI(concat(cfg:get-atom-uri(), '/edit/', $feed, '?id=', $id))
+ 	let $newUri := xs:anyURI(concat(cfg:get-atom-uri(), '/edit', atom:wiki-root(), $dest))
+ 	(: old URI for the entry's comments :)
+-	let $oldCUri := xs:anyURI(concat(cfg:get-atom-uri(), '/edit/', $feed, '/', util:md5($id)))
++	let $oldCUri := xs:anyURI(concat(cfg:get-atom-uri(), '/edit/', $feed, '/', util:hash($id,'MD5')))
+ 	(: get entry data :)
+ 	let $data := httpclient:get($oldUri, false(), ())//atom:entry
+ 	(: get comments feed :)
+@@ -195,7 +195,7 @@
+         					let $newId := $response//atom:entry/atom:id/string()
+         					(: new comment URI :)
+         					let $newCUri := xs:anyURI(concat(cfg:get-atom-uri(), '/edit', 
+-        						atom:wiki-root(), $dest, '/', util:md5($newId)))
++        						atom:wiki-root(), $dest, '/', util:hash($newId,'MD5')))
+         					return
+         						if ($cdata) then
+         							(: copy comment feed to destination :)
+Index: xquery/src/org/exist/atomic/data.xql
+===================================================================
+--- xquery/src/org/exist/atomic/data.xql	(revision 113)
++++ xquery/src/org/exist/atomic/data.xql	(working copy)
+@@ -26,7 +26,7 @@
+             (: Edit existing entry :)
+             collection(concat(util:collection-name($feed), "/.feed.entry"))/atom:entry[atom:id = $id]
+         else if ($action eq 'load-comment') then
+-            for $entry in collection(concat(atom:wiki-root(), $path, '/', util:md5($id), '/.feed.entry'))/atom:entry
++            for $entry in collection(concat(atom:wiki-root(), $path, '/', util:hash($id,'MD5'), '/.feed.entry'))/atom:entry
+             return
+                 data:retrieve-entry($path, $entry, false())
+         else
+@@ -34,7 +34,7 @@
+ };
+ 
+ declare function data:comment-count($path as xs:string, $entry as element(atom:entry)) {
+-    let $commentCol := collection(concat(atom:wiki-root(), $path, '/', util:md5($entry/atom:id), '/.feed.entry'))
++    let $commentCol := collection(concat(atom:wiki-root(), $path, '/', util:hash($entry/atom:id,'MD5'), '/.feed.entry'))
+     let $commentCount := count($commentCol/atom:entry)
+     return
+         <blog:comments xmlns:blog="http://exist-db.org/xquery/blog" count="{$commentCount}"/>
+@@ -70,7 +70,7 @@
+             let $cache := $entry/wiki:cache/@enabled = "yes"
+             let $cached :=
+                 if ($cache) then
+-                    doc(concat("/db/atom/cache/", util:md5($entry/atom:id)))
++                    doc(concat("/db/atom/cache/", util:hash($entry/atom:id,'MD5')))
+                 else
+                     ()
+             let $useCached :=
+@@ -98,7 +98,7 @@
+                                 system:as-user($credentials[1], $credentials[2], 
+                                     (
+                                         xdb:create-collection("/db/atom", "cache"),
+-                                        xdb:store("/db/atom/cache/", util:md5($entry/atom:id), $result, "text/xml")
++                                        xdb:store("/db/atom/cache/", util:hash($entry/atom:id,'MD5'), $result, "text/xml")
+                                     )
+                                 )
+                         else

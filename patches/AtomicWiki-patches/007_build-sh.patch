@@ -1,0 +1,13 @@
+Index: build.sh
+===================================================================
+--- build.sh	(revision 113)
++++ build.sh	(working copy)
+@@ -13,7 +13,7 @@
+ 
+ LOCALCLASSPATH=$CLASSPATH:$ANT_HOME/lib/ant-launcher.jar:.
+ 
+-JAVA_OPTS="-Djava.endorsed.dirs=java/lib/endorsed -Dant.home=$ANT_HOME"
++JAVA_OPTS="-Djava.endorsed.dirs=../external/eXist/lib/endorsed -Dant.home=$ANT_HOME"
+ 
+ echo Starting Ant...
+ echo

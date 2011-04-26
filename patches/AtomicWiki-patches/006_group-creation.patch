@@ -1,0 +1,16 @@
+Index: webapp/setup.xql
+===================================================================
+--- webapp/setup.xql	(revision 113)
++++ webapp/setup.xql	(working copy)
+@@ -5,6 +5,11 @@
+ declare namespace setup="http://atomic.exist-db.org/xquery/setup";
+ 
+ declare function setup:create-admin-user() {
++    if (not(xdb:group-exists("bloggers"))) then
++    	xdb:create-group("bloggers")
++    else
++    	()
++    ,
+     if (not(xdb:exists-user("blogadmin"))) then
+         xdb:create-user("blogadmin", "atom", "bloggers", ())
+     else

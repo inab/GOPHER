@@ -1,0 +1,37 @@
+Index: java/src/org/atomicwiki/servlets/GetThumbnail.java
+===================================================================
+--- java/src/org/atomicwiki/servlets/GetThumbnail.java	(revision 113)
++++ java/src/org/atomicwiki/servlets/GetThumbnail.java	(working copy)
+@@ -51,7 +51,7 @@
+         try {
+             BrokerPool pool = BrokerPool.getInstance();
+             SecurityManager secman = pool.getSecurityManager();
+-            User admin = secman.getUser("admin");
++            Subject admin = secman.getSystemSubject();
+             DBBroker broker = null;
+             DocumentImpl document = null;
+             File tempFile = null;
+Index: java/src/org/exist/xquery/modules/wiki/WikiModule.java
+===================================================================
+--- java/src/org/exist/xquery/modules/wiki/WikiModule.java	(revision 113)
++++ java/src/org/exist/xquery/modules/wiki/WikiModule.java	(working copy)
+@@ -1,5 +1,8 @@
+ package org.exist.xquery.modules.wiki;
+ 
++import java.util.List;
++import java.util.Map;
++
+ import org.exist.xquery.AbstractInternalModule;
+ import org.exist.xquery.FunctionDef;
+ 
+@@ -19,8 +22,8 @@
+             new FunctionDef(Parse.signature, Parse.class)
+     };
+ 
+-    public WikiModule() {
+-        super(functions);
++    public WikiModule(Map<String, List<? extends Object>> parameters) {
++        super(functions,parameters);
+     }
+ 
+     public String getNamespaceURI() {

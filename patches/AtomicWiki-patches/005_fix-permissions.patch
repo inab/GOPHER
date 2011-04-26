@@ -1,0 +1,39 @@
+Index: site/db/wiki/__contents__.xml
+===================================================================
+--- site/db/wiki/__contents__.xml	(revision 113)
++++ site/db/wiki/__contents__.xml	(working copy)
+@@ -1,10 +1,10 @@
+ <collection xmlns="http://exist.sourceforge.net/NS/exist" name="/db/wiki" owner="blogadmin" group="bloggers" mode="774" created="2009-04-18T17:53:39+02:00" version="1">
+     <resource type="XMLResource" name=".feed.atom" owner="blogadmin" group="bloggers" mode="774" created="2009-02-21T22:18:08+01:00" modified="2009-02-21T22:18:09+01:00" filename=".feed.atom" mimetype="application/atom+xml"/>
+     <resource type="XMLResource" name="feed-config.xml" owner="blogadmin" group="bloggers" mode="774" created="2009-04-14T11:44:13+02:00" modified="2009-04-14T11:46:50+02:00" filename="feed-config.xml" mimetype="text/xml"/>
+-    <resource type="BinaryResource" name="view.xql" owner="blogadmin" group="bloggers" mode="774" created="2009-04-18T17:56:31+02:00" modified="2009-04-18T17:56:31+02:00" filename="view.xql" mimetype="application/xquery"/>
++    <resource type="BinaryResource" name="view.xql" owner="blogadmin" group="bloggers" mode="775" created="2009-04-18T17:56:31+02:00" modified="2009-04-18T17:56:31+02:00" filename="view.xql" mimetype="application/xquery"/>
+     <subcollection name="util" filename="util"/>
+     <subcollection name="atomic" filename="atomic"/>
+     <subcollection name="help" filename="help"/>
+     <subcollection name="blogs" filename="blogs"/>
+     <subcollection name=".feed.entry" filename=".feed.entry"/>
+-</collection>
+\ No newline at end of file
++</collection>
+Index: site/db/wiki/util/__contents__.xml
+===================================================================
+--- site/db/wiki/util/__contents__.xml	(revision 113)
++++ site/db/wiki/util/__contents__.xml	(working copy)
+@@ -1,11 +1,11 @@
+ <collection xmlns="http://exist.sourceforge.net/NS/exist" name="/db/wiki/util" owner="blogadmin" group="bloggers" mode="774" created="2009-04-18T17:53:39+02:00" version="1">
+     <resource type="XMLResource" name=".feed.atom" owner="blogadmin" group="bloggers" mode="774" created="2009-02-21T22:18:08+01:00" modified="2009-02-21T22:18:09+01:00" filename=".feed.atom" mimetype="application/atom+xml"/>
+-    <resource type="BinaryResource" name="latestFeeds.xql" owner="blogadmin" group="bloggers" mode="774" created="2009-02-21T22:18:08+01:00" modified="2009-02-21T22:18:08+01:00" filename="latestFeeds.xql" mimetype="application/xquery"/>
+-    <resource type="BinaryResource" name="mainIndex.xql" owner="blogadmin" group="bloggers" mode="774" created="2009-02-21T22:18:08+01:00" modified="2009-02-21T22:18:08+01:00" filename="mainIndex.xql" mimetype="application/xquery"/>
+-    <resource type="BinaryResource" name="search.xql" owner="blogadmin" group="bloggers" mode="774" created="2009-02-21T22:18:08+01:00" modified="2009-02-21T22:18:09+01:00" filename="search.xql" mimetype="application/xquery"/>
++    <resource type="BinaryResource" name="latestFeeds.xql" owner="blogadmin" group="bloggers" mode="775" created="2009-02-21T22:18:08+01:00" modified="2009-02-21T22:18:08+01:00" filename="latestFeeds.xql" mimetype="application/xquery"/>
++    <resource type="BinaryResource" name="mainIndex.xql" owner="blogadmin" group="bloggers" mode="775" created="2009-02-21T22:18:08+01:00" modified="2009-02-21T22:18:08+01:00" filename="mainIndex.xql" mimetype="application/xquery"/>
++    <resource type="BinaryResource" name="search.xql" owner="blogadmin" group="bloggers" mode="775" created="2009-02-21T22:18:08+01:00" modified="2009-02-21T22:18:09+01:00" filename="search.xql" mimetype="application/xquery"/>
+     <resource type="XMLResource" name="test.xml" owner="blogadmin" group="bloggers" mode="774" created="2009-02-21T22:18:08+01:00" modified="2009-02-21T22:18:08+01:00" filename="test.xml" mimetype="text/xml"/>
+     <resource type="BinaryResource" name="test.xql" owner="blogadmin" group="bloggers" mode="774" created="2009-02-21T22:18:08+01:00" modified="2009-02-21T22:18:08+01:00" filename="test.xql" mimetype="application/xquery"/>
+     <resource type="BinaryResource" name="twitter.css" owner="blogadmin" group="bloggers" mode="774" created="2009-04-06T13:56:50+02:00" modified="2009-04-07T12:50:46+02:00" filename="twitter.css" mimetype="text/css"/>
+     <resource type="BinaryResource" name="twitter.xql" owner="blogadmin" group="bloggers" mode="774" created="2009-04-06T13:46:09+02:00" modified="2009-04-07T12:53:21+02:00" filename="twitter.xql" mimetype="application/xquery"/>
+     <subcollection name=".feed.entry" filename=".feed.entry"/>
+-</collection>
+\ No newline at end of file
++</collection>

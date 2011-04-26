@@ -1,0 +1,59 @@
+Index: build.xml
+===================================================================
+--- build.xml	(revision 113)
++++ build.xml	(working copy)
+@@ -49,7 +49,7 @@
+         <fail message="Aborting."/>
+     </target>
+ 
+-    <target name="prepare" depends="exist-check,download-saxon">
++    <target name="prepare" depends="exist-check">
+         <tstamp/>
+         <mkdir dir="${java.classes}"/>
+         <mkdir dir="${java.libs.endorsed}"/>
+@@ -68,7 +68,9 @@
+                 <include name="jgroups*.jar"/>
+                 <include name="jta*.jar"/>
+                 <include name="log4j*.jar"/>
++		<include name="pkg-repo*.jar"/>
+                 <include name="quartz*.jar"/>
++		<include name="slf4j*.jar"/>
+                 <include name="stax-api*.jar"/>
+                 <include name="sunxacml*.jar"/>
+                 <include name="xmldb*.jar"/>
+@@ -99,10 +101,10 @@
+         </copy>
+         <copy todir="${java.libs.tools}">
+             <fileset dir="${exist.dist}/tools/jetty/lib">
+-                <include name="org.mortbay.jetty.jar"/>
++                <include name="jetty*.jar"/>
+             </fileset>
+-            <fileset dir="${exist.dist}/lib/core">
+-                <include name="javax.servlet*.jar"/>
++            <fileset dir="${exist.dist}/lib/optional">
++                <include name="servlet*.jar"/>
+             </fileset>
+         </copy>
+     </target>
+@@ -151,7 +153,7 @@
+ 		<delete dir="${web.dir}/WEB-INF/data/fs"/>
+ 		<delete dir="${web.dir}/WEB-INF/data/fs.journal"/>
+ 		<delete dir="${web.dir}/WEB-INF/data/lucene"/>
+-        <delete file="${java.libs.tools}/org.mortbay.jetty.jar"/>
++        <delete file="${java.libs.tools}/jetty*.jar"/>
+         <delete>
+             <fileset dir="${java.libs.exist}">
+                     <include name="*.jar"/>
+@@ -192,6 +194,12 @@
+ 
+     <target xmlns:xdb="http://exist-db.org/ant"
+         name="create-admin-user" unless="wiki.admin.exists">
++        
++        <!-- Needed! -->
++        <xdb:addgroup uri="${xmldb.uri}/db" user="admin" password="${admin.password}"
++            name="bloggers"
++            initdb="true" configuration="${exist.configuration}"/>
++        
+         <xdb:adduser uri="${xmldb.uri}/db" user="admin" password="${admin.password}" 
+             name="${wiki.admin.user}" secret="${wiki.admin.password}"
+             primarygroup="bloggers" initdb="true" configuration="${exist.configuration}"/>

@@ -79,6 +79,16 @@
       <New id="Handlers" class="org.eclipse.jetty.server.handler.HandlerCollection">
         <Set name="handlers">
          <Array type="org.eclipse.jetty.server.Handler">
+	   <!--
+           <Item>
+             <New id="webapp2" class="org.eclipse.jetty.webapp.WebAppContext">
+               <Set name="contextPath">/orbeon</Set>
+               <Set name="war"><SystemProperty name="jetty.home" default="."/>/orbeon</Set>
+               <Set name="defaultsDescriptor"><SystemProperty name="jetty.home" default="."
+               />/orbeon/WEB-INF/web.xml</Set>
+             </New>
+           </Item>
+	   -->
            <Item>
              <New id="webapp" class="org.exist.http.WebAppContext">
                <!-- can either be '/exist' or '/' -->
