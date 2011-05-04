@@ -117,9 +117,29 @@
 
     </servlet>
 
+    <!--
+        Milton provides the WebDAV interface
+    -->
+    <servlet>
+        <servlet-name>milton</servlet-name>
+        <servlet-class>com.bradmcevoy.http.MiltonServlet</servlet-class>
+        <init-param>
+            <param-name>resource.factory.class</param-name>
+            <param-value>org.exist.webdav.ExistResourceFactory</param-value>
+        </init-param>
+        <!-- Uncomment to enable debugging -->
+        <!--
+            <init-param>
+            <param-name>filter_0</param-name>
+            <param-value>com.bradmcevoy.http.DebugFilter</param-value>
+            </init-param>
+        -->
+    </servlet>
+    
     <!-- 
         Servlet that enables webDAV access to eXist 
     -->
+    <!--
     <servlet>
         <servlet-name>WebDAVServlet</servlet-name>
         <servlet-class>org.exist.http.servlets.WebDAVServlet</servlet-class>
@@ -129,6 +149,7 @@
             <param-value>basic</param-value>
         </init-param>
     </servlet>
+    -->
 	
     <filter>
         <filter-name>XQueryURLRewrite</filter-name>
