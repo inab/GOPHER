@@ -116,6 +116,14 @@
 
 
     </servlet>
+    <!--
+        JMXservlet is a servlet to monitor the database. It returns status information 
+        for the database based on the JMX interface.
+    -->
+	<servlet>
+	    <servlet-name>JMXServlet</servlet-name>
+        <servlet-class>org.exist.management.client.JMXServlet</servlet-class>
+	  </servlet>
 
     <!--
         Milton provides the WebDAV interface
@@ -176,6 +184,90 @@
         <servlet-name>AtomServlet</servlet-name>
         <servlet-class>org.exist.atom.http.AtomServlet</servlet-class>
     </servlet>
+
+	<!--XForms Filter-->
+	<filter>
+		<filter-name>XFormsFilter</filter-name>
+		<filter-class>de.betterform.agent.web.filter.XFormsFilter</filter-class>
+		<init-param>
+			<param-name>useragent</param-name>
+			<param-value>dojo</param-value>
+		</init-param>
+	</filter>
+	
+	<!--betterFORM servlets-->
+	<servlet>
+		<servlet-name>Flux</servlet-name>
+		<servlet-class>org.directwebremoting.servlet.DwrServlet</servlet-class>
+		<init-param>
+			<param-name>debug</param-name>
+			<param-value>true</param-value>
+		</init-param>
+	</servlet>
+	<servlet>
+		<servlet-name>XFormsPostServlet</servlet-name>
+		<servlet-class>de.betterform.agent.web.servlet.XFormsPostServlet</servlet-class>
+	</servlet>
+	<servlet>
+		<servlet-name>FormsServlet</servlet-name>
+		<servlet-class>de.betterform.agent.web.servlet.FormsServlet</servlet-class>
+	</servlet>
+	<servlet>
+		<servlet-name>inspector</servlet-name>
+		<servlet-class>de.betterform.agent.web.servlet.XFormsInspectorServlet</servlet-class>
+	</servlet>
+	<servlet>
+		<servlet-name>ResourceServlet</servlet-name>
+		<servlet-class>de.betterform.agent.web.resources.ResourceServlet</servlet-class>
+	</servlet>
+
+    <!-- XQuery URL rewriter -->
+    <!--
+    <filter-mapping>
+      <filter-name>XFormsFilter</filter-name>
+      <url-pattern>/rest/db/*</url-pattern>
+   </filter-mapping>
+   -->
+   <filter-mapping>
+      <filter-name>XFormsFilter</filter-name>
+      <servlet-name>XFormsPostServlet</servlet-name>
+   </filter-mapping>
+    <!-- ADDED
+   <filter-mapping>
+        <filter-name>XQueryURLRewrite</filter-name>
+        <url-pattern>/*</url-pattern>
+    </filter-mapping>
+    -->
+    
+   <!--betterFORM Flux Servlet Mapping-->
+    
+    <!-- ADDED
+<servlet-mapping>
+      <servlet-name>Flux</servlet-name>
+      <url-pattern>/Flux/*</url-pattern>
+   </servlet-mapping>
+   <servlet-mapping>
+      <servlet-name>XFormsPostServlet</servlet-name>
+      <url-pattern>/XFormsPost</url-pattern>
+   </servlet-mapping>
+   <servlet-mapping>
+      <servlet-name>XQueryServlet</servlet-name>
+      <url-pattern>*.xql</url-pattern>
+   </servlet-mapping>
+   <servlet-mapping>
+      <servlet-name>FormsServlet</servlet-name>
+      <url-pattern>/forms/formslist</url-pattern>
+   </servlet-mapping>
+   <servlet-mapping>
+      <servlet-name>inspector</servlet-name>
+      <url-pattern>/inspector/*</url-pattern>
+   </servlet-mapping>
+   <servlet-mapping>
+      <servlet-name>ResourceServlet</servlet-name>
+      <url-pattern>/bfResources/*</url-pattern>
+   </servlet-mapping>
+   -->
+
 
     <!-- Dynamic GZip filter, for Jetty 7
          make sure you have the classes available before enabling -->
