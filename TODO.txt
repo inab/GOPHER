@@ -1,5 +1,10 @@
 TODO
 ----
+saxon cleanup at build.xml
+
+
+TODO
+----
 1.-	Login box: with username field, password field, remember me checkbox, Forgot password link, Forgot username link, Login button, Sign up button.
 	- Login button authenticates through AJAX with the server, setting up a cookie received from the server.
 	  If authentication succeeds, the login box will translate into Logged Box. The container page could possibly reload (depending on context).

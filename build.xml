@@ -10,10 +10,11 @@
 	<property name="ant.file.properties" location="${project.home}/build.properties"/>
 	<property file="${ant.file.properties}"/>
 	<property name="xcesc.config.col" value="XCESC-config"/>
-	<xmlproperty file="${project.home}/skel/${xcesc.config.col}/systemManagement.xml"/>
-	<xmlproperty file="${project.home}/skel/${xcesc.config.col}/metaManagement.xml"/>
-	<xmlproperty file="${project.home}/skel/${xcesc.config.col}/jobManagement.xml"/>
-	<xmlproperty file="${project.home}/skel/${xcesc.config.col}/guiManagement.xml"/>
+	<property name="skel.dir" location="${project.home}/skel" />
+	<xmlproperty file="${skel.dir}/${xcesc.config.col}/systemManagement.xml"/>
+	<xmlproperty file="${skel.dir}/${xcesc.config.col}/metaManagement.xml"/>
+	<xmlproperty file="${skel.dir}/${xcesc.config.col}/jobManagement.xml"/>
+	<xmlproperty file="${skel.dir}/${xcesc.config.col}/guiManagement.xml"/>
 
 	<property name="deploy.eXist.admin.user" value="metaManagement(user)"/>
 	<property name="deploy.eXist.admin.pass" value="metaManagement(password)"/>
@@ -24,13 +25,15 @@
 	<property name="xmldb.uri" value="xmldb:exist://${deploy.host}:${deploy.eXist.port}/xmlrpc"/>
 	<property name="publicBaseURI" value="http://${systemManagement(publicServerName)}:${systemManagement(publicServerPort)}${systemManagement(publicBasePath)}"/>
 	
+	<property name="external" location="external" />
 	<property name="src" location="src" />
 	<property name="build" location="build" />
 	<property name="libs" location="libs" />
 	<property name="downloads.dir" value="downloads" />
-	<property name="AtomicWiki.dir" location="AtomicWiki" />
+	<property name="AtomicWiki.dir" location="${external}/AtomicWiki" />
 	<property name="eXist.conf.dir" location="eXist-conf" />
 	<property name="GOPHER.patches.dir" location="patches" />
+	<property name="GOPHER.template.startup" value="starteXist-GOPHER.sh"/>
 	<property name="GOPHER.startup" value="starteXist${deploy.eXist.basebranch}.sh"/>
 	
 	<!-- This one will be the default value when we have a true template wiki site
@@ -46,24 +49,17 @@
 	<property name="weeklyGOPHER-eXist-module.dir.rel" value="weeklyGOPHER-eXist-module" />
 	<property name="weeklyGOPHER-eXist-module.dir" location="${weeklyGOPHER-eXist-module.dir.rel}" />
 	<property name="weeklyGOPHER-eXist-module.dist.dir" location="${weeklyGOPHER-eXist-module.dir.rel}/dist" />
-	<property name="eXist.dir" location="${weeklyGOPHER-eXist-module.dir.rel}/eXist" />
+	<property name="eXist.dir" location="${external}/eXist" />
 	<property name="eXist.ant.dir" location="${project.home}/antlibs" />
 	<property name="eXist.jar.rel" value="exist.jar"/>
 	<property name="eXist.jar" location="${eXist.ant.dir}/${eXist.jar.rel}"/>
 	
 	<property name="atomic-xquery.jar" value="${libs}/atomic-xquery.jar"/>
 
-	<!-- Saxon bundle handling -->
-	<property name="saxon.bundle.src" value="saxonb${saxon.version}j.zip"/>
-	<property name="saxon.bundle.src.local" value="${downloads.dir}/${saxon.bundle.src}"/>
-	<property name="saxon.bundle.dir" value="${downloads.dir}/${saxon.name}-${saxon.version}"/>
-
-	<available file="${saxon.bundle.src.local}" property="saxon.bundle.src.present" description="Check for existence of Saxon bundle"/>
-	<available file="${saxon.bundle.dir}" property="saxon.bundle.present" description="Check for existence of uncompressed Saxon bundle"/>
-
 	<path id="exist-ant.classpath.core">
 		<fileset dir="${eXist.ant.dir}">
 			<include name="lib/core/*.jar" />
+			<include name="lib/endorsed/*.jar" />
 			<include name="${eXist.jar.rel}" />
 			<!--
 			<include name="start.jar" />
@@ -80,9 +76,6 @@
 	<path id="AtomicWiki.classpath.tools">
 		<path refid="exist-ant.classpath.core"/>
 		
-		<fileset dir="${project.home}/${saxon.bundle.dir}">
-			<include name="*.jar"/>
-		</fileset>
 		<fileset dir="${AtomicWiki.dir}/java/lib/tools">
 			<include name="*.jar"/>
 			<exclude name="saxon*.jar"/>
@@ -95,9 +88,11 @@
 			<exclude name="exist.jar"/>
 			<exclude name="exist-optional.jar"/>
 		</fileset>
+		<!--
 		<fileset dir="${AtomicWiki.dir}/java/lib/endorsed">
 			<include name="*.jar"/>
 		</fileset>
+		-->
 		<fileset dir="${AtomicWiki.dir}">
 			<include name="atiki-modules.jar"/>
 		</fileset>
@@ -118,11 +113,11 @@
 	<target name="bootstrap.gopher.eXist.version">
 		<exec dir="${project.home}" executable="/bin/sh" outputproperty="gopher.eXist.version.weekly" failonerror="false">
 			<arg value="-c"/>
-			<arg value="svn propget svn:externals '${weeklyGOPHER-eXist-module.dir.rel}' | grep -o -- '-r[0-9]*'"/>
+			<arg value="svn propget svn:externals '${external}' | grep '^eXist' | grep -o -- '-r[0-9]*'"/>
 		</exec>
 		<exec dir="${project.home}" executable="/bin/sh" outputproperty="gopher.eXist.checkout.uri.weekly" failonerror="false">
 			<arg value="-c"/>
-			<arg value="svn propget svn:externals '${weeklyGOPHER-eXist-module.dir.rel}' | grep -o -- 'http[^ ]*'"/>
+			<arg value="svn propget svn:externals '${external}' | grep '^eXist' | grep -o -- 'http[^ ]*'"/>
 		</exec>
 		<exec dir="${project.home}" executable="/bin/sh" outputproperty="gopher.eXist.version.forms" failonerror="false">
 			<arg value="-c"/>
@@ -145,21 +140,29 @@
 	
 	<target name="conditional.bootstrap.gopher.eXist.version" depends="bootstrap.gopher.eXist.version" unless="gopher.eXist.version.uptodate">
 		<!-- First one -->
+		<exec dir="${project.home}" executable="/bin/sh" outputproperty="gopher.eXist.updated.version" failonerror="false">
+			<arg value="-c"/>
+			<arg value="svn propget svn:externals '${external}' | sed '/^eXist.*$/d ; /^tools-ant.*$/d ; /^tools-endorsed.*$/d ; $a eXist	${gopher.eXist.version}	${gopher.eXist.checkout.uri}\ntools-ant	${gopher.eXist.version}	${gopher.eXist.checkout.uri}/tools/ant\ntools-endorsed	${gopher.eXist.version}	${gopher.eXist.checkout.uri}/lib/endorsed' | sed '/^$/d'"/>
+		</exec>
 		<exec dir="${project.home}" executable="svn" failonerror="true">
 			<arg value="propset"/>
 			<arg value="svn:externals"/>
-			<arg value="eXist	${gopher.eXist.version}	${gopher.eXist.checkout.uri}"/>
-			<arg value="${weeklyGOPHER-eXist-module.dir.rel}"/>
+			<arg value="${gopher.eXist.updated.version}"/>
+			<arg value="${external}"/>
 		</exec>
 		<exec dir="${project.home}" executable="svn" failonerror="true">
 			<arg value="update"/>
-			<arg value="${weeklyGOPHER-eXist-module.dir.rel}"/>
+			<arg value="${external}"/>
 		</exec>
 		<!-- Second one -->
+		<exec dir="${project.home}" executable="/bin/sh" outputproperty="gopher.xsltforms.updated.version" failonerror="false">
+			<arg value="-c"/>
+			<arg value="svn propget svn:externals 'skel/www/${guiManagement(XForms-root)}' | sed '/^xsltforms.*$/d ; $a xsltforms	${gopher.eXist.version}	${gopher.eXist.checkout.uri}/webapp/xforms/xsltforms' | sed '/^$/d'"/>
+		</exec>
 		<exec dir="${project.home}" executable="svn" failonerror="true">
 			<arg value="propset"/>
 			<arg value="svn:externals"/>
-			<arg value="xsltforms	${gopher.eXist.version}	${gopher.eXist.checkout.uri}/webapp/xforms/xsltforms"/>
+			<arg value="${gopher.xsltforms.updated.version}"/>
 			<arg value="skel/www/${guiManagement(XForms-root)}"/>
 		</exec>
 		<exec dir="${project.home}" executable="svn" failonerror="true">
@@ -223,20 +226,8 @@
 			property="already.patched.conf.xml"
 			targetfile="${eXist.conf.dir}/conf.xml"
 		>
-			<srcfiles file="${GOPHER.patches.dir}/eXist-conf-xml.patch"/>
+			<srcfiles file="${GOPHER.patches.dir}/conf-patcher.xsl"/>
 			<srcfiles file="${eXist.dir}/conf.xml.tmpl"/>
-			<srcfiles file="${ant.file}"/>
-			<srcfiles file="${ant.file.properties}"/>
-		</uptodate>
-	</target>
-	
-	<target name="is.patched.server.xml" depends="init">
-		<uptodate
-			property="already.patched.server.xml"
-			targetfile="${eXist.conf.dir}/server.xml"
-		>
-			<srcfiles file="${GOPHER.patches.dir}/eXist-server-xml.patch"/>
-			<srcfiles file="${eXist.dir}/server.xml.tmpl"/>
 			<srcfiles file="${ant.file}"/>
 			<srcfiles file="${ant.file.properties}"/>
 		</uptodate>
@@ -249,9 +240,9 @@
 		>
 			<srcfiles file="${ant.file}"/>
 			<srcfiles file="${ant.file.properties}"/>
-			<srcfiles file="${project.home}/skel/${xcesc.config.col}/systemManagement.xml"/>
-			<srcfiles file="${project.home}/skel/${xcesc.config.col}/jobManagement.xml"/>
-			<srcfiles file="${project.home}/skel/${xcesc.config.col}/guiManagement.xml"/>
+			<srcfiles file="${skel.dir}/${xcesc.config.col}/systemManagement.xml"/>
+			<srcfiles file="${skel.dir}/${xcesc.config.col}/jobManagement.xml"/>
+			<srcfiles file="${skel.dir}/${xcesc.config.col}/guiManagement.xml"/>
 			<srcfiles file="${GOPHER.patches.dir}/controller-config.xml"/>
 		</uptodate>
 	</target>
@@ -261,20 +252,10 @@
 			property="already.patched.log4j.xml"
 			targetfile="${eXist.conf.dir}/log4j.xml"
 		>
-			<srcfiles file="${GOPHER.patches.dir}/log4j-eXist-logdir.patch"/>
+			<srcfiles file="${GOPHER.patches.dir}/log4j-patcher.xsl"/>
 			<srcfiles file="${eXist.dir}/log4j.xml"/>
 			<srcfiles file="${ant.file}"/>
 			<srcfiles file="${ant.file.properties}"/>
-		</uptodate>
-	</target>
-	
-	<target name="is.patched.server.xml.norewrite" depends="init">
-		<uptodate
-			property="already.patched.server.xml.norewrite"
-			targetfile="${eXist.conf.dir}/server.xml.norewrite"
-		>
-			<srcfiles file="${GOPHER.patches.dir}/server-no-rewrite.xsl"/>
-			<srcfiles file="${eXist.conf.dir}/server.xml"/>
 		</uptodate>
 	</target>
 	
@@ -283,7 +264,7 @@
 			property="already.patched.startup"
 			targetfile="${eXist.conf.dir}/${GOPHER.startup}"
 		>
-			<srcfiles file="${GOPHER.patches.dir}/starteXist-GOPHER.sh"/>
+			<srcfiles file="${GOPHER.patches.dir}/${GOPHER.template.startup}"/>
 			<srcfiles file="${ant.file}"/>
 			<srcfiles file="${ant.file.properties}"/>
 		</uptodate>
@@ -294,8 +275,19 @@
 	
 	<!-- Generating configuration files by patch -->
 	<target name="conditional.patch.conf.xml" depends="is.patched.conf.xml" unless="already.patched.conf.xml">
+		<!--
 		<delete file="${eXist.conf.dir}/conf.xml.tmpl" failonerror="false"/>
 		<delete file="${eXist.conf.dir}/conf.xml.tmpl.rej" failonerror="false"/>
+		-->
+		<xslt
+			in="${eXist.dir}/conf.xml.tmpl"
+			out="${eXist.conf.dir}/conf.xml.tmpl"
+			style="${GOPHER.patches.dir}/conf-patcher.xsl"
+			force="true"
+		>
+			<outputproperty name="method" value="xml"/>
+		</xslt>
+		<!--
 		<patch
 			patchfile="${GOPHER.patches.dir}/eXist-conf-xml.patch"
 			originalfile="${eXist.dir}/conf.xml.tmpl"
@@ -311,6 +303,7 @@
 				</or>
 			</condition>
 		</fail>
+		-->
 		<filter token="memory" value="${deploy.eXist.conf.memory}"/>
 		<filter token="data.dir" value="${deploy.eXist.data.dir.conf.xml}"/>
 		<filter token="admin.user" value="${deploy.eXist.admin.user}"/>
@@ -324,40 +317,6 @@
 		/>
 	</target>
 	
-	<!--
-	<target name="conditional.patch.server.xml" depends="is.patched.server.xml" unless="already.patched.server.xml">
-		<delete file="${eXist.conf.dir}/server.xml.tmpl" failonerror="false"/>
-		<delete file="${eXist.conf.dir}/server.xml.tmpl.rej" failonerror="false"/>
-		<patch
-			patchfile="${GOPHER.patches.dir}/eXist-server-xml.patch"
-			originalfile="${eXist.dir}/server.xml.tmpl"
-			destfile="${eXist.conf.dir}/server.xml.tmpl"
-		/>
-		<fail message="Error while patching...">
-			<condition>
-				<or>
-					<not>
-						<available file="${eXist.conf.dir}/server.xml.tmpl"/>
-					</not>
-					<available file="${eXist.conf.dir}/server.xml.tmpl.rej"/>
-				</or>
-			</condition>
-		</fail>
-		<filter token="port" value="${deploy.eXist.port}"/>
-		<filter token="tmpdir" value="${job:jobManagement(physicalScratch)}"/>
-		<filter token="XCESCConfig" value="${xcesc.config.col}"/>
-		<filter token="AtomicLogic" value="${guiManagement(AtomicWiki-logic)}"/>
-		<filter token="AtomicVirtual" value="${guiManagement(AtomicWiki-VirtualRoot)}"/>
-		<filter token="XForms.dir" value="${guiManagement(XForms-root)}"/>
-		<copy
-			file="${eXist.conf.dir}/server.xml.tmpl"
-			tofile="${eXist.conf.dir}/server.xml"
-			overwrite="true"
-			filtering="true"
-		/>
-	</target>
-	-->
-
 	<target name="conditional.patch.controller-config.xml" depends="is.patched.controller-config.xml" unless="already.patched.controller-config.xml">
 		<filter token="port" value="${deploy.eXist.port}"/>
 		<filter token="tmpdir" value="${job:jobManagement(physicalScratch)}"/>
@@ -424,19 +383,6 @@
 		</xslt>
 	</target>
 	
-	<!--
-	<target name="conditional.patch.server.xml.norewrite" depends="conditional.patch.server.xml,is.patched.server.xml.norewrite" unless="already.patched.server.xml.norewrite">
-		<xslt
-			in="${eXist.conf.dir}/server.xml"
-			out="${eXist.conf.dir}/server.xml.norewrite"
-			style="${GOPHER.patches.dir}/server-no-rewrite.xsl"
-			force="true"
-		>
-			<outputproperty name="method" value="xml"/>
-		</xslt>
-	</target>
-	-->
-	
 	<target name="conditional.patch.startup" depends="is.patched.startup" unless="already.patched.startup">
 		<filter token="port" value="${deploy.eXist.port}"/>
 		<filter token="basedir" value="${deploy.home.dir}"/>
@@ -445,7 +391,7 @@
 		<filter token="confdir" value="${deploy.eXist.startup.confdir}"/>
 		<filter token="logsdir" value="${deploy.eXist.startup.logsdir}"/>
 		<copy
-			file="${GOPHER.patches.dir}/starteXist-GOPHER.sh"
+			file="${GOPHER.patches.dir}/${GOPHER.template.startup}"
 			tofile="${eXist.conf.dir}/${GOPHER.startup}"
 			overwrite="true"
 			filtering="true"
@@ -575,26 +521,8 @@
 			basedir="${eXist.conf.dir}/xquery-AtomicWiki" />
 	</target>
 
-	<!-- downloads the Saxon bundle -->
-	<target name="download-saxon-bundle" unless="saxon.bundle.src.present">
-		<echo message=""/>
-		<echo message="---------- Downloading saxon-bundle ----------"/>
-		<echo message=""/>
-		<get src="${saxon.download.mirror}/${saxon.bundle.src}" dest="${saxon.bundle.src.local}" verbose="true"/>
-		<echo message=""/>
-	</target>
-	
-	<!-- uncompresses the Saxon bundle -->
-	<target name="uncompress-saxon-bundle" depends="download-saxon-bundle" unless="saxon.bundle.present">
-		<echo message=""/>
-		<echo message="---------- Uncompressing saxon-bundle ----------"/>
-		<echo message=""/>
-		<unzip src="${saxon.bundle.src.local}" dest="${saxon.bundle.dir}"/>
-		<echo message=""/>
-	</target>
-	
 	<target name="deploy.skel.meta"
-		depends="init.eXist.extension,conditional.patches,uncompress-saxon-bundle,build-atomic-xquery-jar,compile.AtomicWiki"
+		depends="init.eXist.extension,conditional.patches,clean.AtomicWiki,patch.AtomicWiki,build-atomic-xquery-jar,compile.AtomicWiki,update.AtomicWiki.default-site"
 		description="Remote eXist Meta-skeleton for GOPHER"
 	>
 		<!-- First, stop the patient (it may fail) -->
@@ -624,6 +552,16 @@
 			passphrase="${deploy.ssh.passphrase}"
 			command="if [ ! -d '${deploy.eXist.dir}' ] ; then svn co ${gopher.eXist.version} '${gopher.eXist.checkout.uri}' '${deploy.eXist.dir}' ; else svn update ${gopher.eXist.version} '${deploy.eXist.dir}' ; fi"
 		/>
+
+		<sshexec
+			host="${deploy.host}"
+			username="${deploy.ssh.user}"
+			keyfile="${deploy.ssh.keyfile}"
+			trust="yes"
+			passphrase="${deploy.ssh.passphrase}"
+			command="mkdir -p '${deploy.eXist.conf.dir}'"
+		/>
+
 		
 		<!-- Copying Configuration files -->
 		<scp
@@ -640,6 +578,7 @@
 				-->
 				<include name="log4j.xml"/>
 				<include name="atom-services.xml"/>
+				<include name="controller-config.xml"/>
 				<include name="etc/**"/>
 			</fileset>
 			<fileset dir="${project.home}">
@@ -702,11 +641,6 @@
 			passphrase="${deploy.ssh.passphrase}"
 		>
 			<!-- The ones from Saxon -->
-			<fileset dir="${saxon.bundle.dir}">
-				<include name="saxon?.jar"/>
-				<include name="saxon?-dom.jar"/>
-				<include name="saxon?-xpath.jar"/>
-			</fileset>
 			<!-- The ones needed by AtomicWiki -->
 			<fileset dir="${AtomicWiki.dir}">
 				<include name="*.jar"/>
@@ -731,7 +665,7 @@
 			keyfile="${deploy.ssh.keyfile}"
 			trust="yes"
 			passphrase="${deploy.ssh.passphrase}"
-			command="cd '${deploy.home.dir}' &amp;&amp; nohup bash -l '${deploy.home.dir}/${GOPHER.startup}' start &gt;&amp; '${GOPHER.startup}.log' &lt; /dev/null &amp; disown"
+			command="cd '${deploy.home.dir}' &amp;&amp; nohup bash -l '${deploy.home.dir}/${GOPHER.startup}' start &gt;&amp; '${GOPHER.startup}.log' &lt; /dev/null &amp; disown ; sleep 10"
 			timeout="20"
 			failonerror="false"
 		/>
@@ -812,7 +746,7 @@
 		</antcall>
 	</target>
 
-	<target name="deploy.skel" depends="init.eXist.extension,deploy.skel.meta.users" description="Upload the skeleton (at last!)">
+	<target name="deploy.skel" depends="conditional.patches,init.eXist.extension,deploy.skel.meta.users" description="Upload the skeleton (at last!)">
 		<!-- First, the meta-skeleton XML content -->
 		<xdb:store uri="${xmldb.uri}/db" user="${deploy.eXist.admin.user}" password="${deploy.eXist.admin.pass}" failonerror="true" createsubcollections="true">
 			<fileset dir="skel">
@@ -838,11 +772,13 @@
 			</fileset>
 		</xdb:store>
 		
+		<!--
 		<xdb:store uri="${xmldb.uri}/db/${xcesc.config.col}" user="${deploy.eXist.gopher.user}" password="${deploy.eXist.gopher.pass}" failonerror="true" createsubcollections="true">
 			<fileset dir="${eXist.conf.dir}">
 				<include name="controller-config.xml"/>
 			</fileset>
 		</xdb:store>
+		-->
 		
 		<xdb:chmod
 			uri="${xmldb.uri}/db/${xcesc.config.col}"
@@ -966,6 +902,50 @@
 		<ant inheritAll="false" inheritRefs="false" dir="${weeklyGOPHER-eXist-module.dir}" target="clean" />
 	</target>
 	
+	<target name="patch.AtomicWiki" description="AtomicWiki is updated and patched">
+		<exec dir="${AtomicWiki.dir}" executable="svn" failonerror="false">
+			<arg value="revert"/>
+			<arg value="-R"/>
+			<arg value="."/>
+		</exec>
+		
+		<patch
+			patchfile="${GOPHER.patches.dir}/AtomicWiki-patches/001_internal-saxon.patch"
+			dir="${AtomicWiki.dir}" strip="0"
+		/>
+		
+		<patch
+			patchfile="${GOPHER.patches.dir}/AtomicWiki-patches/002_eXist-1.5-changes.patch"
+			dir="${AtomicWiki.dir}" strip="0"
+		/>
+		
+		<patch
+			patchfile="${GOPHER.patches.dir}/AtomicWiki-patches/003_eXist-1.5-etc-changes.patch"
+			dir="${AtomicWiki.dir}" strip="0"
+		/>
+		
+		<patch
+			patchfile="${GOPHER.patches.dir}/AtomicWiki-patches/004_xquery-changes-1.5.patch"
+			dir="${AtomicWiki.dir}" strip="0"
+		/>
+		
+		<patch
+			patchfile="${GOPHER.patches.dir}/AtomicWiki-patches/005_fix-permissions.patch"
+			dir="${AtomicWiki.dir}" strip="0"
+		/>
+		
+		<patch
+			patchfile="${GOPHER.patches.dir}/AtomicWiki-patches/006_group-creation.patch"
+			dir="${AtomicWiki.dir}" strip="0"
+		/>
+		
+		<patch
+			patchfile="${GOPHER.patches.dir}/AtomicWiki-patches/007_build-sh.patch"
+			dir="${AtomicWiki.dir}" strip="0"
+		/>
+		
+	</target>
+	
 	<target name="compile.AtomicWiki" depends="conditional.bootstrap.eXist" description="compiles AtomicWiki">
 		<ant inheritAll="false" inheritRefs="false" dir="${AtomicWiki.dir}">
 			<property name="exist.dist" location="${eXist.dir}"/>
@@ -981,7 +961,7 @@
 		</ant>
 	</target>
 	
-	<target name="clean.AtomicWiki" description="compiles AtomicWiki">
+	<target name="clean.AtomicWiki" description="cleans AtomicWiki">
 		<ant inheritAll="false" inheritRefs="false" dir="${AtomicWiki.dir}" target="clean">
 			<property name="exist.dist" location="${eXist.dir}"/>
 			<property name="xmldb.uri" value="${xmldb.uri}"/>
@@ -1048,7 +1028,7 @@
 		<xslt
 			basedir="${AtomicWiki.dir}/site"
 			destdir="${GOPHER.AtomicWiki-site}"
-			style="${GOPHER.patches.dir}/atomic.xsl"
+			style="${GOPHER.patches.dir}/atomic-patcher.xsl"
 			force="true"
 		>
 			<include name="**/*.xml"/>

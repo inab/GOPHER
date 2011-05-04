@@ -32,20 +32,25 @@ else if ($nummatches > 0) then
 				(: Apply integrate-contents.xsl stylesheet :)
 				<exist:set-attribute name="xslt.stylesheet" value="{$exist:root}/style/integrate-contents.xsl"/>
 				<exist:set-attribute name="xslt.output.indent" value="no"/>
-				<exist:set-attribute name="xslt.output.media-type" value="text/html"/>
+				<exist:set-attribute name="xslt.output.media-type" value="application/xhtml+xml"/>
 				<exist:set-attribute name="xslt.output.method" value="xhtml"/>
 				<exist:set-attribute name="xslt.output.encoding" value="UTF-8"/>
 			</exist:forward>
-			<exist:forward servlet="XSLTServlet">
-				(: Apply xsltforms.xsl stylesheet :)
-				<exist:set-attribute name="xslt.stylesheet" value="{$exist:root}{$exist:controller}/xsltforms/xsltforms.xsl"/>
-				<exist:set-attribute name="xslt.output.omit-xml-declaration" value="yes"/>
-				<exist:set-attribute name="xslt.output.indent" value="no"/>
-				<exist:set-attribute name="xslt.output.media-type" value="text/html"/>
-				<exist:set-attribute name="xslt.output.method" value="xhtml"/>
-				<exist:set-attribute name="xslt.output.encoding" value="UTF-8"/>
-				<exist:set-attribute name="xslt.baseuri" value="xsltforms/"/>
-			</exist:forward>
+			{
+				if(request:get-parameter('xsltforms',()) = 'off') then
+					()
+				else
+					<exist:forward servlet="XSLTServlet">
+						(: Apply xsltforms.xsl stylesheet :)
+						<exist:set-attribute name="xslt.stylesheet" value="{$exist:root}{$exist:controller}/xsltforms/xsltforms.xsl"/>
+						<exist:set-attribute name="xslt.output.omit-xml-declaration" value="yes"/>
+						<exist:set-attribute name="xslt.output.indent" value="no"/>
+						<exist:set-attribute name="xslt.output.media-type" value="text/html"/>
+						<exist:set-attribute name="xslt.output.method" value="xhtml"/>
+						<exist:set-attribute name="xslt.output.encoding" value="UTF-8"/>
+						<exist:set-attribute name="xslt.baseuri" value="xsltforms/"/>
+					</exist:forward>
+			}
 		</exist:view>
 	</exist:dispatch>
 	)

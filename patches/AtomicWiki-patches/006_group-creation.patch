@@ -1,3 +1,48 @@
+Index: webapp/preview.xql
+===================================================================
+--- webapp/preview.xql	(revision 113)
++++ webapp/preview.xql	(working copy)
+@@ -7,7 +7,7 @@
+ declare namespace preview="http://exist-db.org/xquery/blog/preview";
+ 
+ import module namespace request="http://exist-db.org/xquery/request";
+-import module namespace xsl="http://exist-db.org/xquery/transform";
++import module namespace xslt="http://exist-db.org/xquery/transform";
+ import module namespace wiki="http://exist-db.org/xquery/wiki"
+     at "java:org.exist.xquery.modules.wiki.WikiModule";
+ import module namespace atom="http://www.w3.org/2005/Atom";
+@@ -64,7 +64,7 @@
+     let $title := request:get-parameter('title', ())
+     let $entry := preview:create-entry($path, $type, $title, $content)
+     let $result :=
+-        xsl:transform($entry, $atom:stylesheet,
++        xslt:transform($entry, $atom:stylesheet,
+             <parameters>
+                 <param name="mode" value="preview"/>
+                 <param name="uri" value="{request:get-attribute('org.exist.forward.request-uri')}"/>
+Index: webapp/apply-theme.xql
+===================================================================
+--- webapp/apply-theme.xql	(revision 113)
++++ webapp/apply-theme.xql	(working copy)
+@@ -96,7 +96,7 @@
+ 
+ declare function theme:apply-theme($data as element()?, $theme as element(theme:theme)) {
+     let $templateId := $theme/theme:template/@name
+-    let $template := collection("/db")/id($templateId)
++    let $template := (collection("/db")/id($templateId))[1]
+     return
+         theme:process-template($template, $theme, $data)
+ };
+@@ -106,6 +106,6 @@
+ 
+ (: try to locate the theme document :)
+ let $themeId := request:get-parameter("theme", ())
+-let $theme := collection("/db")/id($themeId)
++let $theme := (collection("/db")/id($themeId))[1]
+ return
+-    theme:apply-theme($input, $theme)
+\ No newline at end of file
++    theme:apply-theme($input, $theme)
 Index: webapp/setup.xql
 ===================================================================
 --- webapp/setup.xql	(revision 113)
@@ -14,3 +59,44 @@ Index: webapp/setup.xql
      if (not(xdb:exists-user("blogadmin"))) then
          xdb:create-user("blogadmin", "atom", "bloggers", ())
      else
+Index: webapp/comment.xql
+===================================================================
+--- webapp/comment.xql	(revision 113)
++++ webapp/comment.xql	(working copy)
+@@ -12,7 +12,7 @@
+ import module namespace atom="http://www.w3.org/2005/Atom";
+ import module namespace cfg="http://atomic.exist-db.org/xq/config";
+ import module namespace request="http://exist-db.org/xquery/request";
+-import module namespace xsl="http://exist-db.org/xquery/transform";
++import module namespace xslt="http://exist-db.org/xquery/transform";
+ import module namespace wiki="http://exist-db.org/xquery/wiki"
+     at "java:org.exist.xquery.modules.wiki.WikiModule";
+ import module namespace xdb="http://exist-db.org/xquery/xmldb";
+@@ -101,10 +101,10 @@
+                 }
+             </feed>
+ 		let $data := 
+-            xsl:transform($data, $blog:stylesheet, ()) 
++            xslt:transform($data, $blog:stylesheet, ()) 
+         let $log := util:log("DEBUG", ("Comments: ", $data))
+         return
+ 			$data
+     else (
+         blog:post-comment(atom:get-admin-user(), $path, collection(concat(atom:wiki-root(), $path, "/.feed.entry"))/atom:entry[atom:id = $id])
+-    )
+\ No newline at end of file
++    )
+Index: webapp/index.xql
+===================================================================
+--- webapp/index.xql	(revision 113)
++++ webapp/index.xql	(working copy)
+@@ -16,7 +16,9 @@
+ import module namespace request="http://exist-db.org/xquery/request";
+ import module namespace session="http://exist-db.org/xquery/session";
+ import module namespace xdb="http://exist-db.org/xquery/xmldb";
++(:
+ import module namespace xsl="http://exist-db.org/xquery/transform";
++:)
+ import module namespace wiki="http://exist-db.org/xquery/wiki"
+     at "java:org.exist.xquery.modules.wiki.WikiModule";
+ 

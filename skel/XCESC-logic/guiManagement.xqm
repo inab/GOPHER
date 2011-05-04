@@ -15,7 +15,10 @@ import module namespace core = 'http://www.cnio.es/scombio/xcesc/1.0/xquery/core
 import module namespace mgmt="http://www.cnio.es/scombio/xcesc/1.0/xquery/systemManagement" at "xmldb:exist:///db/XCESC-logic/systemManagement.xqm";
 
 (: Don't forget the starting slash! :)
+(:
 declare variable $gui:guiDoc as element(gui:guiManagement) := collection($core:configColURI)//gui:guiManagement[1];
+:)
+declare variable $gui:guiDoc as element(gui:guiManagement) := subsequence(collection($core:configColURI)//gui:guiManagement,1,1);
 declare variable $gui:AtomicRoot as xs:string := concat('/',$gui:guiDoc/@AtomicWiki-logic/string());
 declare variable $gui:AtomicVirtualRoot as xs:string := concat('/',$gui:guiDoc/@AtomicWiki-VirtualRoot/string());
 declare variable $gui:realm as xs:string := concat('/',$gui:guiDoc/@realm/string());

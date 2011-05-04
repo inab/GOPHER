@@ -1,3 +1,25 @@
+Index: xquery/src/org/exist/atomic/render.xql
+===================================================================
+--- xquery/src/org/exist/atomic/render.xql	(revision 113)
++++ xquery/src/org/exist/atomic/render.xql	(working copy)
+@@ -2,7 +2,7 @@
+ 
+ import module namespace request="http://exist-db.org/xquery/request";
+ import module namespace xdb="http://exist-db.org/xquery/xmldb";
+-import module namespace xsl="http://exist-db.org/xquery/transform";
++import module namespace xslt="http://exist-db.org/xquery/transform";
+ import module namespace atom="http://www.w3.org/2005/Atom";
+ import module namespace cfg="http://atomic.exist-db.org/xq/config";
+ import module namespace wiki="http://exist-db.org/xquery/wiki"
+@@ -258,7 +258,7 @@
+ 				else
+ 					$data
+ 			return
+-				xsl:transform($expanded, $xsl,
++				xslt:transform($expanded, $xsl,
+ 					<parameters>
+ 						<param name="mode" value="view"/>
+ 						<param name="feed" value="{$path}"/>
 Index: xquery/src/org/exist/atomic/atom.xql
 ===================================================================
 --- xquery/src/org/exist/atomic/atom.xql	(revision 113)
@@ -33,7 +55,17 @@ Index: xquery/src/org/exist/atomic/data.xql
 ===================================================================
 --- xquery/src/org/exist/atomic/data.xql	(revision 113)
 +++ xquery/src/org/exist/atomic/data.xql	(working copy)
-@@ -26,7 +26,7 @@
+@@ -5,7 +5,9 @@
+ import module namespace request="http://exist-db.org/xquery/request";
+ import module namespace session="http://exist-db.org/xquery/session";
+ import module namespace xdb="http://exist-db.org/xquery/xmldb";
++(:
+ import module namespace xsl="http://exist-db.org/xquery/transform";
++:)
+ import module namespace wiki="http://exist-db.org/xquery/wiki"
+     at "java:org.exist.xquery.modules.wiki.WikiModule";
+ 
+@@ -26,7 +28,7 @@
              (: Edit existing entry :)
              collection(concat(util:collection-name($feed), "/.feed.entry"))/atom:entry[atom:id = $id]
          else if ($action eq 'load-comment') then
@@ -42,7 +74,7 @@ Index: xquery/src/org/exist/atomic/data.xql
              return
                  data:retrieve-entry($path, $entry, false())
          else
-@@ -34,7 +34,7 @@
+@@ -34,7 +36,7 @@
  };
  
  declare function data:comment-count($path as xs:string, $entry as element(atom:entry)) {
@@ -51,7 +83,7 @@ Index: xquery/src/org/exist/atomic/data.xql
      let $commentCount := count($commentCol/atom:entry)
      return
          <blog:comments xmlns:blog="http://exist-db.org/xquery/blog" count="{$commentCount}"/>
-@@ -70,7 +70,7 @@
+@@ -70,7 +72,7 @@
              let $cache := $entry/wiki:cache/@enabled = "yes"
              let $cached :=
                  if ($cache) then
@@ -60,7 +92,7 @@ Index: xquery/src/org/exist/atomic/data.xql
                  else
                      ()
              let $useCached :=
-@@ -98,7 +98,7 @@
+@@ -98,7 +100,7 @@
                                  system:as-user($credentials[1], $credentials[2], 
                                      (
                                          xdb:create-collection("/db/atom", "cache"),

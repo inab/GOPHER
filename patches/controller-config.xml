@@ -9,19 +9,41 @@
   ++ stored in the db.
 -->
 <configuration xmlns="http://exist.sourceforge.net/NS/exist">
-	<!-- REST interface -->
-	<forward pattern="/rest" servlet="EXistServlet"/>
+	<!-- Webstart servlet
+	<forward pattern="/webstart" servlet="jnlp"/>
+	-->
+	
 	<!-- XMLRPC servlet -->
 	<forward pattern="/xmlrpc" servlet="org.exist.xmlrpc.RpcServlet"/>
+	
+	<!-- REST interface -->
+	<forward pattern="/(rest|servlet)/" servlet="EXistServlet"/>
+	
 	<!-- WebDAV interface -->
+	<forward pattern="/webdav/" servlet="milton"/>
+	<!-- Old WebDAV interface
 	<forward pattern="/webdav/" servlet="WebDAVServlet"/>
+	-->
+	
 	<!-- Atom Publishing Protocol -->
 	<forward pattern="/atom/" servlet="AtomServlet"/>
+	
 	<!-- AtomicWiki thumbnails -->
-	<forward pattern="/thumbs" servlet="org.atomicwiki.servlets.GetThumbnail"/>
+	<forward pattern="/thumbs/" servlet="org.atomicwiki.servlets.GetThumbnail"/>
 	<!--
 	<forward pattern="/@AtomicVirtual@" servlet="org.exist.http.urlrewrite.XQueryURLRewrite"/>
 	-->
+	
+	<!-- The JMX status servlet used to monitor the db -->
+	<forward pattern="/status" servlet="JMXServlet"/>
+	
+	<!--
+		++ Default configuration: main web application is served from the
+		++ webapp directory.
+	-->
+	<root pattern="/library" path="xmldb:exist:///db/org/library"/>
+	
+	<root pattern="/apps" path="xmldb:exist:///db"/>
 	
 	<!-- 
 		++ Main web application is served from the
@@ -37,8 +59,8 @@
 	<root pattern="/db.*" path="xmldb:exist:///db"/>
 	-->
 	
-	<root pattern="^/@AtomicVirtual@.*" path="xmldb:exist:///db/@AtomicVirtual@"/>
-	<root pattern="^/@PublicLogic@.*" path="xmldb:exist:///db/XCESC-logic"/>
+	<root pattern="/@AtomicVirtual@" path="xmldb:exist:///db/@AtomicVirtual@"/>
+	<root pattern="/@PublicLogic@" path="xmldb:exist:///db/XCESC-logic"/>
 	<root pattern="^/$" path="xmldb:exist:///db/www/index.html"/>
 	<root pattern=".*" path="xmldb:exist:///db/www"/>
 	<forward pattern=".*\.(xq|xql|xqy|xquery)$" servlet="XQueryServlet"/>

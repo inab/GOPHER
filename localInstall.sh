@@ -8,6 +8,8 @@ case "$PROJDIR" in
 		PROJDIR="${PWD}/${PROJDIR}"
 esac
 
+EXIST_LOCAL_DIR="${PROJDIR}/external/eXist"
+
 JAVA_TMPHOME="$(\ls -1d /opt/ibm-jdk-bin-1.6* 2> /dev/null |tail -n 1)"
 if [ -n "$JAVA_TMPHOME" ] ; then
 	JAVA_HOME="$JAVA_TMPHOME"
@@ -19,9 +21,9 @@ fi
 DEPLOY_EXIST_DATA_DIR_REL=webapp/WEB-INF/data
 DEPLOY_EXIST_LOGS_DIR_REL=webapp/WEB-INF/logs
 DEPLOY_HOME_DIR="$PROJDIR"/testbed
-DEPLOY_EXIST_DIR=${DEPLOY_HOME_DIR}/eXist
+DEPLOY_EXIST_DIR="${DEPLOY_HOME_DIR}"/eXist
 
-LOCALCLASSPATH="${PROJDIR}/weeklyGOPHER-eXist-module/eXist/lib/core/xmldb.jar" ANT_OPTS="-Djava.endorsed.dirs=${PROJDIR}/weeklyGOPHER-eXist-module/eXist/lib/endorsed" ant \
+LOCALCLASSPATH="${EXIST_LOCAL_DIR}/lib/core/xmldb.jar" ANT_OPTS="-Djava.endorsed.dirs=${EXIST_LOCAL_DIR}/lib/endorsed" ant \
 '-Ddeploy.host=127.0.0.1' \
 "-Ddeploy.home.dir=$DEPLOY_HOME_DIR" \
 '-Ddeploy.ssh.user=jmfernandez' \

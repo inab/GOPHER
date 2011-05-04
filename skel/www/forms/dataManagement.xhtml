@@ -1,116 +1,98 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<html xmlns="http://www.w3.org/1999/xhtml" xmlns:xf="http://www.w3.org/2002/xforms" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xcesc="http://www.cnio.es/scombio/xcesc/1.0">
+<?css-conversion no?>
+<?xsltforms-options debug="yes" lang="en" css="no"?>
+
+<html
+	xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:xf="http://www.w3.org/2002/xforms"
+	xmlns:x="http://www.w3.org/2002/xforms"
+	xmlns:ev="http://www.w3.org/2001/xml-events"
+	xmlns:xcesc="http://www.cnio.es/scombio/xcesc/1.0"
+	xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaInstance="http://www.w3.org/2002/xforms http://www.w3.org/MarkUp/Forms/2007/XForms-11-Schema.xsd"
+>
 	<head>
 		<title>Data Management</title>
 		
-		<style type="text/css"><![CDATA[
-			@namespace xf url("http://www.w3.org/2002/xforms");
-			
-			.horiz-tab-menu {
-				text-align: center;
-				margin-bottom: 1px;
-			}
-			
-			/* all the attributes of each tab, except the background color */
-			/*
-			.horiz-tab-menu xf|trigger ,
-			*/
-			.horiz-tab-menu .xforms-trigger ,
-			.horiz-tab-menu label.tab {
-				border-bottom: 0px;
-				font-family: Helvetica, sans-serif;
-				font-size: .9em;
-				margin-right: 5px;
-				padding: 3px;
-				/* the following only works under FireFox */
-				-moz-border-radius: .5em .5em 0em 0em;
-				-webkit-border-top-left-radius: .5em;
-				-webkit-border-top-right-radius: .5em;
-				-ms-border-radius-topleft: .5em;
-				-ms-border-radius-topright: .5em;
-				-khtml-border-radius-topleft: .5em;
-				-khtml-border-radius-topright: .5em;
-				border-radius-top-right: .5em;
-				border-radius-top-left: .5em;
-			}
-			
-			.horiz-tab-menu label.tab {
-				font-weight: bold;
-				color: #000;
-				background-color: rgb(230, 255, 230);
-				border-left: rgb(102, 204, 102) solid 1px;
-				border-top: rgb(102, 204, 102) solid 1px;
-				border-right: rgb(102, 204, 102) solid 1px;
-				/*
-				background-color: rgb(204, 255, 204);
-				*/
-			}
-			
-			.horiz-tab-menu .xforms-trigger {
-				/*
-				background-color: rgb(204, 255, 204);
-				*/
-				background-color: #BBE8BB;
-				/*
-				border-left: #BBE8BB solid 1px;
-				border-top: #BBE8BB solid 1px;
-				border-right: #BBE8BB solid 1px;
-				*/
-				border:0px;
-			}
-			
-			.horiz-tab-menu .xforms-trigger a ,
-			.horiz-tab-menu .xforms-trigger a:visited {
-				font-weight: normal;
-				color: rgb(102,102,102);
-			}
-			
-			/* the attributes of each div inside of a case */
-			/*
-			xf|switch xf|case div ,
-			*/
-			.xforms-switch .xforms-case div , .tabContent {
-				border-left: solid rgb(102, 204, 102) 1px;
-				border-top: solid rgb(102, 204, 102) 1px;
-				border-right: solid rgb(102, 204, 102) 1px;
-				border-bottom: solid rgb(102, 204, 102) 1px;
-				/* the following only works under FireFox */
-				-moz-border-radius: .5em;
-				-webkit-border-radius: .5em;
-				-ms-border-radius: .5em;
-				-khtml-border-radius: .5em;
-				border-radius: .5em;
-				background-color: rgb(230, 255, 230);
-			}
-			
-			.horiz-tab-menu .xforms-switch {
-				display: inline-block;
-			}
-			
-			#div-1  {
-				background-color: pink;
-			}
-			
-			#div-2  {
-				background-color: salmon;
-			}
-			
-			#div-3  {
-				background-color: khaki;
-			}
-]]></style>
-        <script type="text/javascript">
+		<link rel="stylesheet" href="style/xforms.css" type="text/css" />
+		<script type="text/javascript">
 			window.LoginBox_DO_RELOAD = 1;
 		</script>
 		
-		<xf:model id="default-model">
+		<!--
+			For incremental loading see
+			http://xforms-examples.googlecode.com/svn/trunk/03-dynamic-forms/04-incremental-model-loading/incremental-tab-loading.xhtml
+		-->
+		
+		<xf:model id="xcesc-users-xforms-model">
+			<xf:instance id="userProfileTemplate" src="/XCESC-logic/gui-session-gate.xql/users-template" />
+			
 			<xf:instance id="userProfile" src="/XCESC-logic/gui-session-gate.xql/users" />
-			<xf:instance id="newUserTrigger">
-				<data>
-					<new-user-trigger/>
-				</data>
-			</xf:instance>
+			
+			<!-- This one assures the template is copied -->
+			<xf:action ev:event="xforms-ready" if="not(instance('userProfile')/xcesc:user)">
+				<xf:insert context="instance('userProfile')" origin="instance('userProfileTemplate')/xcesc:user"/>
+			
+				<xf:rebuild/>
+				<xf:recalculate/>
+				<xf:revalidate/>
+				<xf:refresh/>
+				
+				<xf:toggle case="nickname" ev:event="DOMActivate"/>
+				<xf:toggle case="password" ev:event="DOMActivate"/>
+				<xf:toggle case="firstLast" ev:event="DOMActivate"/>
+				<xf:toggle case="organization" ev:event="DOMActivate"/>
+				<xf:toggle case="mail" ev:event="DOMActivate"/>
+				<xf:toggle case="link" ev:event="DOMActivate"/>
+			</xf:action>
+
+			<xf:action ev:event="update-model">
+				<xf:rebuild/>
+				<xf:recalculate/>
+				<xf:revalidate/>
+				<xf:refresh/>
+
+				<xf:message>Goooooooooollllllll!!!!!!</xf:message>
+			</xf:action>
+			
+			<!--
+			<xf:bind nodeset="instance('userProfile')/xcesc:user">
+				<xf:bind nodeset="@nickname" type="xsd:string" required="true()"/>
+				<xf:bind nodeset="@nickpass" type="xsd:string" />
+				<xf:bind nodeset="@id" type="xsd:string" readonly="true()"/>
+				<xf:bind nodeset="@firstName" type="xsd:string" required="true()"/>
+				<xf:bind nodeset="@lastName" type="xsd:string" required="true()"/>
+				<xf:bind nodeset="@organization" type="xsd:string" required="true()"/>
+				<xf:bind nodeset="./xcesc:eMail" type="xsd:string" required="true()"/>
+			-->
+				<!--
+				<xf:bind nodeset="instance('userProfile')/xcesc:user/xcesc:eMail" type="xf:email" required="true()">
+				</xf:bind>
+				-->
+			<!--
+				<xf:bind nodeset="xcesc:eMail/@id" type="xsd:string" readonly="true()"/>
+				<xf:bind nodeset="xcesc:reference" type="xsd:anyURI" required="true()"/>
+			</xf:bind>
+			-->
+			
+			<xf:submission id="userSave" method="post" action="almacena.xq" ref="instance('userProfile')"/>
+		</xf:model>
+		
+		<xf:model id="xcesc-servers-xforms-model">
+			<xf:instance id="serversProfileTemplate" src="/XCESC-logic/gui-session-gate.xql/servers-template" />
+
+			<xf:instance id="serversProfile" src="/XCESC-logic/gui-session-gate.xql/servers" />
+			
+			<!-- This one assures the template is copied -->
+			<xf:action ev:event="xforms-ready" if="not(instance('serversProfile')/xcesc:server)">
+				<xf:insert context="instance('serversProfile')" origin="instance('serversProfileTemplate')/xcesc:server"/>
+				<!--
+				<xf:message level="modal">La cosa arde demasiado en el agujero</xf:message>
+				-->
+			</xf:action>
+		</xf:model>
 		
 		
 		<!--
@@ -146,15 +128,15 @@
 			<xf:submission ref="/xcesc:users" mediatype="application/xml" id="s01" method="post" replace="all" action="{tokenize(request:get-servlet-path(),'/')[last()]}">
 				<xf:message level="modeless" ev:event="xforms-submit-error">Submit error.</xf:message>
 			</xf:submission>
-		-->
 		
 		</xf:model>
+		-->
 	</head>
 	<body>
 		<div id="title">Data Management</div>
 		
 		<div id="contents">
-			<div class="horiz-tab-menu">
+			<xf:group class="horiz-tab-menu">
 				<xf:switch appearance="minimal">
 					<xf:case id="userProfileTabActiveCase" selected="true">
 						<xf:label class="tab">User Profile</xf:label>
@@ -196,116 +178,271 @@
 						<xf:label class="tab">Tab 3 Title</xf:label>
 					</xf:case>
 				</xf:switch>
-			</div>
+			</xf:group>
 			<xf:switch>
 				<xf:case id="userProfileCase" selected="true">
-					<div>
-						<xf:trigger bind="newUserTrigger" appearance="minimal">
-							<xf:toggle case="editUser" ev:event="DOMActivate" />
-						</xf:trigger>
-						<!--
-						<xf:repeat nodeset="xcesc:user" id="usuarios" appearance="full">
-							<xf:switch>
-								<xf:case id="viewUser" selected="true">
-				                    <xf:output ref="@id">
-				                        <xf:label>XCESC user Id</xf:label>
-				                        <xf:hint>XCESC Id assigned to the user</xf:hint>
-				                    </xf:output>
-				                    <xf:output ref="@nickname">
-				                        <xf:label>User name</xf:label>
-				                        <xf:hint>The user name you are using in GOPHER</xf:hint>
-				                    </xf:output>
-				
-				                    <xf:output ref="'********'">
-				                        <xf:label>User password</xf:label>
-				                        <xf:hint>The password you want to set at the beginning</xf:hint>
-				                    </xf:output>
-				
-				                    <xf:output ref="@firstName">
-				                        <xf:label>First Name(s)</xf:label>
-				                        <xf:hint>Your first name(s)</xf:hint>
-				                    </xf:output>
-				                    <xf:output ref="@lastName">
-				                        <xf:label>Last Name(s)</xf:label>                        
-				                        <xf:hint>Your last name(s)</xf:hint>
-				                    </xf:output>
-				                    <xf:output ref="@organization">
-				                        <xf:label>Organization</xf:label>                        
-				                        <xf:hint>The main organization unit you are representing with this user and assessment</xf:hint>
-				                    </xf:output>
-				                    <xf:output ref="xcesc:eMail">
-				                        <xf:label>e-mail</xf:label>                        
-				                        <xf:hint>The e-mail you want GOPHER to use when it needs to contact you</xf:hint>
-				                    </xf:output>
-								</xf:case>
-								<xf:case id="editUser" selected="false">
-				                    <xf:output ref="@id">
-				                        <xf:label>XCESC user Id</xf:label>
-				                        <xf:hint>XCESC Id assigned to the user</xf:hint>
-				                    </xf:output>
-				                    <xf:input ref="@nickname">
-				                        <xf:label>User name</xf:label>
-				                        <xf:hint>The user name you are using in GOPHER</xf:hint>
-				                    </xf:input>
-				
-				                    <xf:secret ref="@nickpass">
-				                        <xf:label>User password</xf:label>
-				                        <xf:hint>The password you want to set at the beginning</xf:hint>
-				                    </xf:secret>
-				
-				                    <xf:input ref="@firstName">
-				                        <xf:label>First Name(s)</xf:label>
-				                        <xf:hint>Your first name(s)</xf:hint>
-				                    </xf:input>
-				                    <xf:input ref="@lastName">
-				                        <xf:label>Last Name(s)</xf:label>                        
-				                        <xf:hint>Your last name(s)</xf:hint>
-				                    </xf:input>
-				                    <xf:input ref="@organization">
-				                        <xf:label>Organization</xf:label>                        
-				                        <xf:hint>The main organization unit you are representing with this user and assessment</xf:hint>
-				                    </xf:input>
-				                    <xf:input ref="xcesc:eMail">
-				                        <xf:label>e-mail</xf:label>                        
-				                        <xf:hint>The e-mail you want GOPHER to use when it needs to contact you</xf:hint>
-				                    </xf:input>
-								</xf:case>
-							</xf:switch>
+					<xf:group class="container">
+						<xf:repeat nodeset="instance('userProfile')/xcesc:user" id="usuarios" appearance="full">
+							<!--
+							<xf:trigger bind="newUserTrigger" appearance="minimal">
+								<xf:toggle case="editUser" ev:event="DOMActivate" />
+							</xf:trigger>
+							-->
+							<xf:label class="fancyLabel">
+								<xf:output value="concat('User ',index('usuarios'))"/>
+							</xf:label>
+							<xf:group>
+								<xf:group>
+									<xf:output class="fancyOutput" ref="@id">
+										<xf:label class="fancyLabel">XCESC user Id</xf:label>
+										<xf:hint>XCESC Id assigned to the user</xf:hint>
+									</xf:output>
+								</xf:group>
+								
+								<br/>
+								
+								<xf:switch>
+									<xf:case id="nicknameRO" selected="true">
+										<xf:output class="fancyOutput" ref="@nickname">
+											<xf:label class="fancyLabel">User name</xf:label>
+											<xf:hint>The user name you are using in GOPHER</xf:hint>
+										</xf:output>
+									</xf:case>
+									<xf:case id="nickname" selected="false">
+										<xf:input class="editableOutput" ref="@nickname">
+											<xf:label class="fancyLabel">User name</xf:label>
+											<xf:hint>The user name you are using in GOPHER</xf:hint>
+										</xf:input>
+									</xf:case>
+								</xf:switch>
+								
+								<br/>
+								
+								<xf:switch>
+									<xf:case id="passwordRO" selected="true">
+										<xf:output class="fancyOutput" value="'********'">
+											<xf:label class="fancyLabel">User password</xf:label>
+											<xf:hint>The password you want to set at the beginning</xf:hint>
+										</xf:output>
+										<xf:trigger appearance="compact">
+											<xf:label>change</xf:label>
+											<xf:toggle case="password" ev:event="DOMActivate"/>
+										</xf:trigger>
+									</xf:case>
+									<xf:case id="password" selected="false">
+										<xf:secret class="editableOutput" ref="@nickpass">
+											<xf:label class="fancyLabel">User password</xf:label>
+											<xf:hint>The password you want to set at the beginning</xf:hint>
+										</xf:secret>
+										<xf:trigger appearance="compact">
+											<xf:label>discard changes</xf:label>
+											<xf:toggle case="passwordRO" ev:event="DOMActivate"/>
+										</xf:trigger>
+									</xf:case>
+								</xf:switch>
+			
+								<br/>
+								
+								<xf:switch>
+									<xf:case id="firstLastRO" selected="true">
+										<xf:output class="fancyOutput" value="context()/@firstName">
+											<xf:label class="fancyLabel">First Name(s)</xf:label>
+											<xf:hint>Your first name(s)</xf:hint>
+										</xf:output>
+										<xf:output class="fancyOutput" value="@lastName">
+											<xf:label class="fancyLabel">Last Name(s)</xf:label>
+											<xf:hint>Your last name(s)</xf:hint>
+										</xf:output>
+										<xf:trigger appearance="compact">
+											<xf:label>edit</xf:label>
+											<xf:toggle case="firstLast" ev:event="DOMActivate"/>
+										</xf:trigger>
+									</xf:case>
+									<xf:case id="firstLast" selected="false">
+										<xf:input class="editableOutput" ref="@firstName" incremental="true">
+											<xf:label class="fancyLabel">First Name(s)</xf:label>
+											<xf:hint>Your first name(s)</xf:hint>
+										</xf:input>
+										<xf:input class="editableOutput" ref="@lastName" incremental="true">
+											<xf:label class="fancyLabel">Last Name(s)</xf:label>
+											<xf:hint>Your last name(s)</xf:hint>
+										</xf:input>
+										<xf:trigger appearance="compact">
+											<xf:label>recalculate</xf:label>
+											<!--
+											<xf:rebuild model="xcesc-users-xforms-model"/>
+											-->
+											<xf:action ev:event="DOMActivate">
+												<!--
+												<xf:dispatch name="update-model" target="xcesc-users-xforms-model"/>
+												-->
+												<xf:toggle case="firstLastRO" ev:event="DOMActivate"/>
+											</xf:action>
+										</xf:trigger>
+									</xf:case>
+								</xf:switch>
+								
+								<br/>
+								
+								<xf:setvalue ref="@organization" value="" if="not(@organization)"/>
+								<xf:switch>
+									<xf:case id="organizationRO" selected="true">
+										<xf:output class="fancyOutput" ref="@organization">
+											<xf:label class="fancyLabel">Organization</xf:label>
+											<xf:hint>The main organization unit you are representing with this user and assessment</xf:hint>
+										</xf:output>
+										<xf:trigger appearance="compact">
+											<xf:label>edit</xf:label>
+											<xf:toggle case="organization" ev:event="DOMActivate"/>
+										</xf:trigger>
+									</xf:case>
+									<xf:case id="organization" selected="false">
+										<xf:input class="editableOutput" ref="@organization">
+											<xf:label class="fancyLabel">Organization</xf:label>
+											<xf:hint>The main organization unit you are representing with this user and assessment</xf:hint>
+										</xf:input>
+										<xf:trigger appearance="compact">
+											<xf:label>discard changes</xf:label>
+											<xf:toggle case="organizationRO" ev:event="DOMActivate"/>
+										</xf:trigger>
+									</xf:case>
+								</xf:switch>
+								
+								<br/>
+								
+								<xf:group>
+									<xf:label class="fancyLabel">e-mail</xf:label>			
+									<xf:repeat nodeset="xcesc:eMail" id="emails">
+										<xf:switch>
+											<xf:case id="mailRO" selected="true">
+												<xf:output class="fancyOutput" value="context()">
+													<xf:hint>The e-mail you want GOPHER to use when it needs to contact you</xf:hint>
+												</xf:output>
+												<xf:trigger appearance="compact">
+													<xf:label>edit</xf:label>
+													<xf:toggle case="mail" ev:event="DOMActivate"/>
+												</xf:trigger>
+											</xf:case>
+											<xf:case id="mail" selected="false">
+												<xf:input class="editableOutput" ref="context()">
+													<xf:hint>The e-mail you want GOPHER to use when it needs to contact you</xf:hint>
+												</xf:input>
+												<xf:trigger appearance="compact">
+													<xf:label>discard changes</xf:label>
+													<xf:toggle case="mailRO" ev:event="DOMActivate"/>
+												</xf:trigger>
+											</xf:case>
+										</xf:switch>
+									</xf:repeat>
+								</xf:group>
+								
+								<br/>
+								
+								<xf:group>
+									<xf:label class="fancyLabel">External Link</xf:label>
+									<xf:repeat nodeset="xcesc:references/xcesc:reference" id="refs">
+										<xf:switch>
+											<xf:case id="linkRO" selected="true">
+												<xf:output class="fancyOutput" ref="context()">
+													<xf:hint>Some external link about you</xf:hint>
+												</xf:output>
+												<xf:trigger appearance="compact">
+													<xf:label>edit</xf:label>
+													<xf:toggle case="link" ev:event="DOMActivate"/>
+												</xf:trigger>
+											</xf:case>
+											<xf:case id="link" selected="false">
+												<xf:input class="editableOutput" ref="context()">
+													<xf:hint>Some external link about you</xf:hint>
+												</xf:input>
+												<xf:trigger appearance="compact" class="plusbutton">
+													<xf:action event="DOMActivate">
+														<xf:insert
+															context=".."
+															nodeset="xcesc:reference"
+															at="index('refs')"
+															origin="instance('userProfileTemplate')/xcesc:user/xcesc:references/xcesc:reference"
+															position="after"/>
+													</xf:action>
+												</xf:trigger>
+												<xf:trigger appearance="compact" class="minusbutton">
+													<xf:action event="DOMActivate">
+														<xf:delete nodeset="context()"/>
+													</xf:action>
+												</xf:trigger>
+												<xf:trigger appearance="compact">
+													<xf:label>discard changes</xf:label>
+													<xf:toggle case="linkRO" ev:event="DOMActivate"/>
+												</xf:trigger>
+											</xf:case>
+										</xf:switch>
+									</xf:repeat>
+								</xf:group>
+							</xf:group>
+							<xf:group>
+								<xf:switch>
+									<xf:case id="canEditAll" selected="true">
+										<xf:trigger appearance="full">
+											<xf:label>edit all fields</xf:label>
+											
+											<xf:action ev:event="DOMActivate" if="not(context()/xcesc:references/xcesc:reference)">
+												<xf:insert context="xcesc:references" origin="instance('userProfileTemplate')/xcesc:user/xcesc:references/xcesc:reference"/>
+											</xf:action>
+											
+											<xf:action ev:event="DOMActivate" if="not(context()/xcesc:eMail)">
+												<xf:insert origin="instance('userProfileTemplate')/xcesc:user/xcesc:eMail"/>
+											</xf:action>
+											
+											<xf:toggle case="password" ev:event="DOMActivate"/>
+											<xf:toggle case="firstLast" ev:event="DOMActivate"/>
+											<xf:toggle case="organization" ev:event="DOMActivate"/>
+											<xf:toggle case="mail" ev:event="DOMActivate"/>
+											<xf:toggle case="link" ev:event="DOMActivate"/>
+											
+											<xf:toggle case="hideEditAll" ev:event="DOMActivate"/>
+										</xf:trigger>
+									</xf:case>
+									<xf:case id="hideEditAll"/>
+								</xf:switch>
+							</xf:group>
 						</xf:repeat>
-						-->
+						
+						<xf:submit submission="userSave">
+							<xf:label>Upload XML fragment</xf:label>
+						</xf:submit>
 						
 						<!--
 						<xf:repeat nodeset="xcesc:user" id="usuarios" appearance="full">
-				                    <xf:output ref="@id">
-				                        <xf:label>XCESC user Id</xf:label>
-				                        <xf:hint>XCESC Id assigned to the user</xf:hint>
-				                    </xf:output>
-				                    <xf:input ref="@nickname">
-				                        <xf:label>User name</xf:label>
-				                        <xf:hint>The user name you are using in GOPHER</xf:hint>
-				                    </xf:input>
+						    <xf:output ref="@id">
+							<xf:label>XCESC user Id</xf:label>
+							<xf:hint>XCESC Id assigned to the user</xf:hint>
+						    </xf:output>
+						    <xf:input ref="@nickname">
+							<xf:label>User name</xf:label>
+							<xf:hint>The user name you are using in GOPHER</xf:hint>
+						    </xf:input>
 				
-				                    <xf:secret ref="@nickpass">
-				                        <xf:label>User password</xf:label>
-				                        <xf:hint>The password you want to set at the beginning</xf:hint>
-				                    </xf:secret>
+						    <xf:secret ref="@nickpass">
+							<xf:label>User password</xf:label>
+							<xf:hint>The password you want to set at the beginning</xf:hint>
+						    </xf:secret>
 				
-				                    <xf:input ref="@firstName">
-				                        <xf:label>First Name(s)</xf:label>
-				                        <xf:hint>Your first name(s)</xf:hint>
-				                    </xf:input>
-				                    <xf:input ref="@lastName">
-				                        <xf:label>Last Name(s)</xf:label>                        
-				                        <xf:hint>Your last name(s)</xf:hint>
-				                    </xf:input>
-				                    <xf:input ref="@organization">
-				                        <xf:label>Organization</xf:label>                        
-				                        <xf:hint>The main organization unit you are representing with this user and assessment</xf:hint>
-				                    </xf:input>
-				                    <xf:input ref="xcesc:eMail">
-				                        <xf:label>e-mail</xf:label>                        
-				                        <xf:hint>The e-mail you want GOPHER to use when it needs to contact you</xf:hint>
-				                    </xf:input>
+						    <xf:input ref="@firstName">
+							<xf:label>First Name(s)</xf:label>
+							<xf:hint>Your first name(s)</xf:hint>
+						    </xf:input>
+						    <xf:input ref="@lastName">
+							<xf:label>Last Name(s)</xf:label>			
+							<xf:hint>Your last name(s)</xf:hint>
+						    </xf:input>
+						    <xf:input ref="@organization">
+							<xf:label>Organization</xf:label>			
+							<xf:hint>The main organization unit you are representing with this user and assessment</xf:hint>
+						    </xf:input>
+						    <xf:input ref="xcesc:eMail">
+							<xf:label>e-mail</xf:label>			
+							<xf:hint>The e-mail you want GOPHER to use when it needs to contact you</xf:hint>
+						    </xf:input>
 							<xf:trigger class="delete">
 								<xf:label>X</xf:label>
 								<xf:action ev:event="DOMActivate">
@@ -317,38 +454,20 @@
 							</xf:trigger>
 						</xf:repeat>
 						-->
-					menu 1 content menu 1 content menu 1 content menu 1 content
-					menu 1 content menu 1 content menu 1 content menu 1 content
-					menu 1 content menu 1 content menu 1 content menu 1 content
-					menu 1 content menu 1 content menu 1 content menu 1 content
-					menu 1 content menu 1 content menu 1 content menu 1 content
-					menu 1 content menu 1 content menu 1 content menu 1 content
-					menu 1 content menu 1 content menu 1 content menu 1 content
-					menu 1 content menu 1 content menu 1 content menu 1 content
-					menu 1 content menu 1 content menu 1 content menu 1 content
-					menu 1 content menu 1 content menu 1 content menu 1 content
-					menu 1 content menu 1 content menu 1 content menu 1 content
-					menu 1 content menu 1 content menu 1 content menu 1 content
-					menu 1 content menu 1 content menu 1 content menu 1 content
-					menu 1 content menu 1 content menu 1 content menu 1 content
-					menu 1 content menu 1 content menu 1 content menu 1 content
-					menu 1 content menu 1 content menu 1 content menu 1 content
-					menu 1 content menu 1 content menu 1 content menu 1 content
-					menu 1 content menu 1 content menu 1 content menu 1 content
-					</div>
+					</xf:group>
 				</xf:case>
 				<xf:case id="serverManagementCase">
-					<div>
+					<xf:group class="container">
 					menu 2 content menu 2 content menu 2 content menu 2 content
 					menu 2 content menu 2 content menu 2 content menu 2 content
 					menu 2 content menu 2 content menu 2 content menu 2 content
 					menu 2 content menu 2 content menu 2 content menu 2 content
 					menu 2 content menu 2 content menu 2 content menu 2 content
 					menu 2 content menu 2 content menu 2 content menu 2 content
-					</div>
+					</xf:group>
 				</xf:case>
 				<xf:case id="case-3">
-					<div>
+					<xf:group class="container">
 					menu 3 content menu 3 content menu 3 content menu 3 content
 					menu 3 content menu 3 content menu 3 content menu 3 content
 					menu 3 content menu 3 content menu 3 content menu 3 content
@@ -379,7 +498,7 @@
 					menu 3 content menu 3 content menu 3 content menu 3 content
 					menu 3 content menu 3 content menu 3 content menu 3 content
 					menu 3 content menu 3 content menu 3 content menu 3 content
-					</div>
+					</xf:group>
 				</xf:case>
 			</xf:switch>
 		</div>

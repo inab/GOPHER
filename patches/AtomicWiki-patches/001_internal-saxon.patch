@@ -44,7 +44,20 @@ Index: build.xml
          <delete>
              <fileset dir="${java.libs.exist}">
                      <include name="*.jar"/>
-@@ -192,6 +194,12 @@
+@@ -162,10 +164,11 @@
+ 
+     <target name="setup" description="Prepare the database" depends="jar,configuration,init,styles,default-site,migrate"/>
+ 
+-	<target name="antlibs">
++	<target name="antlibs" unless="already.init.eXist.extension">
+ 		<typedef resource="org/exist/ant/antlib.xml" uri="http://exist-db.org/ant">
+         	<classpath refid="classpath.core"/>
+     	</typedef>
++		<available file="${java.libs.exist}" type="dir" property="already.init.eXist.extension"/>
+ 	</target>
+ 	
+     <target xmlns:xdb="http://exist-db.org/ant" name="init" depends="antlibs">
+@@ -192,6 +195,12 @@
  
      <target xmlns:xdb="http://exist-db.org/ant"
          name="create-admin-user" unless="wiki.admin.exists">
@@ -57,3 +70,24 @@ Index: build.xml
          <xdb:adduser uri="${xmldb.uri}/db" user="admin" password="${admin.password}" 
              name="${wiki.admin.user}" secret="${wiki.admin.password}"
              primarygroup="bloggers" initdb="true" configuration="${exist.configuration}"/>
+@@ -206,6 +215,8 @@
+    	<target xmlns:xdb="http://exist-db.org/ant" name="default-site" depends="antlibs">
+ 		<xdb:restore uri="${xmldb.uri}" user="admin" password="${admin.password}"
+ 			dir="${data.dir}/db/wiki"/>
++		<xdb:restore uri="${xmldb.uri}" user="admin" password="${admin.password}"
++			dir="${data.dir}/db/atom"/>
+ 	</target>
+ 
+     <target xmlns:xdb="http://exist-db.org/ant" name="styles" depends="antlibs">
+@@ -230,9 +241,9 @@
+         </xdb:store>
+         <xdb:xquery uri="${xmldb.uri}/db" initdb="true" configuration="${exist.configuration}"
+             user="admin" password="${admin.password}">
+-            for $resource in xmldb:get-child-resources("${xmldb.uri}/db/atom")
++            for $resource in xmldb:get-child-resources("xmldb:exist:///db/atom")
+             return
+-                xmldb:set-resource-permissions("${xmldb.uri}/db/atom", $resource, 
++                xmldb:set-resource-permissions("xmldb:exist:///db/atom", $resource, 
+                     "${wiki.admin.user}", "bloggers", 508)
+         </xdb:xquery>
+     </target>

@@ -16,7 +16,10 @@ import module namespace core = 'http://www.cnio.es/scombio/xcesc/1.0/xquery/core
 import module namespace upd = 'http://www.cnio.es/scombio/xcesc/1.0/xquery/XQueryUpdatePrimitives' at 'xmldb:exist:///db/XCESC-logic/XQueryUpdatePrimitives.xqm';
 import module namespace mgmt = "http://www.cnio.es/scombio/xcesc/1.0/xquery/systemManagement" at "xmldb:exist:///db/XCESC-logic/systemManagement.xqm";
 
+(:
 declare variable $job:configRoot as element(job:jobManagement) := collection($core:configColURI)//job:jobManagement[1];
+:)
+declare variable $job:configRoot as element(job:jobManagement) := subsequence(collection($core:configColURI)//job:jobManagement,1,1);
 
 (: Deadlines :)
 declare variable $job:intervalBeforeAssessment as xs:dayTimeDuration := xs:dayTimeDuration($job:configRoot/@intervalBeforeAssessment/string());

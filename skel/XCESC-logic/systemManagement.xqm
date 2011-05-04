@@ -17,16 +17,24 @@ import module namespace mailcore = 'http://www.cnio.es/scombio/xcesc/1.0/xquery/
 
 import module namespace upd = 'http://www.cnio.es/scombio/xcesc/1.0/xquery/XQueryUpdatePrimitives' at 'xmldb:exist:///db/XCESC-logic/XQueryUpdatePrimitives.xqm';
 
+(:
 declare variable $mgmt:configRoot as element(mgmt:systemManagement) := collection($core:configColURI)//mgmt:systemManagement[1];
+:)
+declare variable $mgmt:configRoot as element(mgmt:systemManagement) := subsequence(collection($core:configColURI)//mgmt:systemManagement,1,1);
 
 declare variable $mgmt:partServer as xs:string := 'participant';
 declare variable $mgmt:evalServer as xs:string := 'evaluator';
 
 declare variable $mgmt:projectName as xs:string := $mgmt:configRoot/@projectName/string();
 
+(:
 declare variable $mgmt:adminUser as xs:string := $mgmt:configRoot/mgmt:admin[1]/@user/string();
 declare variable $mgmt:adminPass as xs:string := $mgmt:configRoot/mgmt:admin[1]/@password/string();
 declare variable $mgmt:adminMail as xs:string := $mgmt:configRoot/mgmt:admin[1]/@mail/string();
+:)
+declare variable $mgmt:adminUser as xs:string := subsequence($mgmt:configRoot/mgmt:admin,1,1)/@user/string();
+declare variable $mgmt:adminPass as xs:string := subsequence($mgmt:configRoot/mgmt:admin,1,1)/@password/string();
+declare variable $mgmt:adminMail as xs:string := subsequence($mgmt:configRoot/mgmt:admin,1,1)/@mail/string();
 
 declare variable $mgmt:roles as element(mgmt:role)+ := $mgmt:configRoot/mgmt:availableRoles/mgmt:role;
 
@@ -38,12 +46,13 @@ declare variable $mgmt:mgmtDoc as xs:string := $mgmt:configRoot/@managementDoc/s
 declare variable $mgmt:mgmtDocURI as xs:string := xmldb:encode($mgmt:mgmtDoc);
 
 declare variable $mgmt:publicServerPort as xs:string := $mgmt:configRoot/@publicServerPort/string();
+declare variable $mgmt:publicBasePath as xs:string := $mgmt:configRoot/@publicBasePath/string();
 declare variable $mgmt:publicBaseURI as xs:string := concat(
 	if($mgmt:publicServerPort eq '443') then 'https' else 'http',
 	'://',
 	$mgmt:configRoot/@publicServerName/string(),
 	if($mgmt:publicServerPort ne '80' and $mgmt:publicServerPort ne '443') then concat(':',$mgmt:publicServerPort) else '',
-	$mgmt:configRoot/@publicBasePath/string()
+	$mgmt:publicBasePath
 	);
 
 declare variable $mgmt:mgmtDocPath as xs:string := string-join(($mgmt:mgmtCol,$mgmt:mgmtDoc),'/');
@@ -169,6 +178,131 @@ declare function mgmt:getManagementDoc()
 			return
 				$mgmtDoc
 		)
+};
+
+(: It obtains the whole user configuration, by id :)
+declare function mgmt:getUserFromId($id as xs:string)
+	as element(xcesc:user)?
+{
+	mgmt:getManagementDoc()//xcesc:user[@id eq $id]
+};
+
+declare function mgmt:getActiveUserFromId($id as xs:string)
+	as element(xcesc:user)?
+{
+	mgmt:getUserFromId($id)[@status eq 'enabled']
+};
+
+declare function mgmt:is-super-user($rulerDoc as element(xcesc:user))
+	as xs:boolean
+{
+	exists($mgmt:roles[@isSuperUser eq 'true'][@name = $rulerDoc//xcesc:role[not(@isDenied)]/@name])
+};
+
+declare function mgmt:is-super-user($id as xs:string)
+	as xs:boolean
+{
+	let $rulerDoc := mgmt:getActiveUserFromId($id)
+	return
+		if (exists($rulerDoc)) then (
+			mgmt:is-super-user($rulerDoc)
+		) else (
+			false()
+		)
+};
+
+declare function mgmt:has-user-role($rulerDoc as element(xcesc:user), $role as xs:string, $userDoc as element(xcesc:user))
+	as xs:boolean
+{
+	if(mgmt:is-super-user($rulerDoc) or $userDoc/@id eq $rulerDoc/@id or $rulerDoc//xcesc:role[@name eq $role][not(@isDenied)]) then (
+		true()
+	) else (
+		false()
+	)
+};
+
+declare function mgmt:has-user-server-role($rulerDoc as element(xcesc:user), $role as xs:string, $userDoc as element(xcesc:server))
+	as xs:boolean
+{
+	if(mgmt:is-super-user($rulerDoc) or $serverDoc/@managerId eq $rulerDoc/@id or $rulerDoc//xcesc:role[@name eq $role][not(@isDenied)]) then (
+		true()
+	) else (
+		false()
+	)
+};
+
+declare function mgmt:has-user-id-role($id as xs:string, $role as xs:string, $userDoc as element(xcesc:user))
+	as xs:boolean
+{
+	let $rulerDoc := mgmt:getActiveUserFromId($id)
+	return
+		if(exists($rulerDoc)) then (
+			mgmt:has-user-role($rulerDoc,$role,$userDoc)
+		) else (
+			false()
+		)
+};
+
+declare function mgmt:has-user-id-server-role($id as xs:string, $role as xs:string, $serverDoc as element(xcesc:server))
+	as xs:boolean
+{
+	let $rulerDoc := mgmt:getActiveUserFromId($id)
+	return
+		if(exists($rulerDoc)) then (
+			mgmt:has-user-server-role($rulerDoc,$role,$serverDoc)
+		) else (
+			false()
+		)
+};
+
+declare function mgmt:has-nickname-role($nickname as xs:string, $role as xs:string, $userDoc as element(xcesc:user))
+	as xs:boolean
+{
+	let $rulerDoc := mgmt:getActiveUserFromNickname($nickname)
+	return
+		if(exists($rulerDoc)) then (
+			mgmt:has-user-role($rulerDoc,$role,$userDoc)
+		) else (
+			false()
+		)
+};
+
+(: It obtains the whole user configuration, by nickname :)
+declare function mgmt:getUserFromNickname($nickname as xs:string)
+	as element(xcesc:user)?
+{
+	mgmt:getManagementDoc()//xcesc:user[@nickname eq $nickname]
+};
+
+declare function mgmt:getUserIdFromNickname($nickname as xs:string)
+	as xs:string?
+{
+	mgmt:getUserFromNickname($nickname)/@id/string()
+};
+
+declare function mgmt:getPasswordFromNickname($nickname as xs:string)
+	as xs:string?
+{
+	mgmt:getUserFromNickname($nickname)/@nickpass/string()
+};
+
+declare function mgmt:getAuthTokensForSessionFromNickname($nickname as xs:string)
+	as xs:string+
+{
+	let $userDoc := mgmt:getUserFromNickname($nickname)
+	return
+		if(mgmt:is-super-user($userDoc)) then (
+			$mgmt:adminUser , $mgmt:adminPass , $userDoc/@nickpass/string()
+		) else (
+			$userDoc/@nickname/string() , $userDoc/@nickpass/string() , $userDoc/@nickpass/string()
+		)
+};
+
+(: It obtains the whole user configuration, by nickname :)
+declare function mgmt:getActiveUserFromNickname($nickname as xs:string)
+	as element(xcesc:user)?
+{
+	mgmt:getUserFromNickname($nickname)[@status eq 'enabled']
 };
 
 (:::::::::::)
@@ -342,7 +476,7 @@ declare function mgmt:deleteServer($managerId as xs:string,$id as xs:string)
 		let $serverDoc := mgmt:getManagementDoc()//xcesc:server[@id eq $id][@managerId eq $managerId]
 		return
 			if(empty($serverDoc)) then
-				 error((),string-join(("On server deletion, server",$id,"owned by",$managerId,"is unknown"),' '))
+				error((),string-join(("On server deletion, server",$id,"owned by",$managerId,"is unknown"),' '))
 			else
 				upd:delete($serverDoc)
 	(: } :)
@@ -407,9 +541,20 @@ declare function mgmt:getOnlineServers($currentDateTime as xs:dateTime,$serverTy
 
 (: It obtains the whole server configuration :)
 declare function mgmt:getServer($id as xs:string)
-	as element(xcesc:server)*
+	as element(xcesc:server)?
 {
 	mgmt:getManagementDoc()//xcesc:server[@id eq $id]
+};
+
+declare function mgmt:getServer($id as xs:string,$managerId as xs:string)
+	as element(xcesc:server)?
+{
+	let $serverDoc := mgmt:getServer($id)
+	return
+		if(exists($serverDoc) and mgmt:has-user-id-server-role($managerId,'SERVER.UPDATE',$serverDoc)) then
+			$serverDoc
+		else
+			()
 };
 
 declare function mgmt:getServers($ids as xs:string+)
@@ -431,6 +576,12 @@ declare function mgmt:getServersFromNames($names as xs:string+)
 	mgmt:getManagementDoc()//xcesc:server[@name = $names]
 };
 
+declare function mgmt:getServersFromOwnerId($id as xs:string)
+	as element(xcesc:server)*
+{
+	mgmt:getManagementDoc()//xcesc:server[@managerId eq $id]
+};
+
 (:~
  : It updates most pieces of the server declaration.
  : 
@@ -440,7 +591,8 @@ declare function mgmt:updateServer($managerId as xs:string,$serverConfig as elem
 	as empty-sequence()
 {
 	(: (# exist:batch-transaction #) { :)
-		let $serverDoc:=mgmt:getServer($serverConfig/@id)[@managerId eq $managerId]
+		let $serverDoc:=mgmt:getServer($serverConfig/@id,$managerId)
+		let $justNow := current-dateTime()
 		return
 			if($serverDoc) then (
 				for $server in $serverDoc[xcesc:description != $serverConfig/xcesc:description]
@@ -465,16 +617,75 @@ declare function mgmt:updateServer($managerId as xs:string,$serverConfig as elem
 				else
 					()
 				,
-				for $newDown in $serverDoc/xcesc:downTime
-				let $oldDown := $serverConfig/xcesc:downTime[@since eq $newDown/@since] 
+				for $newDown in $serverConfig/xcesc:downTime
+				let $oldDown := $serverDoc/xcesc:downTime[@id eq $newDown/@id] 
 				return
 					if(empty($oldDown)) then
-						upd:insertInto($serverDoc,$newDown)
-					else
-						if(empty($oldDown/@until) and exists($newDown/@until)) then
-							upd:insertInto($oldDown,$newDown/@until) 
+						if(exists($newDown/@since) and ( empty($newDown/@until) or xs:dateTime($newDown/@since) < xs:dateTime($newDown/@until) ) ) then (
+							upd:insertInto($serverDoc,
+								<xcesc:downTime
+									id="{util:uuid()}"
+									since="{$newDown/@since}"
+									managerId="{$newDown/@managerId}"
+									managerName="{$newDown/@managerName}"
+								>{if(exists($newDown/@until)) then $newDown/@until else (),$newDown/node()}</xcesc:downTime>
+							)
+						) else
+							()
+					else (
+						if(xs:dateTime($oldDown/@since) > $justNow and xs:dateTime($newDown/@since) >= $justNow and xs:dateTime($oldDown/@since) != xs:dateTime($newDown/@since)) then
+							upd:replaceValue($oldDown/@since,$newDown/@since/string())
 						else
 							()
+						,
+						if(empty($oldDown/@until) and exists($newDown/@until)) then
+							if(xs:dateTime($oldDown/@since) <= xs:dateTime($newDown/@until)) then
+								upd:insertInto($oldDown,$newDown/@until)
+							else
+								(:
+								upd:insertInto($oldDown,attribute { 'until' } { if($justNow > xs:dateTime($oldDown/@since)) then $justNow else $oldDown/@since/string() })
+								:)
+								()
+						else
+							()
+						,
+						if($oldDown/@managerId ne $newDown/@managerId) then (
+							upd:replaceValue($oldDown/@managerId,$newDown/@managerId/string())
+							, 
+							upd:replaceValue($oldDown/@managerName,$newDown/@managerName/string()) 
+						) else
+							()
+					)
+				,
+				(: Deleted downtimes, but only the ones which has not started :)
+				for $oldDown in $serverDoc/xcesc:downTime[not(@id = $newDown/@id)]
+				return
+					(: We can only delete the downtimes which has not started :)
+					if(xs:dateTime($oldDown/@since) > $justNow) then
+						upd:delete($oldDown)
+					else
+						if(exists($oldDown/@until)) then
+							if(xs:dateTime($oldDown/@until) > $justNow) then (
+								upd:replaceValue($oldDown/@until,$justNow/string())
+								,
+								if($oldDown/@managerId ne $managerId) then (
+									upd:replaceValue($oldDown/@managerId,$managerId)
+									, 
+									upd:replaceValue($oldDown/@managerName,mgmt:getUserFromId($managerId)/@nickname/string())
+								) else
+									() 
+							) else
+								()
+						else (
+							upd:insertInto($oldDown, attribute { 'until' } { $justNow/string() })
+							,
+							if($oldDown/@managerId ne $managerId) then (
+								upd:replaceValue($oldDown/@managerId,$managerId)
+								, 
+								upd:replaceValue($oldDown/@managerName,mgmt:getUserFromId($managerId)/@nickname/string())
+							) else
+								() 
+						)
 			) else
 				error((),string-join(("On server update, server",$serverConfig/@id,"owned by",$managerId,"is unknown"),' '))
 	(: } :)
@@ -602,10 +813,41 @@ declare function mgmt:user-template()
 	<xcesc:users>
 		<xcesc:user id="" nickname="" nickpass="" firstName="" lastName="" organization="">
 			<xcesc:eMail/>
-			<xcesc:references/>
+			<xcesc:references>
+				<xcesc:reference/>
+			</xcesc:references>
 			<xcesc:roles/>
 		</xcesc:user>
 	</xcesc:users>
+};
+
+declare function mgmt:servers-template()
+	as element(xcesc:users)
+{
+	<xcesc:servers>
+		<xcesc:server id="" name="" managerId="" futureManagerId="" uri="" type="">
+			<xcesc:description/>
+			<xcesc:kind/>
+			<xcesc:otherParams>
+				<xcesc:param/>
+			</xcesc:otherParams>
+			<xcesc:references>
+				<xcesc:reference/>
+			</xcesc:references>
+		</xcesc:server>
+	</xcesc:servers>
+};
+
+declare function mgmt:empty-user-template()
+	as element(xcesc:users)
+{
+	<xcesc:users />
+};
+
+declare function mgmt:empty-servers-template()
+	as element(xcesc:users)
+{
+	<xcesc:servers/>
 };
 
 declare function mgmt:createUser($userConfig as element(xcesc:user))
@@ -702,83 +944,6 @@ declare function mgmt:deleteDeletedUsers($users as element(xcesc:deletedUser)*)
 
 
 
-(: It obtains the whole user configuration, by id :)
-declare function mgmt:getUserFromId($id as xs:string)
-	as element(xcesc:user)?
-{
-	mgmt:getManagementDoc()//xcesc:user[@id eq $id]
-};
-
-declare function mgmt:getActiveUserFromId($id as xs:string)
-	as element(xcesc:user)?
-{
-	mgmt:getManagementDoc()//xcesc:user[@id eq $id][@status eq 'enabled']
-};
-
-declare function mgmt:is-super-user($rulerDoc as element(xcesc:user))
-	as xs:boolean
-{
-	exists($mgmt:roles[@isSuperUser eq 'true'][@name = $rulerDoc//xcesc:role[not(@isDenied)]/@name])
-};
-
-declare function mgmt:is-super-user($id as xs:string)
-	as xs:boolean
-{
-	let $rulerDoc := mgmt:getActiveUserFromId($id)
-	return
-		if (exists($rulerDoc)) then (
-			mgmt:is-super-user($rulerDoc)
-		) else (
-			false()
-		)
-};
-
-declare function mgmt:has-user-role($rulerDoc as element(xcesc:user), $role as xs:string, $userDoc as element(xcesc:user))
-	as xs:boolean
-{
-	if(mgmt:is-super-user($rulerDoc) or $userDoc/@id eq $rulerDoc/@id or $rulerDoc//xcesc:role[@name eq $role][not(@isDenied)]) then (
-		true()
-	) else (
-		false()
-	)
-};
-
-declare function mgmt:has-user-id-role($id as xs:string, $role as xs:string, $userDoc as element(xcesc:user))
-	as xs:boolean
-{
-	let $rulerDoc := mgmt:getActiveUserFromId($id)
-	return
-		if(exists($rulerDoc)) then (
-			mgmt:has-user-role($rulerDoc,$role,$userDoc)
-		) else (
-			false()
-		)
-};
-
-declare function mgmt:has-nickname-role($nickname as xs:string, $role as xs:string, $userDoc as element(xcesc:user))
-	as xs:boolean
-{
-	let $rulerDoc := mgmt:getActiveUserFromNickname($nickname)
-	return
-		if(exists($rulerDoc)) then (
-			mgmt:has-user-role($rulerDoc,$role,$userDoc)
-		) else (
-			false()
-		)
-};
-
-declare function mgmt:user-id-can-update($id as xs:string, $userDoc as element(xcesc:user))
-	as xs:boolean
-{
-	mgmt:has-user-id-role($id,'USER.UPDATE',$userDoc)
-};
-
-declare function mgmt:nickname-can-update($nickname as xs:string, $userDoc as element(xcesc:user))
-	as xs:boolean
-{
-	mgmt:has-nickname-role($nickname,'USER.UPDATE',$userDoc)
-};
-
 declare function mgmt:getRestrictedInfoFromId($id as xs:string)
 	as element(xcesc:user)?
 {
@@ -789,10 +954,31 @@ declare function mgmt:getRestrictedInfoFromId($id as xs:string)
 			return
 				if(not($child/local-name() = ('nickpass','password'))) then (
 					$child
-				) else
-					( )
+				) else (
+					(: Blanking these sensible attributes :)
+					attribute { $child/local-name() } { }
+				)
 			,
 			$userDoc/node()
+		}
+};
+
+declare function mgmt:getRestrictedServerInfoFromId($id as xs:string)
+	as element(xcesc:server)*
+{
+	for $serverDoc in mgmt:getServersFromOwnerId($id)
+	return
+		element { node-name($serverDoc) } {
+			for $child in $serverDoc/@*
+			return
+				if(not($child/local-name() = ('nickpass','password'))) then (
+					$child
+				) else (
+					(: Blanking these sensible attributes :)
+					attribute { $child/local-name() } { }
+				)
+			,
+			$serverDoc/node()
 		}
 };
 
@@ -819,42 +1005,27 @@ declare function mgmt:getRestrictedUserListFromId($id as xs:string)
 	}</xcesc:users>
 };
 
-(: It obtains the whole user configuration, by nickname :)
-declare function mgmt:getUserFromNickname($nickname as xs:string)
-	as element(xcesc:user)?
+declare function mgmt:getRestrictedServerListFromId($id as xs:string)
+	as element(xcesc:servers)
 {
-	mgmt:getManagementDoc()//xcesc:user[@nickname eq $nickname]
-};
-
-declare function mgmt:getUserIdFromNickname($nickname as xs:string)
-	as xs:string?
-{
-	mgmt:getUserFromNickname($nickname)/@id/string()
-};
-
-declare function mgmt:getPasswordFromNickname($nickname as xs:string)
-	as xs:string?
-{
-	mgmt:getUserFromNickname($nickname)/@nickpass/string()
-};
-
-declare function mgmt:getAuthTokensForSessionFromNickname($nickname as xs:string)
-	as xs:string+
-{
-	let $userDoc := mgmt:getUserFromNickname($nickname)
-	return
-		if(mgmt:is-super-user($userDoc)) then (
-			$mgmt:adminUser , $mgmt:adminPass , $userDoc/@nickpass/string()
+	<xcesc:servers>{
+		if(mgmt:is-super-user($id)) then (
+			for $serverDoc in mgmt:getManagementDoc()//xcesc:server
+			return
+				element { node-name($serverDoc) } {
+					for $child in $serverDoc/@*
+					return
+						if(not($child/local-name() = ('nickpass','password'))) then (
+							$child
+						) else
+							( )
+					,
+					$serverDoc/node()
+				}
 		) else (
-			$userDoc/@nickname/string() , $userDoc/@nickpass/string() , $userDoc/@nickpass/string()
+			mgmt:getRestrictedServerInfoFromId($id)
 		)
-};
-
-(: It obtains the whole user configuration, by nickname :)
-declare function mgmt:getActiveUserFromNickname($nickname as xs:string)
-	as element(xcesc:user)?
-{
-	mgmt:getManagementDoc()//xcesc:user[@nickname eq $nickname][@status eq 'enabled']
+	}</xcesc:servers>
 };
 
 (: It obtains the whole set of users :)
@@ -877,7 +1048,7 @@ declare function mgmt:updateUser($id as xs:string,$userConfig as element(xcesc:u
 {
 	(: (# exist:batch-transaction #) { :)
 		let $userDoc0:=mgmt:getUserFromNickname($userConfig/@nickname)
-		let $userDoc := if(mgmt:user-id-can-update($id,$userDoc0)) then ( 
+		let $userDoc := if(mgmt:has-user-id-role($id,'USER.UPDATE',$userDoc0)) then ( 
 			$userDoc0[@status ne 'unconfirmed' and @status ne 'deleted']
 		) else
 			()

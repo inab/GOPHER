@@ -8,12 +8,24 @@
 	
 	<xsl:template match="db-connection">
 		<db-connection>
-			<xsl:for-each select="@*">
-				<xsl:apply-templates select="."/>
-			</xsl:for-each>
 			<xsl:attribute name="cacheSize">@memory@</xsl:attribute>
 			<xsl:attribute name="database">native</xsl:attribute>
 			<xsl:attribute name="files">@data.dir@</xsl:attribute>
+			<xsl:for-each select="@*">
+				<xsl:choose>
+					<xsl:when test="name() = 'cacheSize' or name() = 'database' or name() = 'files'">
+						<!-- Ignore the attributes! -->
+					</xsl:when>
+					<xsl:otherwise>
+						<xsl:attribute name="{name(.)}" namespace="{namespace-uri(.)}">
+						    <xsl:value-of select="."/>
+						</xsl:attribute>
+						<!--
+						<xsl:apply-templates select="."/>
+						-->
+					</xsl:otherwise>
+				</xsl:choose>
+			</xsl:for-each>
 			
 			<xsl:apply-templates select="*|text()|comment()|processing-instruction()" />
 		</db-connection>
@@ -21,11 +33,23 @@
 	
 	<xsl:template match="recovery">
 		<recovery>
-			<xsl:for-each select="@*">
-				<xsl:apply-templates select="."/>
-			</xsl:for-each>
 			<xsl:attribute name="journal-dir">@data.dir@</xsl:attribute>
 			<xsl:attribute name="sync-on-commit">yes</xsl:attribute>
+			<xsl:for-each select="@*">
+				<xsl:choose>
+					<xsl:when test="name() = 'journal-dir' or name() = 'sync-on-commit'">
+						<!-- Ignore the attributes! -->
+					</xsl:when>
+					<xsl:otherwise>
+						<xsl:attribute name="{name(.)}" namespace="{namespace-uri(.)}">
+						    <xsl:value-of select="."/>
+						</xsl:attribute>
+						<!--
+						<xsl:apply-templates select="."/>
+						-->
+					</xsl:otherwise>
+				</xsl:choose>
+			</xsl:for-each>
 			
 			<xsl:apply-templates select="*|text()|comment()|processing-instruction()" />
 		</recovery>
@@ -95,4 +119,12 @@
 			</xsl:if>
 		</builtin-modules>
 	</xsl:template>
+    <xsl:template match="*">
+	<xsl:copy>
+		<xsl:apply-templates select="@*|node()"/>
+	</xsl:copy>
+    </xsl:template>
+    <xsl:template match="@*|comment()|text()|processing-instruction()">
+        <xsl:copy-of select="."/>
+    </xsl:template>
 </xsl:stylesheet>

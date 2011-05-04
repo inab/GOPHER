@@ -133,7 +133,10 @@
              the root mappings. -->
         <init-param>
             <param-name>config</param-name>
+            <!--
             <param-value>xmldb:exist:///db/@XCESCConfig@/controller-config.xml</param-value>
+            -->
+            <param-value>../../controller-config.xml</param-value>
         </init-param>
     </filter>
     

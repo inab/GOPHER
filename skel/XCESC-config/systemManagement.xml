@@ -16,5 +16,6 @@
     	<role name="USER.UPDATE" description="The user update role"/>
     	<role name="USER.PASSWORD.UPDATE" description="The user password update role"/>
     	<role name="USER.GRANT.ROLE" description="The granting roles role"/>
+    	<role name="SERVER.UPDATE" description="The server update role"/>
     </availableRoles>
 </systemManagement>
