@@ -9,11 +9,6 @@
   ++ stored in the db.
 -->
 <configuration xmlns="http://exist.sourceforge.net/NS/exist">
-	<context-param>
-		<param-name>betterform.configfile</param-name>
-		<param-value>WEB-INF/betterform-config.xml</param-value>
-	</context-param>
-	
 	<!-- Webstart servlet
 	<forward pattern="/webstart" servlet="jnlp"/>
 	-->
@@ -39,17 +34,12 @@
 	<forward pattern="/@AtomicVirtual@" servlet="org.exist.http.urlrewrite.XQueryURLRewrite"/>
 	-->
 	
-	<!-- betterFORM -->
+	<!-- betterFORM servlets -->
 	<forward pattern="/Flux/" servlet="Flux"/>
 	<forward pattern="/XFormsPost/" servlet="XFormsPostServlet"/>
 	<forward pattern="/forms/formslist" servlet="FormsServlet"/>
 	<forward pattern="/inspector/" servlet="inspector"/>
 	<forward pattern="/bfResources/" servlet="ResourceServlet"/>
-
-
-
-
-
 
 	<!-- The JMX status servlet used to monitor the db -->
 	<forward pattern="/status" servlet="JMXServlet"/>
@@ -76,17 +66,14 @@
 	<root pattern="/db.*" path="xmldb:exist:///db"/>
 	-->
 	
+	<root pattern="/betterform" path="/betterform"/>
 	<root pattern="/@AtomicVirtual@" path="xmldb:exist:///db/@AtomicVirtual@"/>
-	<root pattern="/@PublicLogic@" path="xmldb:exist:///db/XCESC-logic"/>
+	<root pattern="^/@PublicLogic@/.*" path="xmldb:exist:///db/XCESC-logic"/>
 	
 	<!-- Not sure if it will work -->
-	<root pattern="/betterform.*" path="/WEB-INF/betterform"/>
 	
 	<root pattern="^/$" path="xmldb:exist:///db/www/index.html"/>
 	<root pattern=".*" path="xmldb:exist:///db/www"/>
-	
-	<!-- Does not work -->
-	<forward pattern=".*\.(xform|xhtml)$" servlet="FormsServlet"/>
 	
 	<forward pattern=".*\.(xq|xql|xqy|xquery)$" servlet="XQueryServlet"/>
 </configuration>

@@ -15,6 +15,11 @@
     <description>eXist Open Source Native XML Database</description>
     <display-name>eXist XML Database</display-name>
 
+	<context-param>
+		<param-name>betterform.configfile</param-name>
+		<param-value>WEB-INF/betterform-config.xml</param-value>
+	</context-param>
+	
     <!-- 
         Initialize Log4j using a servlet.
         Only needed when eXist is deployed as a .war file in e.g. Tomcat.
@@ -108,7 +113,12 @@
             <param-value>default-user-password</param-value>
         </init-param>
 	-->
-
+	
+	<!--
+		REST is needed by eXist URL rewriting mechanisms
+		but it should be unreachable for the outer world
+		so this init param
+	-->
 	<init-param>
 		<param-name>hidden</param-name>
 		<param-value>true</param-value>
@@ -121,9 +131,9 @@
         for the database based on the JMX interface.
     -->
 	<servlet>
-	    <servlet-name>JMXServlet</servlet-name>
-        <servlet-class>org.exist.management.client.JMXServlet</servlet-class>
-	  </servlet>
+		<servlet-name>JMXServlet</servlet-name>
+		<servlet-class>org.exist.management.client.JMXServlet</servlet-class>
+	</servlet>
 
     <!--
         Milton provides the WebDAV interface
@@ -159,6 +169,36 @@
     </servlet>
     -->
 	
+    <!--
+        XQueryServlet generates HTML from an XQuery file.
+        This is needed by betterFORM error handling mechanism
+    -->
+    <servlet>
+        <servlet-name>XQueryServlet</servlet-name>
+        <servlet-class>org.exist.http.servlets.XQueryServlet</servlet-class>
+
+        <init-param>
+            <param-name>uri</param-name>
+            <param-value>xmldb:exist:///db</param-value>
+        </init-param>
+
+        <init-param>
+            <param-name>form-encoding</param-name>
+            <param-value>UTF-8</param-value>
+        </init-param>
+
+        <init-param>
+            <param-name>container-encoding</param-name>
+            <param-value>UTF-8</param-value>
+        </init-param>
+
+        <init-param>
+            <param-name>encoding</param-name>
+            <param-value>UTF-8</param-value>
+        </init-param>
+    </servlet>
+    
+    
     <filter>
         <filter-name>XQueryURLRewrite</filter-name>
         <filter-class>org.exist.http.urlrewrite.XQueryURLRewrite</filter-class>
@@ -221,52 +261,51 @@
 		<servlet-class>de.betterform.agent.web.resources.ResourceServlet</servlet-class>
 	</servlet>
 
-    <!-- XQuery URL rewriter -->
-    <!--
-    <filter-mapping>
-      <filter-name>XFormsFilter</filter-name>
-      <url-pattern>/rest/db/*</url-pattern>
-   </filter-mapping>
-   -->
-   <filter-mapping>
-      <filter-name>XFormsFilter</filter-name>
-      <servlet-name>XFormsPostServlet</servlet-name>
-   </filter-mapping>
-    <!-- ADDED
-   <filter-mapping>
-        <filter-name>XQueryURLRewrite</filter-name>
-        <url-pattern>/*</url-pattern>
-    </filter-mapping>
-    -->
+	<!--
+		This mapping is relative final layout
+		set by controller-config.xml
+	-->
+	<filter-mapping>
+		<filter-name>XFormsFilter</filter-name>
+		<url-pattern>/forms/*</url-pattern>
+	</filter-mapping>
+	<filter-mapping>
+		<filter-name>XFormsFilter</filter-name>
+		<servlet-name>XFormsPostServlet</servlet-name>
+	</filter-mapping>
     
-   <!--betterFORM Flux Servlet Mapping-->
-    
-    <!-- ADDED
-<servlet-mapping>
-      <servlet-name>Flux</servlet-name>
-      <url-pattern>/Flux/*</url-pattern>
-   </servlet-mapping>
-   <servlet-mapping>
-      <servlet-name>XFormsPostServlet</servlet-name>
-      <url-pattern>/XFormsPost</url-pattern>
-   </servlet-mapping>
-   <servlet-mapping>
-      <servlet-name>XQueryServlet</servlet-name>
-      <url-pattern>*.xql</url-pattern>
-   </servlet-mapping>
-   <servlet-mapping>
-      <servlet-name>FormsServlet</servlet-name>
-      <url-pattern>/forms/formslist</url-pattern>
-   </servlet-mapping>
-   <servlet-mapping>
-      <servlet-name>inspector</servlet-name>
-      <url-pattern>/inspector/*</url-pattern>
-   </servlet-mapping>
-   <servlet-mapping>
-      <servlet-name>ResourceServlet</servlet-name>
-      <url-pattern>/bfResources/*</url-pattern>
-   </servlet-mapping>
-   -->
+	<!--betterFORM Flux Servlet Mapping-->
+	<!--
+		This block is disabled because
+		it is masked by controller-config.xml
+		settings
+	-->
+	<!--
+		<servlet-mapping>
+			<servlet-name>Flux</servlet-name>
+			<url-pattern>/Flux/*</url-pattern>
+		</servlet-mapping>
+		<servlet-mapping>
+			<servlet-name>XFormsPostServlet</servlet-name>
+			<url-pattern>/XFormsPost</url-pattern>
+		</servlet-mapping>
+		<servlet-mapping>
+			<servlet-name>XQueryServlet</servlet-name>
+			<url-pattern>*.xql</url-pattern>
+		</servlet-mapping>
+		<servlet-mapping>
+			<servlet-name>FormsServlet</servlet-name>
+			<url-pattern>/forms/formslist</url-pattern>
+		</servlet-mapping>
+		<servlet-mapping>
+			<servlet-name>inspector</servlet-name>
+			<url-pattern>/inspector/*</url-pattern>
+		</servlet-mapping>
+		<servlet-mapping>
+			<servlet-name>ResourceServlet</servlet-name>
+			<url-pattern>/bfResources/*</url-pattern>
+		</servlet-mapping>
+	-->
 
 
     <!-- Dynamic GZip filter, for Jetty 7
@@ -302,4 +341,10 @@
         <filter-name>XQueryURLRewrite</filter-name>
         <url-pattern>/*</url-pattern>
     </filter-mapping>
+    
+	<!-- This is needed by betterFORM error handling mechanism -->
+	<servlet-mapping>
+		<servlet-name>XQueryServlet</servlet-name>
+		<url-pattern>*.xql</url-pattern>
+	</servlet-mapping>
 </web-app>
