@@ -679,6 +679,7 @@
 					<token key="USER" value="${the.user}"/>
 					<token key="PASS" value="${the.pass}"/>
 					<token key="GROUPS" value="${the.groups}"/>
+					<token key="GROUPCONTROLLER" value="${the.groups.controller}"/>
 				</replacetokens>
 			</filterchain>
 		</loadfile>
@@ -690,20 +691,65 @@
 			password="${the.admin.pass}"
 		/>
 	</target>
+	
+	<!-- This is a meta-target -->
+	<target name="create-group" depends="init.eXist.extension">
+		<loadfile property="the.xquery" srcFile="${GOPHER.patches.dir}/createGroup.xq">
+			<filterchain>
+				<replacetokens>
+					<token key="GROUP" value="${the.group}"/>
+					<token key="GROUPCONTROLLER" value="${the.group.controller}"/>
+				</replacetokens>
+			</filterchain>
+		</loadfile>
+		<xdb:xquery
+			uri="${xmldb.uri}/db"
+			query="${the.xquery}"
+			failonerror="false"
+			user="admin"
+			password=""
+		/>
+		<xdb:xquery
+			uri="${xmldb.uri}/db"
+			query="${the.xquery}"
+			failonerror="false"
+			user="${the.admin.user}"
+			password="${the.admin.pass}"
+		/>
+	</target>
     
 	<target
 		name="deploy.skel.meta.admin"
 		description="Remote eXist Meta-skeleton for GOPHER with admin resetting"
 		depends="init.eXist.extension"
 	>
+		<!-- Needed! -->
+		<antcall target="create-group">
+			<param name="the.admin.user" value="${deploy.eXist.admin.user}"/>
+			<param name="the.admin.pass" value="${deploy.eXist.admin.pass}"/>
+			<param name="the.group" value="${deploy.eXist.xcesc.group}"/>
+			<param name="the.group.controller" value="{admin.user}"/>
+			<param name="the.failonerror" value="true"/>
+		</antcall>
 		<!-- Zero, the users, so admin can have no password! -->
 		<antcall target="create-update-user">
 			<param name="the.user" value="${deploy.eXist.admin.user}"/>
 			<param name="the.pass" value="${deploy.eXist.admin.pass}"/>
 			<param name="the.groups" value="${deploy.eXist.xcesc.group}"/>
+			<param name="the.groups.controller" value="${admin.user}"/>
 			<param name="the.admin.pass" value="${admin.pass}"/>
 			<param name="the.failonerror" value="false"/>
 		</antcall>
+		
+		
+		<!-- Although it is a security hole, it fixes a couple
+			of compatibility problems arisen on latest trunk -->
+		<xdb:chmod
+			uri="${xmldb.uri}/db"
+			user="${deploy.eXist.admin.user}"
+			password="${deploy.eXist.admin.pass}"
+			mode="group=+write,other=+write"
+		/>
 		
 		<!-- Because we have to place there the dispatcher.xql -->
 		<!--
@@ -727,6 +773,7 @@
 			<param name="the.user" value="${deploy.eXist.admin.user}"/>
 			<param name="the.pass" value="${deploy.eXist.admin.pass}"/>
 			<param name="the.groups" value="${deploy.eXist.xcesc.group}"/>
+			<param name="the.groups.controller" value="{admin.user}"/>
 			<param name="the.admin.pass" value="${deploy.eXist.admin.pass}"/>
 			<param name="the.failonerror" value="true"/>
 		</antcall>
@@ -734,6 +781,7 @@
 			<param name="the.user" value="${deploy.eXist.gopher.user}"/>
 			<param name="the.pass" value="${deploy.eXist.gopher.pass}"/>
 			<param name="the.groups" value="${deploy.eXist.xcesc.group}"/>
+			<param name="the.groups.controller" value="{admin.user}"/>
 			<param name="the.admin.pass" value="${deploy.eXist.admin.pass}"/>
 			<param name="the.failonerror" value="true"/>
 		</antcall>
@@ -741,6 +789,7 @@
 			<param name="the.user" value="${deploy.eXist.wiki.admin.user}"/>
 			<param name="the.pass" value="${deploy.eXist.wiki.admin.pass}"/>
 			<param name="the.groups" value="${deploy.eXist.xcesc.group},${deploy.eXist.wiki.group}"/>
+			<param name="the.groups.controller" value="{admin.user}"/>
 			<param name="the.admin.pass" value="${deploy.eXist.admin.pass}"/>
 			<param name="the.failonerror" value="true"/>
 		</antcall>
@@ -1160,6 +1209,7 @@
 			<param name="the.user" value="${deploy.eXist.wiki.editor.user}"/>
 			<param name="the.pass" value="${deploy.eXist.wiki.editor.pass}"/>
 			<param name="the.groups" value="${deploy.eXist.wiki.group}"/>
+			<param name="the.groups.controller" value="{admin.user}"/>
 			<param name="the.admin.pass" value="${deploy.eXist.admin.pass}"/>
 			<param name="the.failonerror" value="true"/>
 		</antcall>
@@ -1203,6 +1253,14 @@
 				<include name="controller.xql" />
 			</fileset>
 		</xdb:store>
+		
+		<xdb:chmod
+			uri="${xmldb.uri}/db/${guiManagement(AtomicWiki-VirtualRoot)}"
+			resource="controller.xql"
+			user="${deploy.eXist.admin.user}"
+			password="${deploy.eXist.admin.pass}"
+			mode="user=+update,group=+update,other=+update"
+		/>
 		
 		<xdb:store uri="${xmldb.uri}/db" user="${deploy.eXist.admin.user}" password="${deploy.eXist.admin.pass}" failonerror="true" createsubcollections="true">
 			<fileset dir="${AtomicWiki.dir}/webapp">

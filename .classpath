@@ -3,9 +3,9 @@
 	<classpathentry kind="src" path="weeklyGOPHER-eXist-module/src"/>
 	<classpathentry kind="src" output="GOPHERPrepare/build" path="GOPHERPrepare/src"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
-	<classpathentry kind="lib" path="weeklyGOPHER-eXist-module/eXist/lib/core/xmldb.jar"/>
-	<classpathentry kind="lib" path="weeklyGOPHER-eXist-module/eXist/exist.jar"/>
-	<classpathentry kind="lib" path="weeklyGOPHER-eXist-module/eXist/lib/core/antlr-2.7.7.jar"/>
-	<classpathentry kind="lib" path="weeklyGOPHER-eXist-module/eXist/lib/core/quartz-1.8.4.jar"/>
+	<classpathentry kind="lib" path="external/eXist/lib/core/antlr-2.7.7.jar"/>
+	<classpathentry kind="lib" path="external/eXist/exist.jar"/>
+	<classpathentry kind="lib" path="external/eXist/lib/core/quartz-1.8.4.jar"/>
+	<classpathentry kind="lib" path="external/eXist/lib/core/xmldb.jar"/>
 	<classpathentry kind="output" path="weeklyGOPHER-eXist-module/build"/>
 </classpath>
