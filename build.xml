@@ -471,7 +471,7 @@
 				<include name="**/*.xq*" />
 			</fileset>
 		</replaceregexp>
-		<replaceregexp match="^declare" replace="import module namespace gui='http://www.cnio.es/scombio/xcesc/1.0/xquery/guiManagement' at 'xmldb:exist:///db/XCESC-logic/guiManagement.xqm';&#x0A;declare" flags="m">
+		<replaceregexp match="^declare" replace="import module namespace gui='http://www.cnio.es/scombio/xcesc/1.0/xquery/guiManagement' at 'xmldb:exist:///db/${systemManagement(publicLogicRelURI)}/guiManagement.xqm';&#x0A;declare" flags="m">
 			<fileset dir="${the.dir}">
 				<include name="**/*.xq*" />
 				<contains text="gui:get-gui-path()" />
@@ -480,7 +480,7 @@
 				</not>
 			</fileset>
 		</replaceregexp>
-		<replaceregexp match="^declare" replace="import module namespace gui='http://www.cnio.es/scombio/xcesc/1.0/xquery/guiManagement' at 'xmldb:exist:///db/XCESC-logic/guiManagement.xqm';&#x0A;declare" flags="m">
+		<replaceregexp match="^declare" replace="import module namespace gui='http://www.cnio.es/scombio/xcesc/1.0/xquery/guiManagement' at 'xmldb:exist:///db/${systemManagement(publicLogicRelURI)}/guiManagement.xqm';&#x0A;declare" flags="m">
 			<fileset dir="${the.dir}">
 				<include name="**/*.xq*" />
 				<contains text="gui:get-public-base-URI()" />
@@ -718,6 +718,26 @@
 		/>
 	</target>
     
+	<!-- This is a meta-target -->
+	<target name="fix-permissions" depends="init.eXist.extension">
+		<loadfile property="the.xquery" srcFile="${GOPHER.patches.dir}/fixPermissions.xq">
+			<filterchain>
+				<replacetokens>
+					<token key="SUFFIXLIST" value="${the.suffix.list}"/>
+					<token key="COLNAME" value="${the.collection.name}"/>
+					<token key="PERM" value="${the.permissions}"/>
+				</replacetokens>
+			</filterchain>
+		</loadfile>
+		<xdb:xquery
+			uri="${xmldb.uri}/db"
+			query="${the.xquery}"
+			failonerror="true"
+			user="${the.admin.user}"
+			password="${the.admin.pass}"
+		/>
+	</target>
+    
 	<target
 		name="deploy.skel.meta.admin"
 		description="Remote eXist Meta-skeleton for GOPHER with admin resetting"
@@ -874,6 +894,34 @@
 			</fileset>
 		</xdb:store>
 		
+		<!-- Fixing XQuery permissions -->
+		<antcall target="fix-permissions">
+			<param name="the.admin.user" value="${deploy.eXist.admin.user}"/>
+			<param name="the.admin.pass" value="${deploy.eXist.admin.pass}"/>
+			<param name="the.suffix.list" value=".xq, .xql"/>
+			<param name="the.collection.name" value="/db/${systemManagement(publicLogicRelURI)}"/>
+			<!-- 0755 in decimal representation -->
+			<param name="the.permissions" value="493"/>
+		</antcall>
+
+		<antcall target="fix-permissions">
+			<param name="the.admin.user" value="${deploy.eXist.admin.user}"/>
+			<param name="the.admin.pass" value="${deploy.eXist.admin.pass}"/>
+			<param name="the.suffix.list" value=".xq, .xql"/>
+			<param name="the.collection.name" value="/db/www/forms"/>
+			<!-- 0755 in decimal representation -->
+			<param name="the.permissions" value="493"/>
+		</antcall>
+
+		<antcall target="fix-permissions">
+			<param name="the.admin.user" value="${deploy.eXist.admin.user}"/>
+			<param name="the.admin.pass" value="${deploy.eXist.admin.pass}"/>
+			<param name="the.suffix.list" value=".xq, .xql"/>
+			<param name="the.collection.name" value="/db/www/XCESC-GUI-logic"/>
+			<!-- 0755 in decimal representation -->
+			<param name="the.permissions" value="493"/>
+		</antcall>
+
 		<!-- And ghost collections -->
 		<xdb:create uri="${xmldb.uri}/db"
 			user="${deploy.eXist.gopher.user}"
@@ -1254,6 +1302,16 @@
 			</fileset>
 		</xdb:store>
 		
+		<antcall target="fix-permissions">
+			<param name="the.admin.user" value="${deploy.eXist.admin.user}"/>
+			<param name="the.admin.pass" value="${deploy.eXist.admin.pass}"/>
+			<param name="the.suffix.list" value=".xq, .xql"/>
+			<param name="the.collection.name" value="/db/${guiManagement(AtomicWiki-VirtualRoot)}"/>
+			<!-- 0755 in decimal representation -->
+			<param name="the.permissions" value="493"/>
+		</antcall>
+
+		<!--
 		<xdb:chmod
 			uri="${xmldb.uri}/db/${guiManagement(AtomicWiki-VirtualRoot)}"
 			resource="controller.xql"
@@ -1261,6 +1319,7 @@
 			password="${deploy.eXist.admin.pass}"
 			mode="user=+update,group=+update,other=+update"
 		/>
+		-->
 		
 		<xdb:store uri="${xmldb.uri}/db" user="${deploy.eXist.admin.user}" password="${deploy.eXist.admin.pass}" failonerror="true" createsubcollections="true">
 			<fileset dir="${AtomicWiki.dir}/webapp">
