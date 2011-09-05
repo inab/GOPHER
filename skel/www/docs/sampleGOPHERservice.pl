@@ -217,7 +217,7 @@ if(!defined($errstate)) {
 
 if($httpcode == 202) {
 	my($acceptedDoc)=XML::LibXML::Document->new('1.0','UTF-8');
-	my($acceptedQueries)=$answerDoc->createElementNS($XCESC_NS,'acceptedQueries');
+	my($acceptedQueries)=$acceptedDoc->createElementNS($XCESC_NS,'acceptedQueries');
 	$acceptedDoc->setDocumentElement($acceptedQueries);
 	$acceptedQueries->setAttribute('timeStamp',getPrintableDate());
 
