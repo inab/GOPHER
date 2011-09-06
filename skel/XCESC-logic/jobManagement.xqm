@@ -263,7 +263,7 @@ declare function job:joinResults($round as xs:string,$ticket as xs:string,$times
 							let $matches:= (
 								(: Match fixing and isolation :)
 								for $match in $answer/xcesc:match
-								return <xcesc:match domain="{$match/@domain}" timeStamp="{$timestamp}">{$match/node()}</xcesc:match>
+								return <xcesc:match source="{$match/@source}" timeStamp="{$timestamp}">{$match/node()}</xcesc:match>
 							)
 						return
 							for $job in $partElem//xcesc:job[@targetId eq $answer/@targetId]
