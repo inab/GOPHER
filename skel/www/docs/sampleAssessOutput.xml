@@ -13,7 +13,7 @@
 				<annotationQuality score="" p-value="">over</annotationQuality>
 				
 				<!-- This is copied from the input -->
-				<match domain="HMMer" timeStamp="2009-10-21T19:12:59.453647576+02:00">
+				<match source="HMMer" timeStamp="2009-10-21T19:12:59.453647576+02:00">
 					<scope from="1" to="116"/>
 					<term namespace="GO" id="GO:0004866" score="2000" p-value="0.01"/>
 				</match>
@@ -24,7 +24,7 @@
 				<annotationQuality score="" p-value="">right</annotationQuality>
 				
 				<!-- This is copied from the input -->
-				<match domain="HMMer" timeStamp="2009-10-21T19:13:20.833425242+02:00">
+				<match source="HMMer" timeStamp="2009-10-21T19:13:20.833425242+02:00">
 					<scope from="131" to="212"/>
 					<term namespace="GO" id="GO:0005576" score="1000" p-value="0.02"/>
 					<term namespace="GO" id="GO:0004421" score="500" p-value="0.03"/>

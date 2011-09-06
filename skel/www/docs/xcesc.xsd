@@ -562,9 +562,9 @@ As the scope can be sparse, more than one scope element can be specified]]></xsd
 					</xsd:element>
 				</xsd:choice>
 			</xsd:sequence>
-			<xsd:attribute name="domain" use="required" type="xsd:string">
+			<xsd:attribute name="source" use="required" type="xsd:string">
 				<xsd:annotation>
-					<xsd:documentation><![CDATA[The match domain is the kind of prediction/assessment done.
+					<xsd:documentation><![CDATA[The match source is the kind of prediction/assessment done.
 For instance, if a server is hybrid, in the sense it is able to generate predictions/assessments for homology modelling and
 ab initio, then the origin of the match must be identified]]></xsd:documentation>
 				</xsd:annotation>

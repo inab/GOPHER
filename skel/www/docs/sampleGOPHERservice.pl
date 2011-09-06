@@ -82,7 +82,7 @@ sub launchJob($$) {
 			# A match is as easy as:
 			# my($match)=$answerDoc->createElementNS($XCESC_NS,'match');
 			# $answer->appendChild($match);
-			# $match->setAttribute('domain','ab-initio');
+			# $match->setAttribute('source','ab-initio');
 			# $match->setAttribute('timeStamp',getPrintableDate());
 			
 			# When you want to narrow the scope of the prediction/assessment you have to use

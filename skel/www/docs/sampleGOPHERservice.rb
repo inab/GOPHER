@@ -128,7 +128,7 @@ def launchJob(callback,query)
 			
 			# A match is as easy as:
 			# match = Element.new('match',answer)
-			# match.attributes['domain'] = 'ab-initio'
+			# match.attributes['source'] = 'ab-initio'
 			# match.attributes['timeStamp'] = Time.now.iso8601
 			
 			# When you want to narrow the scope of the prediction/assessment you have to use

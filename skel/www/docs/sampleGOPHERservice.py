@@ -114,7 +114,7 @@ def launchJob(callback, query):
 			# A match is as easy as:
 			match = answerDoc.createElementNS(XCESC_NS,'match')
 			answer.appendChild(match)
-			match.setAttribute('domain','ab-initio')
+			match.setAttribute('source','ab-initio')
 			# It is much easier to generate an UTC timestamp in Python than a localized one
 			match.setAttribute('timeStamp',datetime.utcnow().isoformat()+'Z')
 			"""
