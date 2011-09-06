@@ -472,8 +472,6 @@ function viewDocumentation(compDesc, compName, docTextArray) {
                   <a href="xcesc.xsd.html_h-589917359.html">scope</a>
                </b>, Element <b>
                   <a href="xcesc.xsd.html_h-595513662.html">match</a>
-               </b>, Element <b>
-                  <a href="xcesc.xsd.html_h-1858945322.html">jobEvaluation</a>
                </b>
             </td>
          </tr>
@@ -509,7 +507,10 @@ function viewDocumentation(compDesc, compName, docTextArray) {
             <img usemap="#h-1374744943" src="schemaDiagrams/h-1374744943.png"/>
             <!--
             Map ref: file:/home/jmfernandez/projects/GOPHER/skel/www/docs//schemaDiagrams/h-1374744943.map--><map name="h-1374744943">
-</map>
+               <area shape="rect" alt="h-1277345709" coords="358,104,630,160"
+                     href="xcesc.xsd.html_h-1277345709.html#h-1277345709"/>
+
+            </map>
          </div>
          <script type="text/javascript">
 <!--
@@ -534,18 +535,11 @@ function viewDocumentation(compDesc, compName, docTextArray) {
                <span style="margin-left: 0.5em"> publicId="<span class="type">
                      <a href="xcesc.xsd.html#ns_xsd" title="Find out namespace of 'xsd' prefix">xsd</a>:string</span> 
                   <span class="occurs">[1]</span> 
-                  <p class="documentation">'The id of the annotation'</p>"</span>
-               <br/>
-               <span style="margin-left: 0.5em"> score="<span class="type">
-                     <a href="xcesc.xsd.html#ns_xsd" title="Find out namespace of 'xsd' prefix">xsd</a>:string</span> 
-                  <span class="occurs">[1]</span> 
-                  <p class="documentation">'The score given to the annotation'</p>"</span>
-               <br/>
-               <span style="margin-left: 0.5em"> p-value="<span class="constraint">
-                     <span class="type">
-                        <a href="xcesc.xsd.html#ns_xsd" title="Find out namespace of 'xsd' prefix">xsd</a>:double</span> (0.0 &lt;= <em>value</em> &lt;= 1.0)</span> 
-                  <span class="occurs">[1]</span> 
-                  <p class="documentation">'An optional, normalized, score between 0 and 1, given to the annotation'</p>"</span>/&gt; </div>
+                  <p class="documentation">'The id of the annotation'</p>"</span>&gt; <br/>
+               <div style="margin-left: 1.5em">&lt;<a href="xcesc.xsd.html#ns_xcesc" title="Find out namespace of 'xcesc' prefix">xcesc</a>:<a title="Jump to &#34;metric&#34; element declaration."
+                     href="xcesc.xsd.html_h-1277345709.html">metric</a>&gt; ... &lt;/<a href="xcesc.xsd.html#ns_xcesc" title="Find out namespace of 'xcesc' prefix">xcesc</a>:<a title="Jump to &#34;metric&#34; element declaration."
+                     href="xcesc.xsd.html_h-1277345709.html">metric</a>&gt; <span class="occurs">[1..*]</span>
+               </div>&lt;/<a href="xcesc.xsd.html#ns_xcesc" title="Find out namespace of 'xcesc' prefix">xcesc</a>:term&gt;</div>
          </div>
          <script type="text/javascript">
 <!--
@@ -564,11 +558,11 @@ function viewDocumentation(compDesc, compName, docTextArray) {
             <img usemap="#h-1673559609" src="schemaDiagrams/h-1673559609.png"/>
             <!--
             Map ref: file:/home/jmfernandez/projects/GOPHER/skel/www/docs//schemaDiagrams/h-1673559609.map--><map name="h-1673559609">
-               <area shape="rect" alt="h555717641" coords="156,0,446,26"
-                     href="xcesc.xsd.html_h555717641.html#h555717641"/>
+               <area shape="rect" alt="h-1277345709" coords="242,0,382,40"
+                     href="xcesc.xsd.html_h-1277345709.html#h-1277345709"/>
 
-               <area shape="rect" alt="h1444303858" coords="156,36,418,62"
-                     href="xcesc.xsd.html_h1444303858.html#h1444303858"/>
+               <area shape="rect" alt="h555717641" coords="156,50,446,76"
+                     href="xcesc.xsd.html_h555717641.html#h555717641"/>
 
             </map>
          </div>
@@ -587,15 +581,16 @@ function viewDocumentation(compDesc, compName, docTextArray) {
          </div>
          <div id="h-573187121_scbox" class="contents">
             <div style="margin-left: 0em">&lt;<span class="scTag">xsd:element</span> 
-               <span class="scTag">name</span>="<span class="scContent">term</span>"&gt;<div style="margin-left: 1.5em">&lt;<span class="scTag">xsd:complexType</span>&gt;<div style="margin-left: 1.5em">&lt;<span class="scTag">xsd:attributeGroup</span> 
+               <span class="scTag">name</span>="<span class="scContent">term</span>"&gt;<div style="margin-left: 1.5em">&lt;<span class="scTag">xsd:complexType</span>&gt;<div style="margin-left: 1.5em">&lt;<span class="scTag">xsd:sequence</span> 
+                     <span class="scTag">minOccurs</span>="<span class="scContent">1</span>" <span class="scTag">maxOccurs</span>="<span class="scContent">1</span>"&gt;<div style="margin-left: 1.5em">&lt;<span class="scTag">xsd:element</span> 
+                        <span class="scTag">ref</span>="<span class="scContent">
+                           <a href="xcesc.xsd.html#ns_xcesc" title="Find out namespace of 'xcesc' prefix">xcesc</a>:<a title="Jump to &#34;metric&#34; element declaration."
+                              href="xcesc.xsd.html_h-1277345709.html">metric</a>
+                        </span>" <span class="scTag">minOccurs</span>="<span class="scContent">1</span>" <span class="scTag">maxOccurs</span>="<span class="scContent">unbounded</span>"/&gt;</div>&lt;/<span class="scTag">xsd:sequence</span>&gt;</div>
+                  <div style="margin-left: 1.5em">&lt;<span class="scTag">xsd:attributeGroup</span> 
                      <span class="scTag">ref</span>="<span class="scContent">
                         <a href="xcesc.xsd.html#ns_xcesc" title="Find out namespace of 'xcesc' prefix">xcesc</a>:<a title="Jump to &#34;namespaceAttributesGroup&#34; attribute group definition."
                            href="xcesc.xsd.html_h555717641.html">namespaceAttributesGroup</a>
-                     </span>"/&gt;</div>
-                  <div style="margin-left: 1.5em">&lt;<span class="scTag">xsd:attributeGroup</span> 
-                     <span class="scTag">ref</span>="<span class="scContent">
-                        <a href="xcesc.xsd.html#ns_xcesc" title="Find out namespace of 'xcesc' prefix">xcesc</a>:<a title="Jump to &#34;scoreAttributesGroup&#34; attribute group definition."
-                           href="xcesc.xsd.html_h1444303858.html">scoreAttributesGroup</a>
                      </span>"/&gt;</div>&lt;/<span class="scTag">xsd:complexType</span>&gt;</div>&lt;/<span class="scTag">xsd:element</span>&gt;</div>
          </div>
          <script type="text/javascript">

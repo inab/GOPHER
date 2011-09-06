@@ -553,21 +553,18 @@ function viewDocumentation(compDesc, compName, docTextArray) {
                      href="xcesc.xsd.html_h-573187121.html">term</a>&gt; ... &lt;/<a href="xcesc.xsd.html#ns_xcesc" title="Find out namespace of 'xcesc' prefix">xcesc</a>:<a title="Jump to &#34;term&#34; element declaration."
                      href="xcesc.xsd.html_h-573187121.html">term</a>&gt; <span class="occurs">[1..*]</span>
                </div>
-               <div style="margin-left: 3em">&lt;<a href="xcesc.xsd.html#ns_xcesc" title="Find out namespace of 'xcesc' prefix">xcesc</a>:result<br/>
-                  <span style="margin-left: 0.5em"> score="<span class="type">
-                        <a href="xcesc.xsd.html#ns_xsd" title="Find out namespace of 'xsd' prefix">xsd</a>:string</span> 
-                     <span class="occurs">[1]</span> 
-                     <p class="documentation">'The score given to the annotation'</p>"</span>
-                  <br/>
-                  <span style="margin-left: 0.5em"> p-value="<span class="constraint">
-                        <span class="type">
-                           <a href="xcesc.xsd.html#ns_xsd" title="Find out namespace of 'xsd' prefix">xsd</a>:double</span> (0.0 &lt;= <em>value</em> &lt;= 1.0)</span> 
-                     <span class="occurs">[1]</span> 
-                     <p class="documentation">'An optional, normalized, score between 0 and 1, given to the annotation'</p>"</span>&gt;  <span class="occurs">[1..*]</span>  
+               <div style="margin-left: 3em">&lt;<a href="xcesc.xsd.html#ns_xcesc" title="Find out namespace of 'xcesc' prefix">xcesc</a>:result&gt;  <span class="occurs">[1..*]</span>  
                   <p class="documentation">'An structured result'</p>
                   <br/>
                   <span class="other" style="margin-left: 1.5em">&lt;!-- Mixed content --&gt;</span>
                   <br/>
+                  <div style="margin-left: 1.5em">&lt;<a href="xcesc.xsd.html#ns_xcesc" title="Find out namespace of 'xcesc' prefix">xcesc</a>:metrics&gt;  <span class="occurs">[1]</span>  
+                     <p class="documentation">'This element is needed by XML Schema 1.0 in order to allow something more'</p>
+                     <br/>
+                     <div style="margin-left: 1.5em">&lt;<a href="xcesc.xsd.html#ns_xcesc" title="Find out namespace of 'xcesc' prefix">xcesc</a>:<a title="Jump to &#34;metric&#34; element declaration."
+                           href="xcesc.xsd.html_h-1277345709.html">metric</a>&gt; ... &lt;/<a href="xcesc.xsd.html#ns_xcesc" title="Find out namespace of 'xcesc' prefix">xcesc</a>:<a title="Jump to &#34;metric&#34; element declaration."
+                           href="xcesc.xsd.html_h-1277345709.html">metric</a>&gt; <span class="occurs">[1..*]</span>
+                     </div>&lt;/<a href="xcesc.xsd.html#ns_xcesc" title="Find out namespace of 'xcesc' prefix">xcesc</a>:metrics&gt;</div>
                   <div class="other" style="margin-left: 1.5em">Allow any elements from any namespace (lax validation). <span class="occurs">[0..*]</span>
                   </div>&lt;/<a href="xcesc.xsd.html#ns_xcesc" title="Find out namespace of 'xcesc' prefix">xcesc</a>:result&gt;</div>
                <span class="group" style="margin-left: 1.5em">End Choice</span>
@@ -596,10 +593,10 @@ function viewDocumentation(compDesc, compName, docTextArray) {
                <area shape="rect" alt="h-573187121" coords="321,50,447,90"
                      href="xcesc.xsd.html_h-573187121.html#h-573187121"/>
 
-               <area shape="rect" alt="h1444303858" coords="491,151,753,177"
-                     href="xcesc.xsd.html_h1444303858.html#h1444303858"/>
+               <area shape="rect" alt="h-1277345709" coords="840,100,980,140"
+                     href="xcesc.xsd.html_h-1277345709.html#h-1277345709"/>
 
-               <area shape="rect" alt="h1172978085" coords="163,223,383,249"
+               <area shape="rect" alt="h1172978085" coords="163,237,383,263"
                      href="xcesc.xsd.html_h1172978085.html#h1172978085"/>
 
             </map>
@@ -631,13 +628,15 @@ function viewDocumentation(compDesc, compName, docTextArray) {
                            </span>" <span class="scTag">minOccurs</span>="<span class="scContent">1</span>" <span class="scTag">maxOccurs</span>="<span class="scContent">unbounded</span>"/&gt;</div>
                         <div style="margin-left: 1.5em">&lt;<span class="scTag">xsd:element</span> 
                            <span class="scTag">name</span>="<span class="scContent">result</span>" <span class="scTag">minOccurs</span>="<span class="scContent">1</span>" <span class="scTag">maxOccurs</span>="<span class="scContent">unbounded</span>"&gt;<div style="margin-left: 1.5em">&lt;<span class="scTag">xsd:complexType</span> 
-                              <span class="scTag">mixed</span>="<span class="scContent">true</span>"&gt;<div style="margin-left: 1.5em">&lt;<span class="scTag">xsd:sequence</span>&gt;<div style="margin-left: 1.5em">&lt;<span class="scTag">xsd:any</span> 
-                                    <span class="scTag">processContents</span>="<span class="scContent">lax</span>" <span class="scTag">namespace</span>="<span class="scContent">##any</span>" <span class="scTag">minOccurs</span>="<span class="scContent">0</span>" <span class="scTag">maxOccurs</span>="<span class="scContent">unbounded</span>"/&gt;</div>&lt;/<span class="scTag">xsd:sequence</span>&gt;</div>
-                              <div style="margin-left: 1.5em">&lt;<span class="scTag">xsd:attributeGroup</span> 
-                                 <span class="scTag">ref</span>="<span class="scContent">
-                                    <a href="xcesc.xsd.html#ns_xcesc" title="Find out namespace of 'xcesc' prefix">xcesc</a>:<a title="Jump to &#34;scoreAttributesGroup&#34; attribute group definition."
-                                       href="xcesc.xsd.html_h1444303858.html">scoreAttributesGroup</a>
-                                 </span>"/&gt;</div>&lt;/<span class="scTag">xsd:complexType</span>&gt;</div>&lt;/<span class="scTag">xsd:element</span>&gt;</div>&lt;/<span class="scTag">xsd:choice</span>&gt;</div>&lt;/<span class="scTag">xsd:sequence</span>&gt;</div>
+                              <span class="scTag">mixed</span>="<span class="scContent">true</span>"&gt;<div style="margin-left: 1.5em">&lt;<span class="scTag">xsd:sequence</span>&gt;<div style="margin-left: 1.5em">&lt;<span class="scTag">xsd:element</span> 
+                                    <span class="scTag">name</span>="<span class="scContent">metrics</span>" <span class="scTag">minOccurs</span>="<span class="scContent">1</span>" <span class="scTag">maxOccurs</span>="<span class="scContent">1</span>"&gt;<div style="margin-left: 1.5em">&lt;<span class="scTag">xsd:complexType</span>&gt;<div style="margin-left: 1.5em">&lt;<span class="scTag">xsd:sequence</span> 
+                                          <span class="scTag">minOccurs</span>="<span class="scContent">1</span>" <span class="scTag">maxOccurs</span>="<span class="scContent">1</span>"&gt;<div style="margin-left: 1.5em">&lt;<span class="scTag">xsd:element</span> 
+                                             <span class="scTag">ref</span>="<span class="scContent">
+                                                <a href="xcesc.xsd.html#ns_xcesc" title="Find out namespace of 'xcesc' prefix">xcesc</a>:<a title="Jump to &#34;metric&#34; element declaration."
+                                                   href="xcesc.xsd.html_h-1277345709.html">metric</a>
+                                             </span>" <span class="scTag">minOccurs</span>="<span class="scContent">1</span>" <span class="scTag">maxOccurs</span>="<span class="scContent">unbounded</span>"/&gt;</div>&lt;/<span class="scTag">xsd:sequence</span>&gt;</div>&lt;/<span class="scTag">xsd:complexType</span>&gt;</div>&lt;/<span class="scTag">xsd:element</span>&gt;</div>
+                                 <div style="margin-left: 1.5em">&lt;<span class="scTag">xsd:any</span> 
+                                    <span class="scTag">processContents</span>="<span class="scContent">lax</span>" <span class="scTag">namespace</span>="<span class="scContent">##any</span>" <span class="scTag">minOccurs</span>="<span class="scContent">0</span>" <span class="scTag">maxOccurs</span>="<span class="scContent">unbounded</span>"/&gt;</div>&lt;/<span class="scTag">xsd:sequence</span>&gt;</div>&lt;/<span class="scTag">xsd:complexType</span>&gt;</div>&lt;/<span class="scTag">xsd:element</span>&gt;</div>&lt;/<span class="scTag">xsd:choice</span>&gt;</div>&lt;/<span class="scTag">xsd:sequence</span>&gt;</div>
                   <div style="margin-left: 1.5em">&lt;<span class="scTag">xsd:attribute</span> 
                      <span class="scTag">name</span>="<span class="scContent">source</span>" <span class="scTag">type</span>="<span class="scContent">
                         <span class="type">

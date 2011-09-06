@@ -148,9 +148,9 @@ def launchEvaluationJob(callback,query)
 								# When you have been able to assess the quality of the place where the prediction/assessment is
 								# you use the placeQuality element
 								# placeQuality = Element.new('placeQuality',evaluation)
-								# Raw score (it could be an e-value, for instance)
-								# placeQuality.attributes['score'] = 1
-								# Normalized p-value
+								# Precision
+								# placeQuality.attributes['score'] = 0.5
+								# Recall
 								# placeQuality.attributes['p-value'] = 0.4
 								# And the subjective appreciation: right, partial, under, over, wrong, missing
 								# placeQuality << Text.new('under')
@@ -158,9 +158,9 @@ def launchEvaluationJob(callback,query)
 								# When you have been able to assess the quality of the annotation where
 								# the prediction/assessment is, you use the annotationQuality element
 								# annotationQuality = Element.new('annotationQuality',evaluation)
-								# Raw score (it could be an e-value or other kind of native score, for instance)
-								# annotationQuality.attributes['score'] = 2
-								# Normalized p-value
+								# Precision
+								# annotationQuality.attributes['score'] = 1
+								# Recall
 								# annotationQuality.attributes['p-value'] = 0.1
 								# And the subjective appreciation: right, under, over, wrong, missing
 								# annotationQuality << Text.new('right')
@@ -175,8 +175,9 @@ def launchEvaluationJob(callback,query)
 								# term.attributes['p-value'] = 0.1
 								
 								# And a copy of the match being evaluated
+								evaluated = Element.new('evaluated',evaluation)
 								imported = match.deep_clone
-								imported.parent = evaluation
+								imported.parent = evaluated
 							end
 						end
 					}

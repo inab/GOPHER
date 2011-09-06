@@ -111,21 +111,21 @@ sub launchEvaluationJob($$) {
 							# you use the placeQuality element
 							# my($placeQuality)=$answerDoc->createElementNS($XCESC_NS,'placeQuality');
 							# $evaluation->appendChild($placeQuality);
-							# Raw score (it could be an e-value, for instance)
-							# $placeQuality->setAttribute('score',1);
-							# Normalized p-value
-							# $placeQuality->setAttribute('p-value',0.4);
-							# And the subjective appreciation: right, partial, under, over, wrong, missing
+							# Precision
+							# $placeQuality->setAttribute('precision',0.5);
+							# Recall
+							# $placeQuality->setAttribute('recall',0.4);
+							# And a subjective appreciation: right, partial, under, over, wrong, missing
 							# $placeQuality->appendChild($answerDoc->createTextNode('under'));
 			
 							# When you have been able to assess the quality of the annotation where
 							# the prediction/assessment is, you use the annotationQuality element
 							# my($annotationQuality)=$answerDoc->createElementNS($XCESC_NS,'annotationQuality');
 							# $evaluation->appendChild($annotationQuality);
-							# Raw score (it could be an e-value or other kind of native score, for instance)
-							# $annotationQuality->setAttribute('score',2);
-							# Normalized p-value
-							# $annotationQuality->setAttribute('p-value',0.1);
+							# Precision
+							# $annotationQuality->setAttribute('precision',1);
+							# Recall
+							# $annotationQuality->setAttribute('recall',0.1);
 							# And the subjective appreciation: right, under, over, wrong, missing
 							# $annotationQuality->appendChild($answerDoc->createTextNode('right'));
 							
@@ -140,7 +140,9 @@ sub launchEvaluationJob($$) {
 							# $term->setAttribute('p-value',0.1);
 							
 							# And a copy of the match being evaluated
-							$evaluation->appendChild($answerDoc->importNode($match));
+							my($evaluated)=$answerDoc->createElementNS($XCESC_NS,'evaluated');
+							$evaluation->appendChild($evaluated);
+							$evaluated->appendChild($answerDoc->importNode($match));
 						}
 					}
 				}

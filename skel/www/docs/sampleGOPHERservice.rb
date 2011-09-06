@@ -140,17 +140,33 @@ def launchJob(callback,query)
 			# And the results, which depending on the kind of prediction or assessment
 			# will be one or more term elements, or one or more result elements
 			
-			# An example of annotation/assessment with term elements would be
+			# An example of annotation/assessment with term elements would be:
 			# term = Element.new('term',match)
 			# term.attributes['namespace'] = 'GO'
 			# term.attributes['publicId'] = 'GO:0004174'
 			# term.attributes['score'] = 100.to_s
 			# term.attributes['p-value'] = 0.5.to_s
+			#
+			# metric = Element.new('metric',term)
+			# metric.attributes['type'] = 'score'
+			# metric << Text.new(100.to_s)
+			#
+			# metric = Element.new('metric',term)
+			# metric.attributes['type'] = 'p-value'
+			# metric << Text.new(0.5.to_s)
 			
-			# An example of annotation/assessment with result elements would be
+			# An example of annotation/assessment with result elements would be:
 			# result = Element.new('result',match)
-			# result.attributes['score'] = 50.to_s
-			# result.attributes['p-value'] = 0.1.to_s
+			# metrics = Element.new('metrics',result)
+			#
+			# otherMetric = Element.new('metric',metrics)
+			# otherMetric.attributes['type'] = 'score'
+			# otherMetric << Text.new(50.to_s)
+			#
+			# otherMetric = Element.new('metric',metrics)
+			# otherMetric.attribute['type'] = 'p-value'
+			# otherMetric << Text.new(0.1.to_s)
+			#
 			# result << CData.new('This could be, for instance, a PDB')
 			
 			# Once the work has finished, results are sent to the GOPHER server.

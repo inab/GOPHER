@@ -385,15 +385,85 @@ When an e-mail is disabled, it is not used to send the user notifications]]></xs
 		</xsd:keyref>
 	</xsd:element>
 	
-	<xsd:attributeGroup name="scoreAttributesGroup">
-		<xsd:attribute name="score" type="xsd:string" use="required">
+	<xsd:element name="metric">
+		<xsd:annotation>
+			<xsd:documentation><![CDATA[A metric about a piece of information (precision, recall, e-value, z-score, etc...)]]></xsd:documentation>
+		</xsd:annotation>
+		<xsd:complexType>
+			<xsd:simpleContent>
+				<xsd:extension base="xsd:string">
+					<xsd:attribute name="type" use="required">
+						<xsd:annotation>
+							<xsd:documentation><![CDATA[The type of metric used]]></xsd:documentation>
+						</xsd:annotation>
+						<xsd:simpleType>
+							<xsd:restriction base="xsd:string">
+								<xsd:enumeration value="score">
+									<xsd:annotation>
+										<xsd:documentation><![CDATA[Custom scoring scheme]]></xsd:documentation>
+									</xsd:annotation>
+								</xsd:enumeration>
+								<xsd:enumeration value="e-value">
+									<xsd:annotation>
+										<xsd:documentation><![CDATA[The expected value (or expectation, or mathematical expectation, or mean, or the first moment) of a random variable is the weighted average of all possible values that this random variable can take on.
+See http://en.wikipedia.org/wiki/Expected_value]]></xsd:documentation>
+									</xsd:annotation>
+								</xsd:enumeration>
+								<xsd:enumeration value="p-value">
+									<xsd:annotation>
+										<xsd:documentation><![CDATA[The p-value is the probability of obtaining a test statistic at least as extreme as the one that was actually observed, assuming that the null hypothesis is true.
+See http://en.wikipedia.org/wiki/P-value]]></xsd:documentation>
+									</xsd:annotation>
+								</xsd:enumeration>
+								<xsd:enumeration value="z-score">
+									<xsd:annotation>
+										<xsd:documentation><![CDATA[A standard (Z) score indicates how many standard deviations an observation or datum is above or below the mean.
+See http://en.wikipedia.org/wiki/Standard_score]]></xsd:documentation>
+									</xsd:annotation>
+								</xsd:enumeration>
+								<xsd:enumeration value="precision">
+									<xsd:annotation>
+										<xsd:documentation><![CDATA[Precision is the fraction of retrieved instances that are relevant.
+See http://en.wikipedia.org/wiki/Precision_and_recall]]></xsd:documentation>
+									</xsd:annotation>
+								</xsd:enumeration>
+								<xsd:enumeration value="recall">
+									<xsd:annotation>
+										<xsd:documentation><![CDATA[Recall is the fraction of relevant instances that are retrieved.
+See http://en.wikipedia.org/wiki/Precision_and_recall]]></xsd:documentation>
+									</xsd:annotation>
+								</xsd:enumeration>
+								<xsd:enumeration value="accuracy">
+									<xsd:annotation>
+										<xsd:documentation><![CDATA[The accuracy of a measurement system is the degree of closeness of measurements of a quantity to that quantity's actual (true) value.
+See http://en.wikipedia.org/wiki/Accuracy]]></xsd:documentation>
+									</xsd:annotation>
+								</xsd:enumeration>
+							</xsd:restriction>
+						</xsd:simpleType>
+					</xsd:attribute>
+				</xsd:extension>
+			</xsd:simpleContent>
+		</xsd:complexType>
+	</xsd:element>
+	
+	<xsd:attributeGroup name="precisionAttributesGroup">
+		<xsd:attribute name="precision" use="required">
 			<xsd:annotation>
-				<xsd:documentation><![CDATA[The score given to the annotation]]></xsd:documentation>
+				<xsd:documentation><![CDATA[Precision is the fraction of retrieved instances that are relevant.
+See http://en.wikipedia.org/wiki/Precision_and_recall]]></xsd:documentation>
 			</xsd:annotation>
+			<xsd:simpleType>
+				<xsd:restriction base="xsd:double">
+					<xsd:minInclusive value="0.0"/>
+					<xsd:maxInclusive value="1.0"/>
+				</xsd:restriction>
+			</xsd:simpleType>
 		</xsd:attribute>
-		<xsd:attribute name="p-value" use="required">
+		<xsd:attribute name="recall" use="required">
 			<xsd:annotation>
-				<xsd:documentation><![CDATA[An optional, normalized, score between 0 and 1, given to the annotation]]></xsd:documentation>
+				<xsd:documentation><![CDATA[Recall is the fraction of relevant instances that are retrieved.
+See http://en.wikipedia.org/wiki/Precision_and_recall]]></xsd:documentation>
 			</xsd:annotation>
 			<xsd:simpleType>
 				<xsd:restriction base="xsd:double">
@@ -480,8 +550,10 @@ When an e-mail is disabled, it is not used to send the user notifications]]></xs
 			<xsd:documentation><![CDATA[An annotated element with a score]]></xsd:documentation>
 		</xsd:annotation>
 		<xsd:complexType>
+			<xsd:sequence minOccurs="1" maxOccurs="1">
+				<xsd:element ref="xcesc:metric" minOccurs="1" maxOccurs="unbounded" />
+			</xsd:sequence>
 			<xsd:attributeGroup ref="xcesc:namespaceAttributesGroup"/>
-			<xsd:attributeGroup ref="xcesc:scoreAttributesGroup"/>
 		</xsd:complexType>
 	</xsd:element>
 
@@ -492,6 +564,7 @@ As the scope can be sparse, more than one scope element can be specified]]></xsd
 		</xsd:annotation>
 		<xsd:complexType>
 			<xsd:sequence minOccurs="1" maxOccurs="1">
+				<xsd:element ref="xcesc:metric" minOccurs="0" maxOccurs="unbounded" />
 				<xsd:element ref="xcesc:term" minOccurs="0" maxOccurs="unbounded">
 					<xsd:annotation>
 						<xsd:documentation><![CDATA[This scope can have associated specific annotations]]></xsd:documentation>
@@ -551,13 +624,22 @@ As the scope can be sparse, more than one scope element can be specified]]></xsd
 						</xsd:annotation>
 						<xsd:complexType mixed="true">
 							<xsd:sequence>
+								<xsd:element name="metrics" minOccurs="1" maxOccurs="1">
+									<xsd:annotation>
+										<xsd:documentation><![CDATA[This element is needed by XML Schema 1.0 in order to allow something more]]></xsd:documentation>
+									</xsd:annotation>
+									<xsd:complexType>
+										<xsd:sequence minOccurs="1" maxOccurs="1">
+											<xsd:element ref="xcesc:metric" minOccurs="1" maxOccurs="unbounded" />
+										</xsd:sequence>
+									</xsd:complexType>
+								</xsd:element>
 								<xsd:any processContents="lax" namespace="##any" minOccurs="0" maxOccurs="unbounded">
 									<xsd:annotation>
 										<xsd:documentation><![CDATA[As it can contain any content, it is mixed]]></xsd:documentation>
 									</xsd:annotation>
 								</xsd:any>
 							</xsd:sequence>
-							<xsd:attributeGroup ref="xcesc:scoreAttributesGroup"/>
 						</xsd:complexType>
 					</xsd:element>
 				</xsd:choice>
@@ -672,7 +754,7 @@ ab initio, then the origin of the match must be identified]]></xsd:documentation
 						<xsd:sequence minOccurs="1" maxOccurs="1">
 							<xsd:element name="report" minOccurs="0" maxOccurs="1">
 								<xsd:annotation>
-									<xsd:documentation><![CDATA[This It should contain native output report]]></xsd:documentation>
+									<xsd:documentation><![CDATA[This It should contain any native output report the server wants to provide]]></xsd:documentation>
 								</xsd:annotation>
 							</xsd:element>
 							<xsd:element name="placeQuality" minOccurs="0" maxOccurs="1">
@@ -682,7 +764,7 @@ ab initio, then the origin of the match must be identified]]></xsd:documentation
 								<xsd:complexType>
 									<xsd:simpleContent>
 										<xsd:extension base="xcesc:placeQualityEnum">
-											<xsd:attributeGroup ref="xcesc:scoreAttributesGroup"/>
+											<xsd:attributeGroup ref="xcesc:precisionAttributesGroup"/>
 										</xsd:extension>
 									</xsd:simpleContent>
 								</xsd:complexType>
@@ -694,11 +776,12 @@ ab initio, then the origin of the match must be identified]]></xsd:documentation
 								<xsd:complexType>
 									<xsd:simpleContent>
 										<xsd:extension base="xcesc:annotationQualityEnum">
-											<xsd:attributeGroup ref="xcesc:scoreAttributesGroup"/>
+											<xsd:attributeGroup ref="xcesc:precisionAttributesGroup"/>
 										</xsd:extension>
 									</xsd:simpleContent>
 								</xsd:complexType>
 							</xsd:element>
+							<!--
 							<xsd:element ref="xcesc:scope" minOccurs="0" maxOccurs="unbounded">
 								<xsd:annotation>
 									<xsd:documentation><![CDATA[The match scope, in its corresponding units.
@@ -710,13 +793,18 @@ As the scope can be sparse, more than one scope element can be specified]]></xsd
 									<xsd:documentation><![CDATA[These terms can help to annotate the assessment using a ontology (it should RDF, I know)]]></xsd:documentation>
 								</xsd:annotation>
 							</xsd:element>
-							<xsd:choice>
-								<xsd:annotation>
-									<xsd:documentation><![CDATA[We can even assess other evaluators]]></xsd:documentation>
-								</xsd:annotation>
-								<xsd:element ref="xcesc:match" minOccurs="0" maxOccurs="1"/>
-								<xsd:element ref="xcesc:jobEvaluation" minOccurs="0" maxOccurs="1"/>
-							</xsd:choice>
+							-->
+							<xsd:element name="evaluated" minOccurs="1" maxOccurs="1">
+								<xsd:complexType>
+									<xsd:choice>
+										<xsd:annotation>
+											<xsd:documentation><![CDATA[We can even assess other evaluators]]></xsd:documentation>
+										</xsd:annotation>
+										<xsd:element ref="xcesc:match" minOccurs="0" maxOccurs="1"/>
+										<xsd:element ref="xcesc:jobEvaluation" minOccurs="0" maxOccurs="1"/>
+									</xsd:choice>
+								</xsd:complexType>
+							</xsd:element>
 						</xsd:sequence>
 					</xsd:complexType>
 				</xsd:element>

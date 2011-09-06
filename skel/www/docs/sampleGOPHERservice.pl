@@ -95,19 +95,38 @@ sub launchJob($$) {
 			# And the results, which depending on the kind of prediction or assessment
 			# will be one or more term elements, or one or more result elements
 			
-			# An example of annotation/assessment with term elements would be
+			# An example of annotation/assessment with term elements would be:
 			# my($term)=$answerDoc->createElementNS($XCESC_NS,'term');
 			# $match->appendChild($term);
 			# $term->setAttribute('namespace','GO');
 			# $term->setAttribute('publicId','GO:0004174');
-			# $term->setAttribute('score',100);
-			# $term->setAttribute('p-value',0.5);
+			#
+			# my($metric)=$answerDoc->createElementNS($XCESC_NS,'metric');
+			# $term->appendChild($metric);
+			# $metric->setAttribute('type','score');
+			# $metric->appendChild($answerDoc->createTextNode(100));
+			#
+			# $metric=$answerDoc->createElementNS($XCESC_NS,'metric');
+			# $term->appendChild($metric);
+			# $metric->setAttribute('type','p-value');
+			# $metric->appendChild($answerDoc->createTextNode(0.5));
 			
-			# An example of annotation/assessment with result elements would be
+			# An example of annotation/assessment with result elements would be:
 			# my($result)=$answerDoc->createElementNS($XCESC_NS,'result');
 			# $match->appendChild($result);
-			# $result->setAttribute('score',50);
-			# $result->setAttribute('p-value',0.1);
+			# my($metrics)=$answerDoc->createElementNS($XCESC_NS,'metrics');
+			# $result->appendChild($metrics);
+			#
+			# my($otherMetric)=$answerDoc->createElementNS($XCESC_NS,'metric');
+			# $metrics->appendChild($otherMetric);
+			# $otherMetric->setAttribute('type','score');
+			# $otherMetric->appendChild($answerDoc->createTextNode(50));
+			#
+			# $otherMetric=$answerDoc->createElementNS($XCESC_NS,'metric');
+			# $metrics->appendChild($otherMetric);
+			# $otherMetric->setAttribute('type','p-value');
+			# $otherMetric->appendChild($answerDoc->createTextNode(0.1));
+			#
 			# $result->appendChild($answerDoc->createCDATASection('This could be, for instance, a PDB'));
 			
 			# Once the work has finished, results are sent to the GOPHER server.

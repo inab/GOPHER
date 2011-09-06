@@ -132,22 +132,42 @@ def launchJob(callback, query):
 			# will be one or more term elements, or one or more result elements
 			
 			"""
-			# An example of annotation/assessment with term elements would be
+			# An example of annotation/assessment with term elements would be:
 			term = answerDoc.createElementNS(XCESC_NS,'term')
 			match.appendChild(term)
 			term.setAttribute('namespace','GO')
 			term.setAttribute('publicId','GO:0004174')
 			term.setAttribute('score',100)
 			term.setAttribute('p-value',0.5)
+			
+			metric = answerDoc.createElementNS(XCESC_NS,'metric')
+			term.appendChild(metric)
+			metric.setAttribute('type','score')
+			metric.appendChild(answerDoc.createTextNode(100))
+			
+			metric = answerDoc.createElementNS(XCESC_NS,'metric')
+			term.appendChild(metric)
+			metric.setAttribute('type','p-value')
+			metric.appendChild(answerDoc.createTextNode(0.5))
 			"""
 			
 			"""
-			#
-			# An example of annotation/assessment with result elements would be
+			# An example of annotation/assessment with result elements would be:
 			result = answerDoc.createElementNS(XCESC_NS,'result')
 			match.appendChild(result)
-			result.setAttribute('score',50)
-			result.setAttribute('p-value',0.1)
+			metrics = answerDoc.createElementNS(XCESC_NS,'metrics')
+			result.appendChild(metrics)
+			
+			otherMetric = answerDoc.createElementNS(XCESC_NS,'metric')
+			metrics.appendChild(otherMetric)
+			otherMetric.setAttribute('type','score')
+			otherMetric.appendChild(answerDoc.createTextNode(50))
+			
+			otherMetric = answerDoc.createElementNS(XCESC_NS,'metric')
+			metrics.appendChild(otherMetric)
+			otherMetric.setAttribute('type','p-value')
+			otherMetric.appendChild(answerDoc.createTextNode(0.1))
+			
 			result.appendChild(answerDoc.createCDATASection('This could be, for instance, a PDB'))
 			"""
 			
@@ -234,7 +254,7 @@ if httpcode == 202:
 	acceptedQueries.setAttribute('timeStamp',datetime.utcnow().isoformat()+'Z')
 	
 	for queryId in acceptedList:
-		accepted = acceptedDoc.createElementNS(XSCESC_NS,'accepted')
+		accepted = acceptedDoc.createElementNS(XCESC_NS,'accepted')
 		accepted.setAttribute('queryId',queryId)
 		acceptedQueries.appendChild(accepted)
 	

@@ -139,10 +139,10 @@ def launchEvaluationJob(callback, query):
 								# you use the placeQuality element
 								placeQuality = answerDoc.createElementNS(XCESC_NS,'placeQuality')
 								evaluation.appendChild(placeQuality)
-								# Raw score (it could be an e-value, for instance)
-								placeQuality.setAttribute('score',1)
-								# Normalized p-value
-								placeQuality.setAttribute('p-value',0.4)
+								# Precision
+								placeQuality.setAttribute('precision',0.5)
+								# Recall
+								placeQuality.setAttribute('recall',0.4)
 								# And the subjective appreciation: right, partial, under, over, wrong, missing
 								placeQuality.appendChild(answerDoc.createTextNode('under'))
 								"""
@@ -152,10 +152,10 @@ def launchEvaluationJob(callback, query):
 								# the prediction/assessment is, you use the annotationQuality element
 								annotationQuality = answerDoc.createElementNS(XCESC_NS,'annotationQuality')
 								evaluation.appendChild(annotationQuality)
-								# Raw score (it could be an e-value or other kind of native score, for instance)
-								annotationQuality.setAttribute('score',2)
-								# Normalized p-value
-								annotationQuality.setAttribute('p-value',0.1)
+								# Precision
+								annotationQuality.setAttribute('precision',1)
+								# Recall
+								annotationQuality.setAttribute('recall',0.1)
 								# And the subjective appreciation: right, under, over, wrong, missing
 								annotationQuality.appendChild(answerDoc.createTextNode('right'))
 								"""
@@ -173,7 +173,9 @@ def launchEvaluationJob(callback, query):
 								"""
 								
 								# And a copy of the match being evaluated
-								evaluation.appendChild(answerDoc.importNode(match), True)
+								evaluated = answerDoc.createElementNS(XCESC_NS,'evaluated')
+								evaluation.appendChild(evaluated)
+								evaluated.appendChild(answerDoc.importNode(match), True)
 			
 			# Once the work has finished, results are sent to the GOPHER server.
 			# The user agent is completely optional!!!!
@@ -258,7 +260,7 @@ if httpcode == 202:
 	acceptedQueries.setAttribute('timeStamp',datetime.utcnow().isoformat()+'Z')
 	
 	for queryId in acceptedList:
-		accepted = acceptedDoc.createElementNS(XSCESC_NS,'accepted')
+		accepted = acceptedDoc.createElementNS(XCESC_NS,'accepted')
 		accepted.setAttribute('queryId',queryId)
 		acceptedQueries.appendChild(accepted)
 	
