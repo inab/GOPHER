@@ -53,11 +53,13 @@ def print_http_headers(status=None,headers={},output=None):
 		print >> output , quopri.encodestring(k+": "+v)
 	print >> output
 
-def launchEvaluationJob(callback, query):
+def launchEvaluationJob(callback, query, common):
 	"""
 		This is the function where you have to put your results evaluation work...
 		First parameter is the callback URI where we have to send each one of the results.
 		Second parameter is the xcesc:query XML fragment, with all the details needed to start an assessment.
+		Third parameter is the xcesc:common XML fragment (if available), with all the shared details needed
+		by any value of second parameter.
 		As it is an asynchronous work, you should use here your favourite queue system (SGE, NQS, etc...).
 		This example only uses fork, which could saturate the server with a DoS attack.
 		If the assessment job is accepted, it returns the queryId, otherwise it returns None.
@@ -110,18 +112,24 @@ def launchEvaluationJob(callback, query):
 			# on 0 or more jobEvaluation elements. As this is a sample service, no match is
 			# appended based on input query, because it means 'no result'.
 			
-			for target in query.childNodes():
-				if target.nodeType == Node.ELEMENT_NODE and target.localName == 'target' and target.namespaceURI == XCESC_NS:
+			for predAnswer in query.childNodes():
+				if predAnswer.nodeType == Node.ELEMENT_NODE and predAnswer.localName == 'answer' and predAnswer.namespaceURI == XCESC_NS and predAnswer.hasAttribute('targetId'):
 					jobEvaluation = answerDoc.createElementNS(XCESC_NS,'jobEvaluation')
 					answer.appendChild(jobEvaluation)
 					jobEvaluation.setAttribute('timeStamp',datetime.utcnow().isoformat()+'Z')
-					queryId = None
+
+					# The targetId comes from the prediction's 'answer' targetId
+					# and it is the same as the queryId from 'query' inside 'target'
+					queryId = predAnswer.getAttribute('targetId')
+					jobEvaluation.setAttribute('targetId',queryId)
 					
-					for match in target.childNodes():
+					# This variable will containt the 'target' element
+					target = None
+					for match in predAnswer.childNodes():
 						if match.nodeType == Node.ELEMENT_NODE and match.namespaceURI == XCESC_NS:
-							if match.localName == 'query' and match.hasAttribute('queryId'):
-								queryId = match.getAttribute('queryId')
-								jobEvaluation.setAttribute('targetId',queryId)
+							if match.localName == 'target':
+								# This information is needed to evaluate later
+								target = match
 							elif queryId is not None and match.localName == 'match':
 								# An evaluation match is as easy as:
 								evaluation = answerDoc.createElementNS(XCESC_NS,'evaluation')
@@ -229,13 +237,17 @@ else:
 		if el.namespaceURI == XCESC_NS and el.localName == 'queries':
 			if el.hasAttribute('callback'):
 				callback = el.getAttribute('callback')
+				common = None
 				
 				for query in el.childNodes():
-					if query.nodeType == Node.ELEMENT_NODE and query.localName == 'query' and query.namespaceURI == XCESC_NS and query.hasAttribute('queryId'):
-						queryId = launchEvaluationJob(callback,query)
-						if queryId is not None:
-							errstate = 'Accepted'
-							acceptedList.append(queryId)
+					if query.nodeType == Node.ELEMENT_NODE and query.namespaceURI == XCESC_NS:
+						if query.localName == 'common':
+							common = query
+						elif query.localName == 'query' and query.hasAttribute('queryId'):
+							queryId = launchEvaluationJob(callback,query,common)
+							if queryId is not None:
+								errstate = 'Accepted'
+								acceptedList.append(queryId)
 				
 #				doc.writexml(writer=sys.stdout)
 			else:

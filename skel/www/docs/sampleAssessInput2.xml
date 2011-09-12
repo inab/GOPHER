@@ -4,8 +4,9 @@
 	callback="http://gopher.bioinfo.cnio.es/XCESC-logic/evapobox.xql/SOMEUUID/MOREUUID/LASTUUID"
 	xmlns="http://www.cnio.es/scombio/xcesc/1.0"
 >
-	<query queryId="ANOTHERUUID">
-		<answer targetId="1">
+	<!-- Shared area -->
+	<common>
+		<content id="A">
 			<target publicId="2JK5_1" namespace="pdbpre" description="Entity 1" level="1.0">
 				<query queryId="1"><![CDATA[QVQLQQPGAELVKPGASVKLSCKASGYTFTSDWIHWVKQRPGHGLEWIGEIIPSYGRANYNEKIQKKATLTADKSSSTAFMQLSSLTSEDSAVYYCARERGDGYFAVWGAGTTVTVSSAKTTPPSVYPLAPGSAAQTNSMVTLGCLVKGYFPEPVTVTWNSGSLSSGVHTFPAVLQSDLYTLSSSVTVPSSSWPSETVTCNVAHPASSTKVDKKIVPRD]]></query>
 				<baseline>
@@ -28,27 +29,8 @@
 					</match>
 				</baseline>
 			</target>
-			<!-- source attribute is used to tell something about the method class -->
-			<match source="HMMer" timeStamp="2009-10-21T19:12:59.453647576+02:00">
-				<scope from="1" to="116"/>
-				<term namespace="GO" publicId="GO:0004866">
-					 <metric type="score">2000</metric>
-					 <metric type="p-value">0.01</metric>
-				</term>
-			</match>
-			<match source="HMMer" timeStamp="2009-10-21T19:13:20.833425242+02:00">
-				<scope from="131" to="212"/>
-				<term namespace="GO" id="GO:0005576">
-					<metric type="score">1000</metric>
-					<metric type="p-value">0.02</metric>
-				</term>
-				<term namespace="GO" id="GO:0004421">
-					<metric type="score">500</metric>
-					<metric type="p-value">0.03</metric>
-				</term>
-			</match>
-		</answer>
-		<answer targetId="2">
+		</content>
+		<content id="B">
 			<target publicId="2JK5_3" namespace="pdbpre" description="Entity 3" level="0.0">
 				<query queryId="2"><![CDATA[MPPMLSGLLARLVKLLLGRHGSALHWRAAGAATVLLVIVLLAGSYLAVLAERGAPGAQLITYPRALWWSVETATTVGYGDLYPVTLWGRCVAVVVMVAGITSFGLVTAALATWFVGREQERRGH]]></query>
 				<baseline>
@@ -112,9 +94,8 @@
 					</match>
 				</baseline>
 			</target>
-			<!-- This one did not get matches, so it is empty -->
-		</answer>
-		<answer targetId="3">
+		</content>
+		<content id="C">
 			<target publicId="2JK5_2" namespace="pdbpre" description="Entity 2" level="0.75">
 				<query queryId="3"><![CDATA[DILLTQSPAILSVSPGERVSFSCRASQSIGTDIHWYQQRTNGSPRLLIKYASESISGIPSRFSGSGSGTDFTLSINSVESEDIANYYCQQSNRWPFTFGSGTKLEIKRADAAPTVSIFPPSSEQLTSGGASVVCFLNNFYPKDINVKWKIDGSERQNGVLNSWTDQDSKDSTYSMSSTLTLTKDEYERHNSYTCEATHKTSTSPIVKSFNRN]]></query>
 				<baseline>
@@ -128,17 +109,8 @@
 					</match>
 				</baseline>
 			</target>
-			<match source="Pfam" timeStamp="2009-10-21T19:13:44.977189325+02:00">
-				<!-- This one maps more than one segment -->
-				<scope from="10" to="40"/>
-				<scope from="60" to="80"/>
-				<term namespace="GO" publicId="GO:0005615">
-					<metric type="score">2000</metric>
-					<metric type="p-value">0.01</metric>
-				</term>
-			</match>
-		</answer>
-		<answer targetId="4">
+		</content>
+		<content id="D">
 			<target publicId="2JKY_1" namespace="pdbpre" description="Entity 1" level="0.20">
 				<query queryId="4"><![CDATA[SANDKQYISYNNVHQLCQVSAERIKNFKPDLIIAIGGGGFIPARILRTFLKEPGVPTIRIFAIILSLYEDLNSVGSEVEEVGVKVSRTQWIDYEQCKLDLVGKNVLIVDEVDDTRTTLHYALSELEKDAAEQAKAKGIDTEKSPEMKTNFGIFVLHDKQKPKKADLPAEMLNDKNRYFAAKTVPDKWYAYPWESTDIVFHTRMAIEQGNDIFI]]></query>
 				<baseline>
@@ -199,6 +171,50 @@
 					</match>
 				</baseline>
 			</target>
+		</content>
+	</common>
+	
+	<!-- And now, the queries -->
+	<query queryId="ANOTHERUUID">
+		<answer targetId="1">
+			<refContent ref="A" />
+			<!-- source attribute is used to tell something about the method class -->
+			<match source="HMMer" timeStamp="2009-10-21T19:12:59.453647576+02:00">
+				<scope from="1" to="116"/>
+				<term namespace="GO" publicId="GO:0004866">
+					 <metric type="score">2000</metric>
+					 <metric type="p-value">0.01</metric>
+				</term>
+			</match>
+			<match source="HMMer" timeStamp="2009-10-21T19:13:20.833425242+02:00">
+				<scope from="131" to="212"/>
+				<term namespace="GO" id="GO:0005576">
+					<metric type="score">1000</metric>
+					<metric type="p-value">0.02</metric>
+				</term>
+				<term namespace="GO" id="GO:0004421">
+					<metric type="score">500</metric>
+					<metric type="p-value">0.03</metric>
+				</term>
+			</match>
+		</answer>
+		<answer targetId="2">
+			<refContent ref="B" />
+			<!-- This one did not get matches, so it is empty -->
+		</answer>
+		<answer targetId="3">
+			<refContent ref="C" />
+			<match source="Pfam" timeStamp="2009-10-21T19:13:44.977189325+02:00">
+				<!-- This one maps more than one segment -->
+				<scope from="10" to="40"/>
+				<scope from="60" to="80"/>
+				<term namespace="GO" publicId="GO:0005615">
+					<metric type="score">2000</metric>
+					<metric type="p-value">0.01</metric>
+				</term>
+			</match>
+		</answer>
+		<answer targetId="4">
 			<match source="Blast" timeStamp="2009-10-21T19:14:00.413601006+02:00">
 				<!-- This one is mapped to the whole sequence -->
 				<term namespace="GO" publicId="GO:0005737">
@@ -226,6 +242,52 @@
 					<metric type="p-value">0.01</metric>
 				</term>
 				<term namespace="GO" publicId="GO:0032264">
+					<metric type="score">2000</metric>
+					<metric type="p-value">0.01</metric>
+				</term>
+			</match>
+		</answer>
+	</query>
+	<query queryId="SECONDUUID">
+		<answer targetId="1">
+			<refContent ref="A" />
+			<match source="HMMer" timeStamp="2010-10-21T19:13:20.833425242+02:00">
+				<scope from="134" to="211"/>
+				<term namespace="GO" id="GO:0004421">
+					<metric type="score">500</metric>
+					<metric type="p-value">0.03</metric>
+				</term>
+			</match>
+		</answer>
+		<answer targetId="2">
+			<refContent ref="B" />
+			<!-- This one did not get matches, so it is empty -->
+			<match source="HMMer" timeStamp="2010-10-21T19:13:20.833425242+02:00">
+				<term namespace="GO" id="GO:0005576">
+					<metric type="score">1000</metric>
+					<metric type="p-value">0.02</metric>
+				</term>
+			</match>
+		</answer>
+		<answer targetId="3">
+			<refContent ref="C" />
+		</answer>
+		<answer targetId="4">
+			<match source="Blast" timeStamp="2010-10-21T19:14:00.413601006+02:00">
+				<!-- This one is mapped to the whole sequence -->
+				<term namespace="GO" publicId="GO:0005634">
+					<metric type="score">2000</metric>
+					<metric type="p-value">0.01</metric>
+				</term>
+				<term namespace="GO" publicId="GO:0004422">
+					<metric type="score">2000</metric>
+					<metric type="p-value">0.01</metric>
+				</term>
+				<term namespace="GO" publicId="GO:0005515">
+					<metric type="score">2000</metric>
+					<metric type="p-value">0.01</metric>
+				</term>
+				<term namespace="GO" publicId="GO:0032263">
 					<metric type="score">2000</metric>
 					<metric type="p-value">0.01</metric>
 				</term>

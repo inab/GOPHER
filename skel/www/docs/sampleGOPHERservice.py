@@ -53,11 +53,13 @@ def print_http_headers(status=None,headers={},output=None):
 		print >> output , quopri.encodestring(k+": "+v)
 	print >> output
 
-def launchJob(callback, query):
+def launchJob(callback, query, common):
 	"""
 		This is the function where you have to put your service work...
 		First parameter is the callback URI where we have to send each one of the results.
 		Second parameter is the xcesc:query XML fragment, with all the details of the job.
+		Third parameter is the xcesc:common XML fragment (if available), with all the shared details needed
+		by any value of second parameter.
 		As it is an asynchronous work, you should use here your favourite queue system (SGE, NQS, etc...).
 		This example only uses fork, which could saturate the server with a DoS attack.
 		If the job is accepted, it returns the queryId, otherwise it returns None.
@@ -223,13 +225,17 @@ else:
 		if el.namespaceURI == XCESC_NS and el.localName == 'queries':
 			if el.hasAttribute('callback'):
 				callback = el.getAttribute('callback')
+				common = None
 				
 				for query in el.childNodes():
-					if query.nodeType == Node.ELEMENT_NODE and query.localName == 'query' and query.namespaceURI == XCESC_NS and query.hasAttribute('queryId'):
-						queryId = launchJob(callback,query)
-						if queryId is not None:
-							errstate = 'Accepted'
-							acceptedList.append(queryId)
+					if query.nodeType == Node.ELEMENT_NODE and query.namespaceURI == XCESC_NS:
+						if query.localName == 'common':
+							common = query
+						elif query.localName == 'query' and query.hasAttribute('queryId'):
+							queryId = launchJob(callback,query,common)
+							if queryId is not None:
+								errstate = 'Accepted'
+								acceptedList.append(queryId)
 				
 #				doc.writexml(writer=sys.stdout)
 			else:

@@ -18,7 +18,7 @@ $|=1;
 my($XCESC_NS)='http://www.cnio.es/scombio/xcesc/1.0';
 
 sub getPrintableDate(;$);
-sub launchJob($$);
+sub launchEvaluationJob($$$);
 
 # this is only a helper function to generate ISO8601 timestamp strings
 sub getPrintableDate(;$) {
@@ -37,11 +37,13 @@ sub getPrintableDate(;$) {
 # This is the function where you have to put your results evaluation work...
 # First parameter is the callback URI where we have to send each one of the results.
 # Second parameter is the xcesc:query XML fragment, with all the details needed to start an assessment.
+# Third parameter is the xcesc:common XML fragment (if available), with all the shared details needed
+# by any value of second parameter.
 # As it is an asynchronous work, you should use here your favourite queue system (SGE, NQS, etc...).
 # This example only uses fork, which could saturate the server with a DoS attack.
 # If the assessment job is accepted, it returns the queryId, otherwise it returns undef.
-sub launchEvaluationJob($$) {
-	my($callback,$query)=@_;
+sub launchEvaluationJob($$$) {
+	my($callback,$query,$common)=@_;
 	
 	# We have to ignore pleas from the children
 	$SIG{CHLD}='IGNORE';
@@ -79,24 +81,30 @@ sub launchEvaluationJob($$) {
 			# on 0 or more jobEvaluation elements. As this is a sample service, no match is
 			# appended based on input query, because it means 'no result'.
 			
-			foreach my $target ($query->childNodes()) {
+			foreach my $predAnswer ($query->childNodes()) {
 				next  unless(
-					$target->nodeType() eq ELEMENT_NODE &&
-					$target->localname() eq 'target' &&
-					$target->namespaceURI() eq $XCESC_NS
+					$predAnswer->nodeType() eq ELEMENT_NODE &&
+					$predAnswer->localname() eq 'answer' &&
+					$predAnswer->namespaceURI() eq $XCESC_NS &&
+					$predAnswer->hasAttribute('targetId')
 				);
 
 				my $jobEvaluation = $answerDoc->createElementNS($XCESC_NS,'jobEvaluation');
 				$answer->appendChild($jobEvaluation);
 				$jobEvaluation->setAttribute('timeStamp',getPrintableDate());
-				my($queryId) = undef;
 				
-				foreach my $match ($target->childNodes()) {
+				# The targetId comes from the prediction's 'answer' targetId
+				# and it is the same as the queryId from 'query' inside 'target'
+				my $queryId = $predAnswer->getAttribute('targetId');
+				$jobEvaluation->setAttribute('targetId',$queryId);
+				
+				# This variable will contain the 'target' element
+				my $target = undef;
+				foreach my $match ($predAnswer->childNodes()) {
 					if($match->nodeType() eq ELEMENT_NODE && $match->namespaceURI() eq $XCESC_NS) {
-						if($match->localname() eq 'query' && $match->hasAttribute('queryId')) {
-							# The targetId comes from the queryId from query inside the target
-							$queryId = $match->getAttribute('queryId');
-							$jobEvaluation->setAttribute('targetId',$queryId);
+						if($match->localname() eq 'target') {
+							# This information is needed to evaluate later
+							$target = $match;
 						} elsif(defined($queryId) && $match->localname() eq 'match') {
 							# An evaluation match is as easy as:
 							my($evaluation)=$answerDoc->createElementNS($XCESC_NS,'evaluation');
@@ -215,18 +223,27 @@ if(defined($hasQueryDoc)) {
 		my($el)=$doc->documentElement();
 		if($el->namespaceURI() eq $XCESC_NS && $el->localname() eq 'queries') {
 			my($callback)=$el->getAttribute('callback');
+			my $common = undef;
 			if(defined($callback) && $callback ne '') {
 				
 				foreach my $query ($el->childNodes()) {
 					next  unless(
 						$query->nodeType() eq ELEMENT_NODE &&
+						$query->namespaceURI() eq $XCESC_NS
+					);
+					
+					if($query->localname() eq 'common') {
+						$common = $query;
+						next;
+					}
+					
+					next  unless(
 						$query->localname() eq 'query' &&
-						$query->namespaceURI() eq $XCESC_NS &&
 						$query->hasAttribute('queryId')
 					);
 					
 					# This is the function to implement
-					my $queryId = launchEvaluationJob($callback,$query);
+					my $queryId = launchEvaluationJob($callback,$query,$common);
 					
 					if(defined($queryId)) {
 						$errstate='Accepted';

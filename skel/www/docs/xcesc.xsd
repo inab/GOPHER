@@ -823,33 +823,57 @@ i.e. The value of the targetId attribute from the query element inside the arriv
 		</xsd:complexType>
 	</xsd:element>
 	
+	<xsd:element name="answer">
+		<xsd:annotation>
+			<xsd:documentation><![CDATA[An answer about a target]]></xsd:documentation>
+		</xsd:annotation>
+		<xsd:complexType>
+			<xsd:sequence>
+				<xsd:choice minOccurs="0">
+					<xsd:element ref="xcesc:target" minOccurs="1" maxOccurs="1" />
+					<xsd:element name="refContent" minOccurs="1" maxOccurs="1">
+						<xsd:annotation>
+							<xsd:documentation><![CDATA[This element is used to reference a common bundle of information]]></xsd:documentation>
+						</xsd:annotation>
+						<xsd:complexType>
+							<xsd:attribute name="ref" type="xsd:string" use="required">
+								<xsd:annotation>
+									<xsd:documentation><![CDATA[This attribute contains the reference]]></xsd:documentation>
+								</xsd:annotation>
+							</xsd:attribute>
+						</xsd:complexType>
+						<xsd:keyref refer="xcesc:contentKey" name="contentKeyRef">
+							<xsd:selector xpath="." />
+							<xsd:field xpath="@ref" />
+						</xsd:keyref>
+					</xsd:element>
+				</xsd:choice>
+				<xsd:choice>
+					<xsd:element ref="xcesc:match" minOccurs="0" maxOccurs="unbounded" />
+					<xsd:element ref="xcesc:jobEvaluation" minOccurs="0" maxOccurs="unbounded" />
+				</xsd:choice>
+			</xsd:sequence>
+			<xsd:attribute name="targetId" use="required" type="xsd:string">
+				<xsd:annotation>
+					<xsd:documentation><![CDATA[The id of the answer]]></xsd:documentation>
+				</xsd:annotation>
+			</xsd:attribute>
+			<xsd:attribute name="message" type="xsd:string" use="optional">
+				<xsd:annotation>
+					<xsd:documentation><![CDATA[An optional message, about the answer]]></xsd:documentation>
+				</xsd:annotation>
+			</xsd:attribute>
+		</xsd:complexType>
+	</xsd:element>
+	
 	<xsd:element name="answers">
 		<xsd:annotation>
 			<xsd:documentation><![CDATA[The answers bundle sent by the servers. A server can send more than one bundle.]]></xsd:documentation>
 		</xsd:annotation>
 		<xsd:complexType>
 			<xsd:sequence>
-				<xsd:element name="answer" minOccurs="1" maxOccurs="unbounded">
-					<xsd:annotation>
-						<xsd:documentation><![CDATA[An answer about a target]]></xsd:documentation>
-					</xsd:annotation>
-					<xsd:complexType>
-						<xsd:choice minOccurs="1" maxOccurs="1">
-							<xsd:element ref="xcesc:match" minOccurs="0" maxOccurs="unbounded"/>
-							<xsd:element ref="xcesc:jobEvaluation" minOccurs="0" maxOccurs="unbounded"/>
-						</xsd:choice>
-						<xsd:attribute name="targetId" use="required" type="xsd:string">
-							<xsd:annotation>
-								<xsd:documentation><![CDATA[The id of the answer]]></xsd:documentation>
-							</xsd:annotation>
-						</xsd:attribute>
-						<xsd:attribute name="message" type="xsd:string" use="optional">
-							<xsd:annotation>
-								<xsd:documentation><![CDATA[An optional message, about the answer]]></xsd:documentation>
-							</xsd:annotation>
-						</xsd:attribute>
-					</xsd:complexType>
-				</xsd:element>
+				<xsd:element ref="xcesc:common" minOccurs="0" maxOccurs="1" />
+				<xsd:element ref="xcesc:answer" minOccurs="1" maxOccurs="unbounded"/>
 			</xsd:sequence>
 		</xsd:complexType>
 	</xsd:element>
@@ -869,7 +893,7 @@ i.e. The value of the targetId attribute from the query element inside the arriv
 		<xsd:complexType mixed="true">
 			<xsd:choice>
 				<xsd:any minOccurs="0" maxOccurs="unbounded" namespace="##other" processContents="lax"/>
-				<xsd:element ref="xcesc:target" minOccurs="1" maxOccurs="unbounded"/>
+				<xsd:element ref="xcesc:answer" minOccurs="1" maxOccurs="unbounded"/>
 			</xsd:choice>
 			<xsd:attributeGroup ref="xcesc:queryIdGroup">
 				<xsd:annotation>
@@ -890,16 +914,51 @@ i.e. The value of the targetId attribute from the query element inside the arriv
 		</xsd:attribute>
 	</xsd:attributeGroup>
 	
+	<xsd:element name="common">
+		<xsd:annotation>
+			<xsd:documentation><![CDATA[An area where common content is shared in bundles]]></xsd:documentation>
+		</xsd:annotation>
+		<xsd:complexType>
+			<xsd:sequence>
+				<xsd:element name="content">
+					<xsd:annotation>
+						<xsd:documentation><![CDATA[A bundle of shared content]]></xsd:documentation>
+					</xsd:annotation>
+					<xsd:complexType>
+						<xsd:choice>
+							<xsd:element ref="xcesc:query" />
+							<xsd:element ref="xcesc:target" />
+						</xsd:choice>
+						<xsd:attribute name="id" type="xsd:string" use="required">
+							<xsd:annotation>
+								<xsd:documentation><![CDATA[The unique id of this bundle within this XML document]]></xsd:documentation>
+							</xsd:annotation>
+						</xsd:attribute>
+					</xsd:complexType>
+				</xsd:element>
+			</xsd:sequence>
+		</xsd:complexType>
+	</xsd:element>
+	
 	<xsd:element name="queries">
 		<xsd:annotation>
 			<xsd:documentation><![CDATA[One or more queries sent to a server]]></xsd:documentation>
 		</xsd:annotation>
 		<xsd:complexType>
 			<xsd:sequence>
-				<xsd:element ref="xcesc:query" minOccurs="1" maxOccurs="unbounded"></xsd:element>
+				<xsd:element ref="xcesc:common" minOccurs="0" maxOccurs="1" />
+				<xsd:element ref="xcesc:query" minOccurs="1" maxOccurs="unbounded" />
 			</xsd:sequence>
 			<xsd:attributeGroup ref="xcesc:callbackAttributeGroup"/>
 		</xsd:complexType>
+		<xsd:key name="contentKey">
+			<xsd:annotation>
+				<xsd:documentation><![CDATA[The shared content must use unique keys within the document]]></xsd:documentation>
+			</xsd:annotation>
+			<xsd:selector xpath="xcesc:content" />
+			<xsd:field xpath="@id" />
+		</xsd:key>
+		
 	</xsd:element>
 	
 	<xsd:element name="acceptedQueries">
@@ -929,6 +988,53 @@ i.e. The value of the targetId attribute from the query element inside the arriv
 		<xsd:complexType>
 			<xsd:sequence minOccurs="1" maxOccurs="1">
 				<xsd:element ref="xcesc:query"/>
+				<xsd:element name="relatedContent" minOccurs="0" maxOccurs="unbounded">
+					<xsd:annotation>
+						<xsd:documentation><![CDATA[Related content to the query, given by the XCESC core]]></xsd:documentation>
+					</xsd:annotation>
+					<xsd:complexType>
+						<xsd:choice minOccurs="1" maxOccurs="unbounded">
+							<xsd:element ref="xcesc:term">
+								<xsd:annotation>
+									<xsd:documentation><![CDATA[Links to related data or members identified by the XCESC core]]></xsd:documentation>
+								</xsd:annotation>
+							</xsd:element>
+							<!-- SOMETHING MORE! INLINE RELATED CONTENT, FOR INSTANCE! -->
+							<xsd:element name="inlineContent">
+								<xsd:annotation>
+									<xsd:documentation><![CDATA[Inline related content]]></xsd:documentation>
+								</xsd:annotation>
+								<xsd:complexType>
+									<xsd:simpleContent>
+										<xsd:extension base="xsd:string">
+											<xsd:attribute name="source" use="required" type="xsd:string">
+												<xsd:annotation>
+													<xsd:documentation><![CDATA[The source of this related content. It should be like a namespace]]></xsd:documentation>
+												</xsd:annotation>
+											</xsd:attribute>
+											<xsd:attribute name="description" use="optional" type="xsd:string">
+												<xsd:annotation>
+													<xsd:documentation><![CDATA[An optional textual description ]]></xsd:documentation>
+												</xsd:annotation>
+											</xsd:attribute>
+										</xsd:extension>
+									</xsd:simpleContent>
+								</xsd:complexType>
+							</xsd:element>
+						</xsd:choice>
+						<xsd:attribute name="label" use="optional" type="xsd:string" />
+					</xsd:complexType>
+				</xsd:element>
+				<xsd:element name="baseline" minOccurs="1" maxOccurs="1">
+					<xsd:annotation>
+						<xsd:documentation><![CDATA[A fast, baseline answer for the query]]></xsd:documentation>
+					</xsd:annotation>
+					<xsd:complexType>
+						<xsd:sequence>
+							<xsd:element ref="xcesc:match" minOccurs="0" maxOccurs="unbounded" />
+						</xsd:sequence>
+					</xsd:complexType>
+				</xsd:element>
 				<!--							<xsd:element name="tag" minOccurs="0" maxOccurs="unbounded">
 					<xsd:annotation>
 					<xsd:documentation><![CDATA[Generic tags, containing the value as content]]></xsd:documentation>
@@ -946,7 +1052,6 @@ i.e. The value of the targetId attribute from the query element inside the arriv
 					</xsd:complexType>
 					</xsd:element>
 				-->
-				<xsd:element ref="xcesc:match" minOccurs="0" maxOccurs="unbounded"/>
 			</xsd:sequence>
 			<xsd:attributeGroup ref="xcesc:namespaceAttributesGroup"/>
 			<xsd:attribute name="description" type="xsd:string" use="required">

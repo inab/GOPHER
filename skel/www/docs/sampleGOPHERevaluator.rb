@@ -84,10 +84,12 @@ end
 # This is the function where you have to put your results evaluation work...
 # First parameter is the callback URI where we have to send each one of the results.
 # Second parameter is the xcesc:query XML fragment, with all the details needed to start an assessment.
+# Third parameter is the xcesc:common XML fragment (if available), with all the shared details needed
+# by any value of second parameter.
 # As it is an asynchronous work, you should use here your favourite queue system (SGE, NQS, etc...).
 # This example only uses fork, which could saturate the server with a DoS attack.
 # If the assessment job is accepted, it returns 1, otherwise it returns nil.
-def launchEvaluationJob(callback,query)
+def launchEvaluationJob(callback,query,common)
 	# We have to ignore pleas from the children
 	trap('CLD','IGNORE')
 	
@@ -126,17 +128,23 @@ def launchEvaluationJob(callback,query)
 			# on 0 or more jobEvaluation elements. As this is a sample service, no match is
 			# appended based on input query, because it means 'no result'.
 			
-			query.elements.each { |target|
-				if target.name == 'target' and target.namespace == XCESC_NS
+			query.elements.each { |predAnswer|
+				if predAnswer.name == 'answer' and predAnswer.namespace == XCESC_NS and predAnswer.attributes.get_attribute('targetId') != nil
 					jobEvaluation = Element.new('jobEvaluation',answer)
 					jobEvaluation.attributes['timeStamp'] = Time.now.iso8601
-					queryId = nil
+
+					# The targetId comes from the prediction's 'answer' targetId
+					# and it is the same as the queryId from 'query' inside 'target'
+					queryId = predAnswer.attributes['targetId']
+					jobEvaluation.attributes['targetId'] = queryId
 					
-					target.elements.each { |match|
+					# This variable will containt the 'target' element
+					target = nil
+					predAnswer.elements.each { |match|
 						if match.namespace == XCESC_NS
-							if match.name == 'query' and match.attributes.get_attribute('queryId') != nil
-								queryId = match.attributes['queryId']
-								jobEvaluation.attributes['targetId'] = queryId
+							if match.name == 'target'
+								# This information is needed to evaluate later
+								target = match
 							elsif queryId != nil and match.name == 'match'
 								# An evaluation match is as easy as:
 								evaluation = Element.new('evaluation',jobEvaluation)
@@ -233,13 +241,18 @@ if c.params.has_key?('POSTDATA')
 				httpcode = 400
 			else
 				callback = el.attributes['callback']
+				common = nil
 				
 				el.elements.each { |query|
-					if query.name == 'query' and query.namespace == XCESC_NS and query.attributes.get_attribute('queryId') != nil
-						queryId = launchEvaluationJob(callback,query)
-						if queryId != nil
-							errstate = 'Accepted'
-							acceptedList << queryId
+					if query.namespace == XCESC_NS
+						if query.name == 'common'
+							common = query
+						elsif query.name == 'query' and query.attributes.get_attribute('queryId') != nil
+							queryId = launchEvaluationJob(callback,query,common)
+							if queryId != nil
+								errstate = 'Accepted'
+								acceptedList << queryId
+							end
 						end
 					end
 				}

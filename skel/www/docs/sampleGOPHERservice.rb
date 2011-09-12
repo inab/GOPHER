@@ -84,10 +84,12 @@ end
 # This is the function where you have to put your service work...
 # First parameter is the callback URI where we have to send each one of the results.
 # Second parameter is the xcesc:query XML fragment, with all the details of the job.
+# Third parameter is the xcesc:common XML fragment (if available), with all the shared details needed
+# by any value of second parameter.
 # As it is an asynchronous work, you should use here your favourite queue system (SGE, NQS, etc...).
 # This example only uses fork, which could saturate the server with a DoS attack.
 # If the job is accepted, it returns the queryId, otherwise it returns nil.
-def launchJob(callback,query)
+def launchJob(callback,query,common)
 	# We have to ignore pleas from the children
 	trap('CLD','IGNORE')
 	
@@ -218,14 +220,18 @@ if c.params.has_key?('POSTDATA')
 				httpcode = 400
 			else
 				callback = el.attributes['callback']
+				common = nil
 				
 				el.elements.each { |query|
-					if query.name == 'query' and query.namespace == XCESC_NS and query.attributes.get_attribute('queryId') != nil
-						queryId = launchJob(callback,query)
-						if queryId != nil
-							errstate = 'Accepted'
-							acceptedList << queryId
-						end
+					if query.namespace == XCESC_NS
+						 if query.name == 'common'
+							common = query
+						 elsif query.name == 'query' and query.attributes.get_attribute('queryId') != nil
+							queryId = launchJob(callback,query,common)
+							if queryId != nil
+								errstate = 'Accepted'
+								acceptedList << queryId
+							end
 					end
 				}
 #				doc.writexml(writer=sys.stdout)

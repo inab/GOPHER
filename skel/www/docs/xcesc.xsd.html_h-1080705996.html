@@ -469,7 +469,9 @@ function viewDocumentation(compDesc, compName, docTextArray) {
          <tr>
             <th>Used by (from the same schema document)</th>
             <td>Element <b>
-                  <a href="xcesc.xsd.html_h-591237691.html">query</a>
+                  <a href="xcesc.xsd.html_h-1612608927.html">answer</a>
+               </b>, Element <b>
+                  <a href="xcesc.xsd.html_h-1554615154.html">common</a>
                </b>, Element <b>
                   <a href="xcesc.xsd.html_h658840864.html">experiment</a>
                </b>
@@ -505,9 +507,6 @@ function viewDocumentation(compDesc, compName, docTextArray) {
             Map ref: file:/home/jmfernandez/projects/GOPHER/skel/www/docs//schemaDiagrams/h296507148.map--><map name="h296507148">
                <area shape="rect" alt="h-591237691" coords="358,192,630,233"
                      href="xcesc.xsd.html_h-591237691.html#h-591237691"/>
-
-               <area shape="rect" alt="h-595513662" coords="358,243,630,299"
-                     href="xcesc.xsd.html_h-595513662.html#h-595513662"/>
 
             </map>
          </div>
@@ -550,10 +549,47 @@ function viewDocumentation(compDesc, compName, docTextArray) {
                      href="xcesc.xsd.html_h-591237691.html">query</a>&gt; ... &lt;/<a href="xcesc.xsd.html#ns_xcesc" title="Find out namespace of 'xcesc' prefix">xcesc</a>:<a title="Jump to &#34;query&#34; element declaration."
                      href="xcesc.xsd.html_h-591237691.html">query</a>&gt; <span class="occurs">[1]</span>
                </div>
-               <div style="margin-left: 1.5em">&lt;<a href="xcesc.xsd.html#ns_xcesc" title="Find out namespace of 'xcesc' prefix">xcesc</a>:<a title="Jump to &#34;match&#34; element declaration."
-                     href="xcesc.xsd.html_h-595513662.html">match</a>&gt; ... &lt;/<a href="xcesc.xsd.html#ns_xcesc" title="Find out namespace of 'xcesc' prefix">xcesc</a>:<a title="Jump to &#34;match&#34; element declaration."
-                     href="xcesc.xsd.html_h-595513662.html">match</a>&gt; <span class="occurs">[0..*]</span>
-               </div>&lt;/<a href="xcesc.xsd.html#ns_xcesc" title="Find out namespace of 'xcesc' prefix">xcesc</a>:target&gt;</div>
+               <div style="margin-left: 1.5em">&lt;<a href="xcesc.xsd.html#ns_xcesc" title="Find out namespace of 'xcesc' prefix">xcesc</a>:relatedContent<br/>
+                  <span style="margin-left: 0.5em"> label="<span class="type">
+                        <a href="xcesc.xsd.html#ns_xsd" title="Find out namespace of 'xsd' prefix">xsd</a>:string</span> 
+                     <span class="occurs">[0..1]</span>"</span>&gt;  <span class="occurs">[0..*]</span>  
+                  <p class="documentation">'Related content to the query, given by the XCESC core'</p>
+                  <br/>
+                  <span class="group" style="margin-left: 1.5em">Start <a title="Look up 'Choice' in glossary" href="xcesc.xsd.html#term_Choice">Choice</a> 
+                     <span class="occurs">[1..*]</span>
+                  </span>
+                  <br/>
+                  <div style="margin-left: 3em">&lt;<a href="xcesc.xsd.html#ns_xcesc" title="Find out namespace of 'xcesc' prefix">xcesc</a>:<a title="Jump to &#34;term&#34; element declaration."
+                        href="xcesc.xsd.html_h-573187121.html">term</a>&gt; ... &lt;/<a href="xcesc.xsd.html#ns_xcesc" title="Find out namespace of 'xcesc' prefix">xcesc</a>:<a title="Jump to &#34;term&#34; element declaration."
+                        href="xcesc.xsd.html_h-573187121.html">term</a>&gt; <span class="occurs">[1]</span> 
+                     <p class="documentation">'Links to related data or members identified by the XCESC core'</p>
+                  </div>
+                  <div style="margin-left: 3em">&lt;<a href="xcesc.xsd.html#ns_xcesc" title="Find out namespace of 'xcesc' prefix">xcesc</a>:inlineContent<br/>
+                     <span style="margin-left: 0.5em"> source="<span class="type">
+                           <a href="xcesc.xsd.html#ns_xsd" title="Find out namespace of 'xsd' prefix">xsd</a>:string</span> 
+                        <span class="occurs">[1]</span> 
+                        <p class="documentation">'The source of this related content. It should be like a namespace'</p>"</span>
+                     <br/>
+                     <span style="margin-left: 0.5em"> description="<span class="type">
+                           <a href="xcesc.xsd.html#ns_xsd" title="Find out namespace of 'xsd' prefix">xsd</a>:string</span> 
+                        <span class="occurs">[0..1]</span> 
+                        <p class="documentation">'An optional textual description'</p>"</span>&gt;  <span class="occurs">[1]</span>  
+                     <p class="documentation">'Inline related content'</p>
+                     <br/>
+                     <span style="margin-left: 1.5em"> 
+                        <span class="type">
+                           <a href="xcesc.xsd.html#ns_xsd" title="Find out namespace of 'xsd' prefix">xsd</a>:string</span> 
+                     </span>
+                     <br/>&lt;/<a href="xcesc.xsd.html#ns_xcesc" title="Find out namespace of 'xcesc' prefix">xcesc</a>:inlineContent&gt;</div>
+                  <span class="group" style="margin-left: 1.5em">End Choice</span>
+                  <br/>&lt;/<a href="xcesc.xsd.html#ns_xcesc" title="Find out namespace of 'xcesc' prefix">xcesc</a>:relatedContent&gt;</div>
+               <div style="margin-left: 1.5em">&lt;<a href="xcesc.xsd.html#ns_xcesc" title="Find out namespace of 'xcesc' prefix">xcesc</a>:baseline&gt;  <span class="occurs">[1]</span>  
+                  <p class="documentation">'A fast, baseline answer for the query'</p>
+                  <br/>
+                  <div style="margin-left: 1.5em">&lt;<a href="xcesc.xsd.html#ns_xcesc" title="Find out namespace of 'xcesc' prefix">xcesc</a>:<a title="Jump to &#34;match&#34; element declaration."
+                        href="xcesc.xsd.html_h-595513662.html">match</a>&gt; ... &lt;/<a href="xcesc.xsd.html#ns_xcesc" title="Find out namespace of 'xcesc' prefix">xcesc</a>:<a title="Jump to &#34;match&#34; element declaration."
+                        href="xcesc.xsd.html_h-595513662.html">match</a>&gt; <span class="occurs">[0..*]</span>
+                  </div>&lt;/<a href="xcesc.xsd.html#ns_xcesc" title="Find out namespace of 'xcesc' prefix">xcesc</a>:baseline&gt;</div>&lt;/<a href="xcesc.xsd.html#ns_xcesc" title="Find out namespace of 'xcesc' prefix">xcesc</a>:target&gt;</div>
          </div>
          <script type="text/javascript">
 <!--
@@ -575,10 +611,13 @@ function viewDocumentation(compDesc, compName, docTextArray) {
                <area shape="rect" alt="h-591237691" coords="256,0,389,25"
                      href="xcesc.xsd.html_h-591237691.html#h-591237691"/>
 
-               <area shape="rect" alt="h-595513662" coords="256,35,389,75"
+               <area shape="rect" alt="h-573187121" coords="554,35,680,60"
+                     href="xcesc.xsd.html_h-573187121.html#h-573187121"/>
+
+               <area shape="rect" alt="h-595513662" coords="526,249,659,289"
                      href="xcesc.xsd.html_h-595513662.html#h-595513662"/>
 
-               <area shape="rect" alt="h555717641" coords="170,85,460,111"
+               <area shape="rect" alt="h555717641" coords="170,299,460,325"
                      href="xcesc.xsd.html_h555717641.html#h555717641"/>
 
             </map>
@@ -604,6 +643,40 @@ function viewDocumentation(compDesc, compName, docTextArray) {
                            <a href="xcesc.xsd.html#ns_xcesc" title="Find out namespace of 'xcesc' prefix">xcesc</a>:<a title="Jump to &#34;query&#34; element declaration."
                               href="xcesc.xsd.html_h-591237691.html">query</a>
                         </span>"/&gt;</div>
+                     <div style="margin-left: 1.5em">&lt;<span class="scTag">xsd:element</span> 
+                        <span class="scTag">name</span>="<span class="scContent">relatedContent</span>" <span class="scTag">minOccurs</span>="<span class="scContent">0</span>" <span class="scTag">maxOccurs</span>="<span class="scContent">unbounded</span>"&gt;<div style="margin-left: 1.5em">&lt;<span class="scTag">xsd:complexType</span>&gt;<div style="margin-left: 1.5em">&lt;<span class="scTag">xsd:choice</span> 
+                              <span class="scTag">minOccurs</span>="<span class="scContent">1</span>" <span class="scTag">maxOccurs</span>="<span class="scContent">unbounded</span>"&gt;<div style="margin-left: 1.5em">&lt;<span class="scTag">xsd:element</span> 
+                                 <span class="scTag">ref</span>="<span class="scContent">
+                                    <a href="xcesc.xsd.html#ns_xcesc" title="Find out namespace of 'xcesc' prefix">xcesc</a>:<a title="Jump to &#34;term&#34; element declaration."
+                                       href="xcesc.xsd.html_h-573187121.html">term</a>
+                                 </span>"/&gt;</div>
+                              <div class="comment" style="margin-left: 1.5em">&lt;-- SOMETHING MORE! INLINE RELATED CONTENT, FOR INSTANCE! --&gt;</div>
+                              <div style="margin-left: 1.5em">&lt;<span class="scTag">xsd:element</span> 
+                                 <span class="scTag">name</span>="<span class="scContent">inlineContent</span>"&gt;<div style="margin-left: 1.5em">&lt;<span class="scTag">xsd:complexType</span>&gt;<div style="margin-left: 1.5em">&lt;<span class="scTag">xsd:simpleContent</span>&gt;<div style="margin-left: 1.5em">&lt;<span class="scTag">xsd:extension</span> 
+                                          <span class="scTag">base</span>="<span class="scContent">
+                                             <span class="type">
+                                                <a href="xcesc.xsd.html#ns_xsd" title="Find out namespace of 'xsd' prefix">xsd</a>:string</span>
+                                          </span>"&gt;<div style="margin-left: 1.5em">&lt;<span class="scTag">xsd:attribute</span> 
+                                             <span class="scTag">name</span>="<span class="scContent">source</span>" <span class="scTag">type</span>="<span class="scContent">
+                                                <span class="type">
+                                                   <a href="xcesc.xsd.html#ns_xsd" title="Find out namespace of 'xsd' prefix">xsd</a>:string</span>
+                                             </span>" <span class="scTag">use</span>="<span class="scContent">required</span>"/&gt;</div>
+                                          <div style="margin-left: 1.5em">&lt;<span class="scTag">xsd:attribute</span> 
+                                             <span class="scTag">name</span>="<span class="scContent">description</span>" <span class="scTag">type</span>="<span class="scContent">
+                                                <span class="type">
+                                                   <a href="xcesc.xsd.html#ns_xsd" title="Find out namespace of 'xsd' prefix">xsd</a>:string</span>
+                                             </span>" <span class="scTag">use</span>="<span class="scContent">optional</span>"/&gt;</div>&lt;/<span class="scTag">xsd:extension</span>&gt;</div>&lt;/<span class="scTag">xsd:simpleContent</span>&gt;</div>&lt;/<span class="scTag">xsd:complexType</span>&gt;</div>&lt;/<span class="scTag">xsd:element</span>&gt;</div>&lt;/<span class="scTag">xsd:choice</span>&gt;</div>
+                           <div style="margin-left: 1.5em">&lt;<span class="scTag">xsd:attribute</span> 
+                              <span class="scTag">name</span>="<span class="scContent">label</span>" <span class="scTag">type</span>="<span class="scContent">
+                                 <span class="type">
+                                    <a href="xcesc.xsd.html#ns_xsd" title="Find out namespace of 'xsd' prefix">xsd</a>:string</span>
+                              </span>" <span class="scTag">use</span>="<span class="scContent">optional</span>"/&gt;</div>&lt;/<span class="scTag">xsd:complexType</span>&gt;</div>&lt;/<span class="scTag">xsd:element</span>&gt;</div>
+                     <div style="margin-left: 1.5em">&lt;<span class="scTag">xsd:element</span> 
+                        <span class="scTag">name</span>="<span class="scContent">baseline</span>" <span class="scTag">minOccurs</span>="<span class="scContent">1</span>" <span class="scTag">maxOccurs</span>="<span class="scContent">1</span>"&gt;<div style="margin-left: 1.5em">&lt;<span class="scTag">xsd:complexType</span>&gt;<div style="margin-left: 1.5em">&lt;<span class="scTag">xsd:sequence</span>&gt;<div style="margin-left: 1.5em">&lt;<span class="scTag">xsd:element</span> 
+                                 <span class="scTag">ref</span>="<span class="scContent">
+                                    <a href="xcesc.xsd.html#ns_xcesc" title="Find out namespace of 'xcesc' prefix">xcesc</a>:<a title="Jump to &#34;match&#34; element declaration."
+                                       href="xcesc.xsd.html_h-595513662.html">match</a>
+                                 </span>" <span class="scTag">minOccurs</span>="<span class="scContent">0</span>" <span class="scTag">maxOccurs</span>="<span class="scContent">unbounded</span>"/&gt;</div>&lt;/<span class="scTag">xsd:sequence</span>&gt;</div>&lt;/<span class="scTag">xsd:complexType</span>&gt;</div>&lt;/<span class="scTag">xsd:element</span>&gt;</div>
                      <div class="comment" style="margin-left: 1.5em">&lt;--							&lt;xsd:element name="tag" minOccurs="0" maxOccurs="unbounded"&gt;
 					&lt;xsd:annotation&gt;
 					&lt;xsd:documentation&gt;&lt;![CDATA[Generic tags, containing the value as content]]&gt;&lt;/xsd:documentation&gt;
@@ -620,12 +693,7 @@ function viewDocumentation(compDesc, compName, docTextArray) {
 					&lt;/xsd:simpleContent&gt;
 					&lt;/xsd:complexType&gt;
 					&lt;/xsd:element&gt;
-				--&gt;</div>
-                     <div style="margin-left: 1.5em">&lt;<span class="scTag">xsd:element</span> 
-                        <span class="scTag">ref</span>="<span class="scContent">
-                           <a href="xcesc.xsd.html#ns_xcesc" title="Find out namespace of 'xcesc' prefix">xcesc</a>:<a title="Jump to &#34;match&#34; element declaration."
-                              href="xcesc.xsd.html_h-595513662.html">match</a>
-                        </span>" <span class="scTag">minOccurs</span>="<span class="scContent">0</span>" <span class="scTag">maxOccurs</span>="<span class="scContent">unbounded</span>"/&gt;</div>&lt;/<span class="scTag">xsd:sequence</span>&gt;</div>
+				--&gt;</div>&lt;/<span class="scTag">xsd:sequence</span>&gt;</div>
                   <div style="margin-left: 1.5em">&lt;<span class="scTag">xsd:attributeGroup</span> 
                      <span class="scTag">ref</span>="<span class="scContent">
                         <a href="xcesc.xsd.html#ns_xcesc" title="Find out namespace of 'xcesc' prefix">xcesc</a>:<a title="Jump to &#34;namespaceAttributesGroup&#34; attribute group definition."

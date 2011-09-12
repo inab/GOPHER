@@ -18,7 +18,7 @@ $|=1;
 my($XCESC_NS)='http://www.cnio.es/scombio/xcesc/1.0';
 
 sub getPrintableDate(;$);
-sub launchJob($$);
+sub launchJob($$$);
 
 # this is only a helper function to generate ISO8601 timestamp strings
 sub getPrintableDate(;$) {
@@ -37,11 +37,13 @@ sub getPrintableDate(;$) {
 # This is the function where you have to put your service work...
 # First parameter is the callback URI where we have to send each one of the results.
 # Second parameter is the xcesc:query XML fragment, with all the details of the job.
+# Third parameter is the xcesc:common XML fragment (if available), with all the shared details needed
+# by any value of second parameter.
 # As it is an asynchronous work, you should use here your favourite queue system (SGE, NQS, etc...).
 # This example only uses fork, which could saturate the server with a DoS attack.
 # If the job is accepted, it returns the queryId, otherwise it returns undef.
-sub launchJob($$) {
-	my($callback,$query)=@_;
+sub launchJob($$$) {
+	my($callback,$query,$common)=@_;
 	
 	# We have to ignore pleas from the children
 	$SIG{CHLD}='IGNORE';
@@ -196,18 +198,27 @@ if(defined($hasQueryDoc)) {
 		my($el)=$doc->documentElement();
 		if($el->namespaceURI() eq $XCESC_NS && $el->localname() eq 'queries') {
 			my($callback)=$el->getAttribute('callback');
+			my $common = undef;
 			if(defined($callback) && $callback ne '') {
 				
 				foreach my $query ($el->childNodes()) {
 					next  unless(
 						$query->nodeType() eq ELEMENT_NODE &&
+						$query->namespaceURI() eq $XCESC_NS
+					);
+					
+					if($query->localname() eq 'common') {
+						$common = $query;
+						next;
+					}
+					
+					next  unless(
 						$query->localname() eq 'query' &&
-						$query->namespaceURI() eq $XCESC_NS &&
 						$query->hasAttribute('queryId')
 					);
 					
 					# This is the function to implement
-					my $queryId = launchJob($callback,$query);
+					my $queryId = launchJob($callback,$query,$common);
 					
 					if(defined($queryId)) {
 						$errstate='Accepted';
