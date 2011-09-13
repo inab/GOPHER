@@ -1005,20 +1005,16 @@ i.e. The value of the targetId attribute from the query element inside the arriv
 									<xsd:documentation><![CDATA[Inline related content]]></xsd:documentation>
 								</xsd:annotation>
 								<xsd:complexType>
-									<xsd:simpleContent>
-										<xsd:extension base="xsd:string">
-											<xsd:attribute name="source" use="required" type="xsd:string">
-												<xsd:annotation>
-													<xsd:documentation><![CDATA[The source of this related content. It should be like a namespace]]></xsd:documentation>
-												</xsd:annotation>
-											</xsd:attribute>
-											<xsd:attribute name="description" use="optional" type="xsd:string">
-												<xsd:annotation>
-													<xsd:documentation><![CDATA[An optional textual description ]]></xsd:documentation>
-												</xsd:annotation>
-											</xsd:attribute>
-										</xsd:extension>
-									</xsd:simpleContent>
+									<xsd:attribute name="source" use="required" type="xsd:string">
+										<xsd:annotation>
+											<xsd:documentation><![CDATA[The source of this related content. It should be like a namespace]]></xsd:documentation>
+										</xsd:annotation>
+									</xsd:attribute>
+									<xsd:attribute name="description" use="optional" type="xsd:string">
+										<xsd:annotation>
+											<xsd:documentation><![CDATA[An optional textual description ]]></xsd:documentation>
+										</xsd:annotation>
+									</xsd:attribute>
 								</xsd:complexType>
 							</xsd:element>
 						</xsd:choice>
