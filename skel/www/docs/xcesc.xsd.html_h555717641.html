@@ -489,7 +489,12 @@ function viewDocumentation(compDesc, compName, docTextArray) {
                <span class="occurs">[1]</span> 
                <p class="documentation">'The namespace of the annotation. For instance, GO'</p>"</span>
             <br/>
-            <span style="margin-left: 0em"> publicId="<span class="type">
+            <span style="margin-left: 0em"> kind="<span class="type">
+                  <a href="xcesc.xsd.html#ns_xsd" title="Find out namespace of 'xsd' prefix">xsd</a>:string</span> 
+               <span class="occurs">[0..1]</span> 
+               <p class="documentation">'This optional attribute is useful when under an specific namespace there can be more than one kind of public identifiers, so we can distinguish among the different available subtypes, categories or ontologies'</p>"</span>
+            <br/>
+            <span style="margin-left: 0em"> id="<span class="type">
                   <a href="xcesc.xsd.html#ns_xsd" title="Find out namespace of 'xsd' prefix">xsd</a>:string</span> 
                <span class="occurs">[1]</span> 
                <p class="documentation">'The id of the annotation'</p>"</span>
@@ -534,7 +539,12 @@ function viewDocumentation(compDesc, compName, docTextArray) {
                         <a href="xcesc.xsd.html#ns_xsd" title="Find out namespace of 'xsd' prefix">xsd</a>:string</span>
                   </span>" <span class="scTag">use</span>="<span class="scContent">required</span>"/&gt;</div>
                <div style="margin-left: 1.5em">&lt;<span class="scTag">xsd:attribute</span> 
-                  <span class="scTag">name</span>="<span class="scContent">publicId</span>" <span class="scTag">type</span>="<span class="scContent">
+                  <span class="scTag">name</span>="<span class="scContent">kind</span>" <span class="scTag">type</span>="<span class="scContent">
+                     <span class="type">
+                        <a href="xcesc.xsd.html#ns_xsd" title="Find out namespace of 'xsd' prefix">xsd</a>:string</span>
+                  </span>" <span class="scTag">use</span>="<span class="scContent">optional</span>"/&gt;</div>
+               <div style="margin-left: 1.5em">&lt;<span class="scTag">xsd:attribute</span> 
+                  <span class="scTag">name</span>="<span class="scContent">id</span>" <span class="scTag">type</span>="<span class="scContent">
                      <span class="type">
                         <a href="xcesc.xsd.html#ns_xsd" title="Find out namespace of 'xsd' prefix">xsd</a>:string</span>
                   </span>" <span class="scTag">use</span>="<span class="scContent">required</span>"/&gt;</div>&lt;/<span class="scTag">xsd:attributeGroup</span>&gt;</div>

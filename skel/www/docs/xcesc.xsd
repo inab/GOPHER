@@ -480,7 +480,14 @@ See http://en.wikipedia.org/wiki/Precision_and_recall]]></xsd:documentation>
 				<xsd:documentation><![CDATA[The namespace of the annotation. For instance, GO]]></xsd:documentation>
 			</xsd:annotation>
 		</xsd:attribute>
-		<xsd:attribute name="publicId" type="xsd:string" use="required">
+		<xsd:attribute name="kind" type="xsd:string" use="optional">
+			<xsd:annotation>
+				<xsd:documentation><![CDATA[This optional attribute is useful when under an specific namespace
+there can be more than one kind of public identifiers, so we can distinguish among the different available
+subtypes, categories or ontologies]]></xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="id" type="xsd:string" use="required">
 			<xsd:annotation>
 				<xsd:documentation><![CDATA[The id of the annotation]]></xsd:documentation>
 			</xsd:annotation>
@@ -596,7 +603,15 @@ It depends on the units system and it is always an inclusive limit.]]></xsd:docu
 		</xsd:complexType>
 	</xsd:element>
 	
-	<xsd:attributeGroup name="timeStampGroup">
+	<xsd:attributeGroup name="requiredTimeStampGroup">
+		<xsd:attribute  name="timeStamp" use='required' type="xsd:dateTime">
+			<xsd:annotation>
+				<xsd:documentation><![CDATA[The timestamp assigned to the element either in origin or destination]]></xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+	</xsd:attributeGroup>
+	
+	<xsd:attributeGroup name="optionalTimeStampGroup">
 		<xsd:attribute  name="timeStamp" use='optional' type="xsd:dateTime">
 			<xsd:annotation>
 				<xsd:documentation><![CDATA[The timestamp assigned to the element either in origin or destination]]></xsd:documentation>
@@ -651,7 +666,7 @@ For instance, if a server is hybrid, in the sense it is able to generate predict
 ab initio, then the origin of the match must be identified]]></xsd:documentation>
 				</xsd:annotation>
 			</xsd:attribute>
-			<xsd:attributeGroup ref="xcesc:timeStampGroup">
+			<xsd:attributeGroup ref="xcesc:optionalTimeStampGroup">
 				<xsd:annotation>
 					<xsd:documentation><![CDATA[The timestamp assigned to this match once it arrives to the server]]></xsd:documentation>
 				</xsd:annotation>
@@ -815,7 +830,7 @@ As the scope can be sparse, more than one scope element can be specified]]></xsd
 i.e. The value of the targetId attribute from the query element inside the arriving target element being assessed.]]></xsd:documentation>
 				</xsd:annotation>
 			</xsd:attribute>
-			<xsd:attributeGroup ref="xcesc:timeStampGroup">
+			<xsd:attributeGroup ref="xcesc:optionalTimeStampGroup">
 				<xsd:annotation>
 					<xsd:documentation><![CDATA[The timestamp of this assessment from the point of view of the evaluator]]></xsd:documentation>
 				</xsd:annotation>
@@ -976,7 +991,7 @@ i.e. The value of the targetId attribute from the query element inside the arriv
 					</xsd:complexType>
 				</xsd:element>
 			</xsd:sequence>
-			<xsd:attributeGroup ref="xcesc:timeStampGroup">
+			<xsd:attributeGroup ref="xcesc:optionalTimeStampGroup">
 				<xsd:annotation>
 					<xsd:documentation><![CDATA[The timestamp assigned by the server which has accepted these prediction or evaluation queries]]></xsd:documentation>
 				</xsd:annotation>
@@ -1021,7 +1036,7 @@ i.e. The value of the targetId attribute from the query element inside the arriv
 						<xsd:attribute name="label" use="optional" type="xsd:string" />
 					</xsd:complexType>
 				</xsd:element>
-				<xsd:element name="baseline" minOccurs="1" maxOccurs="1">
+				<xsd:element name="baseline" minOccurs="1" maxOccurs="unbounded">
 					<xsd:annotation>
 						<xsd:documentation><![CDATA[A fast, baseline answer for the query]]></xsd:documentation>
 					</xsd:annotation>
@@ -1029,6 +1044,7 @@ i.e. The value of the targetId attribute from the query element inside the arriv
 						<xsd:sequence>
 							<xsd:element ref="xcesc:match" minOccurs="0" maxOccurs="unbounded" />
 						</xsd:sequence>
+						<xsd:attributeGroup ref="xcesc:requiredTimeStampGroup" />
 					</xsd:complexType>
 				</xsd:element>
 				<!--							<xsd:element name="tag" minOccurs="0" maxOccurs="unbounded">
@@ -1054,17 +1070,6 @@ i.e. The value of the targetId attribute from the query element inside the arriv
 				<xsd:annotation>
 					<xsd:documentation><![CDATA[A descriptive line for the query (for instance, from PDB or PDBPre)]]></xsd:documentation>
 				</xsd:annotation>
-			</xsd:attribute>
-			<xsd:attribute name="level" use="optional">
-				<xsd:annotation>
-					<xsd:documentation><![CDATA[The initially estimated complexity score assigned to the query]]></xsd:documentation>
-				</xsd:annotation>
-				<xsd:simpleType>
-					<xsd:restriction base="xsd:double">
-						<xsd:minInclusive value="0.0"/>
-						<xsd:maxInclusive value="1.0"/>
-					</xsd:restriction>
-				</xsd:simpleType>
 			</xsd:attribute>
 		</xsd:complexType>
 	</xsd:element>
@@ -1241,11 +1246,11 @@ i.e. The value of the targetId attribute from the query element inside the arriv
 			<xsd:documentation><![CDATA[Last round document, needed to know where PDB and PDBPre filtered database files are lying]]></xsd:documentation>
 		</xsd:annotation>
 		<xsd:complexType>
-			<xsd:attribute name="timeStamp" type="xsd:dateTime" use="required">
+			<xsd:attributeGroup ref="xcesc:requiredTimeStampGroup">
 				<xsd:annotation>
 					<xsd:documentation><![CDATA[The last update stamp, empty on server init!]]></xsd:documentation>
 				</xsd:annotation>
-			</xsd:attribute>
+			</xsd:attributeGroup>
 		</xsd:complexType>
 	</xsd:element>
 	

@@ -171,7 +171,7 @@
 		</exec>
 	</target>
 	
-	<target name="bootstrap.eXist.exists" depends="init,conditional.bootstrap.gopher.eXist.version">
+	<target name="bootstrap.eXist.exists" depends="init , conditional.bootstrap.gopher.eXist.version">
 		<uptodate
 			property="eXist.archive.present"
 			targetfile="${eXist.jar}"
@@ -195,7 +195,7 @@
 		</copy>
 	</target>
 	
-	<target name="bootstrap.eXist" depends="conditional.bootstrap.gopher.eXist.version,compile.eXist" description="It compiles eXist">
+	<target name="bootstrap.eXist" depends="conditional.bootstrap.gopher.eXist.version , compile.eXist" description="It compiles eXist">
 	</target>
 	
 
@@ -270,7 +270,7 @@
 		</uptodate>
 	</target>
 	
-	<target name="conditional.patches" depends="conditional.patch.conf.xml,conditional.patch.controller-config.xml,conditional.patch.log4j.xml,conditional.patch.startup,patch.jetty.config" description="Conditional patching of configuration files">
+	<target name="conditional.patches" depends="conditional.patch.conf.xml , conditional.patch.controller-config.xml , conditional.patch.log4j.xml , conditional.patch.startup , patch.jetty.config" description="Conditional patching of configuration files">
 	</target>
 	
 	<!-- Generating configuration files by patch -->
@@ -522,7 +522,7 @@
 	</target>
 
 	<target name="deploy.skel.meta"
-		depends="init.eXist.extension,conditional.patches,clean.AtomicWiki,patch.AtomicWiki,build-atomic-xquery-jar,compile.AtomicWiki,update.AtomicWiki.default-site"
+		depends="init.eXist.extension , conditional.patches , clean.AtomicWiki , patch.AtomicWiki , build-atomic-xquery-jar , compile.AtomicWiki , update.AtomicWiki.default-site"
 		description="Remote eXist Meta-skeleton for GOPHER"
 	>
 		<!-- First, stop the patient (it may fail) -->
@@ -815,7 +815,7 @@
 		</antcall>
 	</target>
 
-	<target name="deploy.skel" depends="conditional.patches,init.eXist.extension,deploy.skel.meta.users" description="Upload the skeleton (at last!)">
+	<target name="deploy.skel" depends="conditional.patches , init.eXist.extension , deploy.skel.meta.users" description="Upload the skeleton (at last!)">
 		<!-- First, the meta-skeleton XML content -->
 		<xdb:store uri="${xmldb.uri}/db" user="${deploy.eXist.admin.user}" password="${deploy.eXist.admin.pass}" failonerror="true" createsubcollections="true">
 			<fileset dir="skel">
@@ -938,7 +938,7 @@
 		
 	</target>
 
-	<target name="deploy.skel.forms" depends="init.eXist.extension,deploy.skel.meta.users" description="Upload the skeleton (at last!)">
+	<target name="deploy.skel.forms" depends="init.eXist.extension , deploy.skel.meta.users" description="Upload the skeleton (at last!)">
 		<!-- First, the meta-skeleton XML content -->
 		<xdb:store uri="${xmldb.uri}/db" user="${deploy.eXist.admin.user}" password="${deploy.eXist.admin.pass}" failonerror="true" createsubcollections="true">
 			<fileset dir="skel">
@@ -971,7 +971,7 @@
 		</scp>
 	</target>
 	
-	<target name="deploy" depends="deploy.skel.meta.admin,deploy.AtomicWiki,deploy.skel" description="Installation procedure, with the eXist instance working">
+	<target name="deploy" depends="deploy.skel.meta.admin , deploy.AtomicWiki , deploy.skel" description="Installation procedure, with the eXist instance working">
 		<!-- At this point the database instance must be running! -->
 	</target>
 	
@@ -989,7 +989,7 @@
 		</ant>
 	</target>
 	
-	<target name="clean" depends="clean.weeklyGOPHER-eXist-module,clean.AtomicWiki" description="clean up ${ant.project.name}">
+	<target name="clean" depends="clean.weeklyGOPHER-eXist-module , clean.AtomicWiki" description="clean up ${ant.project.name}">
 		<!-- Something, please! -->
 		<delete dir="${libs}"/>
 		<delete dir="${downloads.dir}"/>
@@ -1148,7 +1148,7 @@
 	
 	<target
 		name="deploy.AtomicWiki"
-		depends="compile.AtomicWiki,init.eXist.extension"
+		depends="compile.AtomicWiki , init.eXist.extension"
 		description="deploys AtomicWiki files into the database"
 	>
 		

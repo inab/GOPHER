@@ -1,3 +1,28 @@
+DONE
+====
+*	Consider allowing more than one 'baseline' element, so we can have in
+	place cummulative historical information.
+*	Added a 'timeStamp' attribute to 'baseline' element, so different baselines are labeled.
+*	Rename 'publicId' attribute to 'id'.
+*	Removed attribute 'level' from element 'target', because successive 'baseline' information elements should explain with facts how difficult is a target.
+*	Some sample Ruby and Python programs still had 'score' and 'e-value' attributes in the examples.
+*	Added new optional attribute 'kind' related to 'namespace' attribute, so we use the same namespace for all the public identifiers
+	of a data source, but we can distinguish among the different available subtypes, categories or ontologies.
+*	'origin' attribute declared and generated in Java code for datasets is now 'kind'.
+
+
+TODO
+====
+
+*	Implement function job:addBaseline, which injects 'baseline' elements, along with their 'timeStamp'.
+*	Create infrastructure to add calls to the functions which will generate contents for 'baseline' element.
+
+CHANGES TODO
+============
+*	Add assessment baseline results generation
+	- For GOPHER, Blast search against UniProt Swiss-Prot with a cut-off
+	  of 1e-3 and transfer GO annotation from UniProt entry.
+
 TODO
 ----
 saxon cleanup at build.xml

@@ -173,15 +173,6 @@ def launchEvaluationJob(callback,query,common)
 								# And the subjective appreciation: right, under, over, wrong, missing
 								# annotationQuality << Text.new('right')
 								
-								# Optional custom appreciations from any namespace (zero or more)
-								# term = Element.new('term',evaluation)
-								# term.attributes['namespace'] = 'GO'
-								# term.attributes['id'] = 'GO:12345'
-								# Raw score (it could be an e-value or other kind of native score, for instance)
-								# term.attributes['score'] = 2
-								# Normalized p-value
-								# term.attributes['p-value'] = 0.1
-								
 								# And a copy of the match being evaluated
 								evaluated = Element.new('evaluated',evaluation)
 								imported = match.deep_clone

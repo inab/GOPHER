@@ -49,9 +49,9 @@ public class CronGOPHERFunction
 	private final static String XCESC_EXPERIMENT_ROOT="experiment";
 	private final static String XCESC_TARGET_ELEMENT="target";
 	
-	private final static String XCESC_PUBLICID_ATTRIBUTE="publicId";
+	private final static String XCESC_PUBLICID_ATTRIBUTE="id";
 	private final static String XCESC_DESCRIPTION_ATTRIBUTE="description";
-	private final static String XCESC_ORIGIN_ATTRIBUTE="origin";
+	private final static String XCESC_ORIGIN_ATTRIBUTE="kind";
 	
 	private final static String XCESC_QUERY_ELEMENT="query";
 	private final static String XCESC_ID_ATTRIBUTE="queryId";

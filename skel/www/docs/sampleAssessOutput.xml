@@ -16,7 +16,7 @@
 					<!-- This is copied from the input -->
 					<match source="HMMer" timeStamp="2009-10-21T19:12:59.453647576+02:00">
 						<scope from="1" to="116"/>
-						<term namespace="GO" publicId="GO:0004866">
+						<term namespace="GO" id="GO:0004866">
 							 <metric type="score">2000</metric>
 							 <metric type="p-value">0.01</metric>
 						</term>

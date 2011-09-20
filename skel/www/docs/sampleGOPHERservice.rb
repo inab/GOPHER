@@ -145,9 +145,14 @@ def launchJob(callback,query,common)
 			# An example of annotation/assessment with term elements would be:
 			# term = Element.new('term',match)
 			# term.attributes['namespace'] = 'GO'
-			# term.attributes['publicId'] = 'GO:0004174'
-			# term.attributes['score'] = 100.to_s
-			# term.attributes['p-value'] = 0.5.to_s
+			# term.attributes['id'] = 'GO:0004174'
+			#
+			# If the annotation/assessment 'id' belongs to a subset which should be
+			# declared in order to ease the identifier recognition, use 'kind'
+			# In this example, using the nomenclature from GOA and UniProt, this
+			# GO term is from Molecular Function ontology, which abbreviated form
+			# is 'F'
+			# term.attributes['kind'] = 'F'
 			#
 			# metric = Element.new('metric',term)
 			# metric.attributes['type'] = 'score'

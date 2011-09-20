@@ -168,18 +168,6 @@ def launchEvaluationJob(callback, query, common):
 								annotationQuality.appendChild(answerDoc.createTextNode('right'))
 								"""
 								
-								"""
-								# Optional custom appreciations from any namespace (zero or more)
-								term = answerDoc.createElementNS(XCESC_NS,'term')
-								evaluation.appendChild(term)
-								term.setAttribute('namespace','GO')
-								term.setAttribute('id','GO:12345')
-								# Raw score (it could be an e-value or other kind of native score, for instance)
-								term.setAttribute('score',2)
-								# Normalized p-value
-								term.setAttribute('p-value',0.1)
-								"""
-								
 								# And a copy of the match being evaluated
 								evaluated = answerDoc.createElementNS(XCESC_NS,'evaluated')
 								evaluation.appendChild(evaluated)

@@ -110,6 +110,16 @@ declare function job:plantSeed()
 };
 
 (:
+	This function calls the underlying implementation to calculate the baseline
+	from the queries, and then it attaches the baseline to the queries document
+:)
+declare function job:addBaseline($storedExperiment as element(xcesc:experiment))
+	as element(xcesc:experiment)
+{
+	(: TODO :)
+};
+
+(:
 	This function calls the underlying implementation to calculate the queries,
 	and then it stores them and the queries document
 :)
@@ -134,7 +144,7 @@ declare function job:doQueriesComputation($currentDateTime as xs:dateTime)
 		
 		(: Seventh, time to store and update! :)
 		let $stored := xmldb:store-files-from-pattern($newCol,$physicalScratch,$queriesComputation/@storagePattern)
-		let $storedExperiment := doc(xmldb:store($newCol,$job:queriesDocURI,$queriesDoc,'application/xml'))/element()
+		let $storedExperiment := job:addBaseline(doc(xmldb:store($newCol,$job:queriesDocURI,$queriesDoc,'application/xml'))/element())
 		return (
 			upd:replaceValue($lastDoc/@timeStamp,$currentDateTime)
 			,
@@ -367,17 +377,24 @@ declare function job:doAssessment($currentAssessment as xs:string,$round as xs:s
 		)
 	)/element()
 	(: Fourth, get online servers based on currentDateTime :)
-	let $storedExperiment := doc(string-join(($job:resultsColURI,xmldb:encode($round),$job:queriesDocURI),'/'))
-	let $targetSet:=(
+	let $storedExperimentDoc := doc(string-join(($job:resultsColURI,xmldb:encode($round),$job:queriesDocURI),'/'))
+	let $storedExperiment := job:addBaseline($storedExperimentDoc/element())
+	let $commonSet := ()
+	let $targetSet := (
 		for $participant in $storedExperiment//xcesc:participant
 		return
 			<xcesc:query queryId="{$participant/@ticket}">{
 				for $target in $storedExperiment/xcesc:experiment/xcesc:target
+				let $queryId := $target/xcesc:query/@queryId
 				return
-					<xcesc:target publicId="{$target/@publicId}" namespace="{$target/@namespace}" description="{$target/@description}" level="{$target/@level}">
-					{$target/xcesc:query}
-					{$participant/xcesc:job[@targetId eq $target/xcesc:query/@queryId]/xcesc:match}
-					</xcesc:target>
+					<xcesc:answer targetId="{$queryId}">
+						<xcesc:target id="{$target/@id}" namespace="{$target/@namespace}" description="{$target/@description}">
+							{$target/@kind}
+							{$target/node()}
+							{$baseline}
+						</xcesc:target>
+						{$participant/xcesc:job[@targetId eq $queryId]/xcesc:match}
+					<xcesc:answer>
 			}</xcesc:query>
 	)
 	(: Fifth, submit jobs!!!! :)
@@ -385,7 +402,7 @@ declare function job:doAssessment($currentAssessment as xs:string,$round as xs:s
 	for $onlineServer in $onlineServers
 		let $ticketId:=util:uuid()
 		let $poboxURI := string-join(($basePobox,$ticketId),'/')
-		let $queries := <xcesc:queries callback="{$poboxURI}">{$targetSet}</xcesc:queries>
+		let $queries := <xcesc:queries callback="{$poboxURI}">{$commonSet}{$targetSet}</xcesc:queries>
 		let $sendDateTime:=current-dateTime()
 		let $ret:=httpclient:post($onlineServer/@uri,$queries,false(),())
 		let $acceptedQueries := $ret/httpclient:body/*[1]

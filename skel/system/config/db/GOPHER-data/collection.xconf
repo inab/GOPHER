@@ -73,7 +73,7 @@
         	<create path="//mim:geneSymbol" type="xs:string"/>
 		-->
 		
-		<!-- For servers and users -->
+		<!-- For servers, users and targets -->
         	<create qname="@id" type="xs:string"/>
 		<!-- For servers -->
         	<create qname="@managerId" type="xs:string"/>
@@ -85,10 +85,8 @@
 		<!-- For users -->
         	<create qname="@nickname" type="xs:string"/>
 		<!-- For target -->
-		<create qname="@publicId" type="xs:string"/>
-		<!-- For query -->
 		<create qname="@queryId" type="xs:string"/>
-		<!-- For job -->
+		<!-- For job and answer -->
 		<create qname="@targetId" type="xs:string"/>
 		<!-- For participant -->
 		<create qname="@ticket" type="xs:string"/>

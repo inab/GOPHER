@@ -138,9 +138,14 @@ def launchJob(callback, query, common):
 			term = answerDoc.createElementNS(XCESC_NS,'term')
 			match.appendChild(term)
 			term.setAttribute('namespace','GO')
-			term.setAttribute('publicId','GO:0004174')
-			term.setAttribute('score',100)
-			term.setAttribute('p-value',0.5)
+			term.setAttribute('id','GO:0004174')
+			
+			# If the annotation/assessment 'id' belongs to a subset which should be
+			# declared in order to ease the identifier recognition, use 'kind'
+			# In this example, using the nomenclature from GOA and UniProt, this
+			# GO term is from Molecular Function ontology, which abbreviated form
+			# is 'F'
+			term.setAttribute('kind','F')
 			
 			metric = answerDoc.createElementNS(XCESC_NS,'metric')
 			term.appendChild(metric)

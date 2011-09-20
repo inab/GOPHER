@@ -101,7 +101,14 @@ sub launchJob($$$) {
 			# my($term)=$answerDoc->createElementNS($XCESC_NS,'term');
 			# $match->appendChild($term);
 			# $term->setAttribute('namespace','GO');
-			# $term->setAttribute('publicId','GO:0004174');
+			# $term->setAttribute('id','GO:0004174');
+			#
+			# If the annotation/assessment 'id' belongs to a subset which should be
+			# declared in order to ease the identifier recognition, use 'kind'
+			# In this example, using the nomenclature from GOA and UniProt, this
+			# GO term is from Molecular Function ontology, which abbreviated form
+			# is 'F'
+			# $term->setAttribute('kind','F');
 			#
 			# my($metric)=$answerDoc->createElementNS($XCESC_NS,'metric');
 			# $term->appendChild($metric);
