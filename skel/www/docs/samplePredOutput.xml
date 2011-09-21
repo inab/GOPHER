@@ -8,18 +8,18 @@
 		<!-- source attribute is used to tell something about the method class -->
 		<match source="HMMer" timeStamp="2009-10-21T19:12:59.453647576+02:00">
 			<scope from="1" to="116"/>
-			<term namespace="GO" id="GO:0004866">
+			<term namespace="GO" kind="F" id="GO:0004866">
 				 <metric type="score">2000</metric>
 				 <metric type="p-value">0.01</metric>
 			</term>
 		</match>
 		<match source="HMMer" timeStamp="2009-10-21T19:13:20.833425242+02:00">
 			<scope from="131" to="212"/>
-			<term namespace="GO" id="GO:0005576">
+			<term namespace="GO" kind="C" id="GO:0005576">
 				<metric type="score">1000</metric>
 				<metric type="p-value">0.02</metric>
 			</term>
-			<term namespace="GO" id="GO:0004421">
+			<term namespace="GO" kind="F" id="GO:0004421">
 				<metric type="score">500</metric>
 				<metric type="p-value">0.03</metric>
 			</term>
@@ -33,7 +33,7 @@
 			<!-- This one maps more than one segment -->
 			<scope from="10" to="40"/>
 			<scope from="60" to="80"/>
-			<term namespace="GO" id="GO:0005615">
+			<term namespace="GO" kind="C" id="GO:0005615">
 				<metric type="score">2000</metric>
 				<metric type="p-value">0.01</metric>
 			</term>
@@ -42,31 +42,31 @@
 	<answer targetId="4">
 		<match source="Blast" timeStamp="2009-10-21T19:14:00.413601006+02:00">
 			<!-- This one is mapped to the whole sequence -->
-			<term namespace="GO" id="GO:0005737">
+			<term namespace="GO" kind="C" id="GO:0005737">
 				<metric type="score">2000</metric>
 				<metric type="p-value">0.01</metric>
 			</term>
-			<term namespace="GO" id="GO:0005634">
+			<term namespace="GO" kind="C" id="GO:0005634">
 				<metric type="score">2000</metric>
 				<metric type="p-value">0.01</metric>
 			</term>
-			<term namespace="GO" id="GO:0004422">
+			<term namespace="GO" kind="F" id="GO:0004422">
 				<metric type="score">2000</metric>
 				<metric type="p-value">0.01</metric>
 			</term>
-			<term namespace="GO" id="GO:0000287">
+			<term namespace="GO" kind="F" id="GO:0000287">
 				<metric type="score">2000</metric>
 				<metric type="p-value">0.01</metric>
 			</term>
-			<term namespace="GO" id="GO:0005515">
+			<term namespace="GO" kind="F" id="GO:0005515">
 				<metric type="score">2000</metric>
 				<metric type="p-value">0.01</metric>
 			</term>
-			<term namespace="GO" id="GO:0032263">
+			<term namespace="GO" kind="P" id="GO:0032263">
 				<metric type="score">2000</metric>
 				<metric type="p-value">0.01</metric>
 			</term>
-			<term namespace="GO" id="GO:0032264">
+			<term namespace="GO" kind="P" id="GO:0032264">
 				<metric type="score">2000</metric>
 				<metric type="p-value">0.01</metric>
 			</term>

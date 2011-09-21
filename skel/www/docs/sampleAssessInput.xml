@@ -10,19 +10,19 @@
 				<query queryId="1"><![CDATA[QVQLQQPGAELVKPGASVKLSCKASGYTFTSDWIHWVKQRPGHGLEWIGEIIPSYGRANYNEKIQKKATLTADKSSSTAFMQLSSLTSEDSAVYYCARERGDGYFAVWGAGTTVTVSSAKTTPPSVYPLAPGSAAQTNSMVTLGCLVKGYFPEPVTVTWNSGSLSSGVHTFPAVLQSDLYTLSSSVTVPSSSWPSETVTCNVAHPASSTKVDKKIVPRD]]></query>
 				<baseline timeStamp="2011-09-12T19:12:59.453647576+01:00">
 					<match source="GOA" timeStamp="2011-09-12T19:12:59.453647576+01:00">
-						<term namespace="GO" id="GO:0003823">
+						<term namespace="GO" kind="F" id="GO:0003823">
 							<metric type="e-value">1.0e-72</metric>
 						</term>
-						<term namespace="GO" id="GO:0005576">
+						<term namespace="GO" kind="C" id="GO:0005576">
 							<metric type="e-value">1.0e-72</metric>
 						</term>
-						<term namespace="GO" id="GO:0005586">
+						<term namespace="GO" kind="C" id="GO:0005586">
 							<metric type="e-value">7e-51</metric>
 						</term>
-						<term namespace="GO" id="GO:0016020">
+						<term namespace="GO" kind="C" id="GO:0016020">
 							<metric type="e-value">7e-51</metric>
 						</term>
-						<term namespace="GO" id="GO:0016021">
+						<term namespace="GO" kind="C" id="GO:0016021">
 							<metric type="e-value">7e-51</metric>
 						</term>
 					</match>
@@ -31,18 +31,18 @@
 			<!-- source attribute is used to tell something about the method class -->
 			<match source="HMMer" timeStamp="2009-10-21T19:12:59.453647576+02:00">
 				<scope from="1" to="116"/>
-				<term namespace="GO" id="GO:0004866">
+				<term namespace="GO" kind="F" id="GO:0004866">
 					 <metric type="score">2000</metric>
 					 <metric type="p-value">0.01</metric>
 				</term>
 			</match>
 			<match source="HMMer" timeStamp="2009-10-21T19:13:20.833425242+02:00">
 				<scope from="131" to="212"/>
-				<term namespace="GO" id="GO:0005576">
+				<term namespace="GO" kind="C" id="GO:0005576">
 					<metric type="score">1000</metric>
 					<metric type="p-value">0.02</metric>
 				</term>
-				<term namespace="GO" id="GO:0004421">
+				<term namespace="GO" kind="F" id="GO:0004421">
 					<metric type="score">500</metric>
 					<metric type="p-value">0.03</metric>
 				</term>
@@ -53,60 +53,60 @@
 				<query queryId="2"><![CDATA[MPPMLSGLLARLVKLLLGRHGSALHWRAAGAATVLLVIVLLAGSYLAVLAERGAPGAQLITYPRALWWSVETATTVGYGDLYPVTLWGRCVAVVVMVAGITSFGLVTAALATWFVGREQERRGH]]></query>
 				<baseline timeStamp="2011-09-12T19:12:59.453647576+01:00">
 					<match source="GOA" timeStamp="2011-09-12T19:42:59.453647576+01:00">
-						<term namespace="GO" id="GO:0006810">
+						<term namespace="GO" kind="P" id="GO:0006810">
 							<metric type="e-value">4.0e-65</metric>
 						</term>
-						<term namespace="GO" id="GO:0006811">
+						<term namespace="GO" kind="P" id="GO:0006811">
 							<metric type="e-value">4.0e-65</metric>
 						</term>
-						<term namespace="GO" id="GO:0006813">
+						<term namespace="GO" kind="P" id="GO:0006813">
 							<metric type="e-value">4.0e-65</metric>
 						</term>
-						<term namespace="GO" id="GO:0034765">
+						<term namespace="GO" kind="P" id="GO:0034765">
 							<metric type="e-value">4.0e-65</metric>
 						</term>
-						<term namespace="GO" id="GO:0005216">
+						<term namespace="GO" kind="F" id="GO:0005216">
 							<metric type="e-value">4.0e-65</metric>
 						</term>
-						<term namespace="GO" id="GO:0005244">
+						<term namespace="GO" kind="F" id="GO:0005244">
 							<metric type="e-value">4.0e-65</metric>
 						</term>
-						<term namespace="GO" id="GO:0005249">
+						<term namespace="GO" kind="F" id="GO:0005249">
 							<metric type="e-value">4.0e-65</metric>
 						</term>
-						<term namespace="GO" id="GO:0005886">
+						<term namespace="GO" kind="C" id="GO:0005886">
 							<metric type="e-value">4.0e-65</metric>
 						</term>
-						<term namespace="GO" id="GO:0008076">
+						<term namespace="GO" kind="C" id="GO:0008076">
 							<metric type="e-value">4.0e-65</metric>
 						</term>
-						<term namespace="GO" id="GO:0016020">
+						<term namespace="GO" kind="C" id="GO:0016020">
 							<metric type="e-value">4.0e-65</metric>
 						</term>
-						<term namespace="GO" id="GO:0016021">
+						<term namespace="GO" kind="C" id="GO:0016021">
 							<metric type="e-value">4.0e-65</metric>
 						</term>
 
-						<term namespace="GO" id="GO:0071805">
+						<term namespace="GO" kind="P" id="GO:0071805">
 							<metric type="e-value">4.0e-11</metric>
 						</term>
-						<term namespace="GO" id="GO:0000166">
+						<term namespace="GO" kind="F" id="GO:0000166">
 							<metric type="e-value">4.0e-11</metric>
 						</term>
-						<term namespace="GO" id="GO:0005267">
+						<term namespace="GO" kind="F" id="GO:0005267">
 							<metric type="e-value">4.0e-11</metric>
 						</term>
-						<term namespace="GO" id="GO:0030552">
+						<term namespace="GO" kind="F" id="GO:0030552">
 							<metric type="e-value">4.0e-11</metric>
 						</term>
 
-						<term namespace="GO" id="GO:0055085">
+						<term namespace="GO" kind="P" id="GO:0055085">
 							<metric type="e-value">6.0e-10</metric>
 						</term>
-						<term namespace="GO" id="GO:0047485">
+						<term namespace="GO" kind="F" id="GO:0047485">
 							<metric type="e-value">6.0e-10</metric>
 						</term>
-						<term namespace="GO" id="GO:0043234">
+						<term namespace="GO" kind="C" id="GO:0043234">
 							<metric type="e-value">6.0e-10</metric>
 						</term>
 					</match>
@@ -119,10 +119,10 @@
 				<query queryId="3"><![CDATA[DILLTQSPAILSVSPGERVSFSCRASQSIGTDIHWYQQRTNGSPRLLIKYASESISGIPSRFSGSGSGTDFTLSINSVESEDIANYYCQQSNRWPFTFGSGTKLEIKRADAAPTVSIFPPSSEQLTSGGASVVCFLNNFYPKDINVKWKIDGSERQNGVLNSWTDQDSKDSTYSMSSTLTLTKDEYERHNSYTCEATHKTSTSPIVKSFNRN]]></query>
 				<baseline timeStamp="2011-09-12T19:12:59.453647576+01:00">
 					<match source="GOA" timeStamp="2011-09-12T19:55:59.453647576+01:00">
-						<term namespace="GO" id="GO:0003823">
+						<term namespace="GO" kind="F" id="GO:0003823">
 							<metric type="e-value">7.0e-56</metric>
 						</term>
-						<term namespace="GO" id="GO:0005576">
+						<term namespace="GO" kind="C" id="GO:0005576">
 							<metric type="e-value">7.0e-56</metric>
 						</term>
 					</match>
@@ -132,7 +132,7 @@
 				<!-- This one maps more than one segment -->
 				<scope from="10" to="40"/>
 				<scope from="60" to="80"/>
-				<term namespace="GO" id="GO:0005615">
+				<term namespace="GO" kind="C" id="GO:0005615">
 					<metric type="score">2000</metric>
 					<metric type="p-value">0.01</metric>
 				</term>
@@ -143,57 +143,57 @@
 				<query queryId="4"><![CDATA[SANDKQYISYNNVHQLCQVSAERIKNFKPDLIIAIGGGGFIPARILRTFLKEPGVPTIRIFAIILSLYEDLNSVGSEVEEVGVKVSRTQWIDYEQCKLDLVGKNVLIVDEVDDTRTTLHYALSELEKDAAEQAKAKGIDTEKSPEMKTNFGIFVLHDKQKPKKADLPAEMLNDKNRYFAAKTVPDKWYAYPWESTDIVFHTRMAIEQGNDIFI]]></query>
 				<baseline timeStamp="2011-09-12T19:12:59.453647576+01:00">
 					<match source="GOA" timeStamp="2011-09-12T19:57:59.453647576+01:00">
-						<term namespace="GO" id="GO:0006166">
+						<term namespace="GO" kind="P" id="GO:0006166">
 							<metric type="e-value">1.0e-120</metric>
 						</term>
-						<term namespace="GO" id="GO:0009116">
+						<term namespace="GO" kind="P" id="GO:0009116">
 							<metric type="e-value">1.0e-120</metric>
 						</term>
-						<term namespace="GO" id="GO:0032263">
+						<term namespace="GO" kind="P" id="GO:0032263">
 							<metric type="e-value">1.0e-120</metric>
 						</term>
-						<term namespace="GO" id="GO:0032264">
+						<term namespace="GO" kind="P" id="GO:0032264">
 							<metric type="e-value">1.0e-120</metric>
 						</term>
-						<term namespace="GO" id="GO:0000166">
+						<term namespace="GO" kind="F" id="GO:0000166">
 							<metric type="e-value">1.0e-120</metric>
 						</term>
-						<term namespace="GO" id="GO:0004422">
+						<term namespace="GO" kind="F" id="GO:0004422">
 							<metric type="e-value">1.0e-120</metric>
 						</term>
-						<term namespace="GO" id="GO:0016740">
+						<term namespace="GO" kind="F" id="GO:0016740">
 							<metric type="e-value">1.0e-120</metric>
 						</term>
-						<term namespace="GO" id="GO:0016757">
+						<term namespace="GO" kind="F" id="GO:0016757">
 							<metric type="e-value">1.0e-120</metric>
 						</term>
-						<term namespace="GO" id="GO:0046872">
+						<term namespace="GO" kind="F" id="GO:0046872">
 							<metric type="e-value">1.0e-120</metric>
 						</term>
-						<term namespace="GO" id="GO:0052675">
+						<term namespace="GO" kind="F" id="GO:0052675">
 							<metric type="e-value">1.0e-120</metric>
 						</term>
-						<term namespace="GO" id="GO:0005634">
+						<term namespace="GO" kind="C" id="GO:0005634">
 							<metric type="e-value">1.0e-120</metric>
 						</term>
-						<term namespace="GO" id="GO:0005737">
+						<term namespace="GO" kind="C" id="GO:0005737">
 							<metric type="e-value">1.0e-120</metric>
 						</term>
 
-						<term namespace="GO" id="GO:0006164">
+						<term namespace="GO" kind="P" id="GO:0006164">
 							<metric type="e-value">7.0e-56</metric>
 						</term>
-						<term namespace="GO" id="GO:0032265">
+						<term namespace="GO" kind="P" id="GO:0032265">
 							<metric type="e-value">7.0e-56</metric>
 						</term>
-						<term namespace="GO" id="GO:0000310">
+						<term namespace="GO" kind="F" id="GO:0000310">
 							<metric type="e-value">7.0e-56</metric>
 						</term>
 						
-						<term namespace="GO" id="GO:0032261">
+						<term namespace="GO" kind="P" id="GO:0032261">
 							<metric type="e-value">2.0e-52</metric>
 						</term>
-						<term namespace="GO" id="GO:0005783">
+						<term namespace="GO" kind="C" id="GO:0005783">
 							<metric type="e-value">2.0e-52</metric>
 						</term>
 					</match>
@@ -201,31 +201,31 @@
 			</target>
 			<match source="Blast" timeStamp="2009-10-21T19:14:00.413601006+02:00">
 				<!-- This one is mapped to the whole sequence -->
-				<term namespace="GO" id="GO:0005737">
+				<term namespace="GO" kind="C" id="GO:0005737">
 					<metric type="score">2000</metric>
 					<metric type="p-value">0.01</metric>
 				</term>
-				<term namespace="GO" id="GO:0005634">
+				<term namespace="GO" kind="C" id="GO:0005634">
 					<metric type="score">2000</metric>
 					<metric type="p-value">0.01</metric>
 				</term>
-				<term namespace="GO" id="GO:0004422">
+				<term namespace="GO" kind="F" id="GO:0004422">
 					<metric type="score">2000</metric>
 					<metric type="p-value">0.01</metric>
 				</term>
-				<term namespace="GO" id="GO:0000287">
+				<term namespace="GO" kind="F" id="GO:0000287">
 					<metric type="score">2000</metric>
 					<metric type="p-value">0.01</metric>
 				</term>
-				<term namespace="GO" id="GO:0005515">
+				<term namespace="GO" kind="F" id="GO:0005515">
 					<metric type="score">2000</metric>
 					<metric type="p-value">0.01</metric>
 				</term>
-				<term namespace="GO" id="GO:0032263">
+				<term namespace="GO" kind="P" id="GO:0032263">
 					<metric type="score">2000</metric>
 					<metric type="p-value">0.01</metric>
 				</term>
-				<term namespace="GO" id="GO:0032264">
+				<term namespace="GO" kind="P" id="GO:0032264">
 					<metric type="score">2000</metric>
 					<metric type="p-value">0.01</metric>
 				</term>

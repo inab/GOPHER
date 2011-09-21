@@ -16,7 +16,7 @@
 					<!-- This is copied from the input -->
 					<match source="HMMer" timeStamp="2009-10-21T19:12:59.453647576+02:00">
 						<scope from="1" to="116"/>
-						<term namespace="GO" id="GO:0004866">
+						<term namespace="GO" kind="F" id="GO:0004866">
 							 <metric type="score">2000</metric>
 							 <metric type="p-value">0.01</metric>
 						</term>
@@ -32,11 +32,11 @@
 					<!-- This is copied from the input -->
 					<match source="HMMer" timeStamp="2009-10-21T19:13:20.833425242+02:00">
 						<scope from="131" to="212"/>
-						<term namespace="GO" id="GO:0005576">
+						<term namespace="GO" kind="C" id="GO:0005576">
 							<metric type="score">1000</metric>
 							<metric type="p-value">0.02</metric>
 						</term>
-						<term namespace="GO" id="GO:0004421">
+						<term namespace="GO" kind="F" id="GO:0004421">
 							<metric type="score">500</metric>
 							<metric type="p-value">0.03</metric>
 						</term>
