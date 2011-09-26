@@ -64,11 +64,28 @@ if(defined($serviceToTest)) {
 	my $uuid = `uuidgen`;
 	chomp($uuid);
 	my $edoc;
+	my $scriptURI = undef;
+	
+	if(exists($ENV{'SCRIPT_URI'}) && index($ENV{'SCRIPT_URI'},'http')==0) {
+		$scriptURI = $ENV{'SCRIPT_URI'};
+	} elsif(exists($ENV{'SCRIPT_URL'})) {
+		my $proto = undef;
+		my $port = $ENV{'SERVER_PORT'};
+		if($port eq '443') {
+			$proto='https';
+			$port='';
+		} else {
+			$proto='http';
+			$port=''  if($port eq '80');
+		}
+		$port = ':'.$port  unless(length($port)==0);
+		$scriptURI = $proto.'://'.$ENV{'SERVER_NAME'}.$port.$ENV{'SCRIPT_URL'};
+	}
 	eval {
 		my($parser)=XML::LibXML->new();
 		# Beware encodings here!!!!
 		$edoc=$parser->parse_file($fileToSend);
-		$edoc->documentElement()->setAttribute('callback',$ENV{'SCRIPT_URI'}.'/'.$uuid);
+		$edoc->documentElement()->setAttribute('callback',$scriptURI.'/'.$uuid);
 		
 		my $F;
 		$edoc->toFile('/tmp/gopher-'.$uuid.'-init.xml');
