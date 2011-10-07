@@ -98,8 +98,9 @@ def launchEvaluationJob(callback, query, common):
 			
 			answerDoc = domImplementation.createDocument(XCESC_NS, 'answers', None)
 			answers = answerDoc.documentElement
+			answers.setAttribute('xmlns',XCESC_NS)
 			
-			answer = answerDoc.createElementNS(XSCESC_NS,'answer')
+			answer = answerDoc.createElementNS(XCESC_NS,'answer')
 			answer.setAttribute('targetId',query.getAttribute('queryId'))
 			answers.appendChild(answer)
 			
