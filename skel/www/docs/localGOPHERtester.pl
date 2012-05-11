@@ -16,6 +16,9 @@ use FindBin;
 
 $|=1;
 
+# For the temporal files saved by this tester file
+umask(2);
+
 my($XCESC_NS)='http://www.cnio.es/scombio/xcesc/1.0';
 
 my($c)=CGI->new();
