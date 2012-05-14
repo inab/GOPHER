@@ -96,11 +96,12 @@ def launchEvaluationJob(callback,query,common)
 	# The variable which will contain the return value (the jobId or undef)
 	retval = nil
 	
-	pid = fork
-	
-	if pid
+	begin
+		# When fork fails, an exception is fired
+		pid = fork
+		
 		# This is the child
-		if pid == 0
+		if pid.nil?
 			# As we are using dumb forks, we must close connections to the parent process
 			$stdin.close
 			$stdin = File.new('/dev/null', 'r')
@@ -206,11 +207,13 @@ def launchEvaluationJob(callback,query,common)
 			# And then finish!
 			exit 0
 		else
+			Process.detach(pid)
 			# This is the parent, which has to do nothing...
 			retval = query.attributes['queryId']
 		end
+	rescue
+		# No job, no party (retval == nil)!
 	end
-	# No job, no party (retval == nil)!
 	
 	return retval
 end
