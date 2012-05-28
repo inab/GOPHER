@@ -1,0 +1,173 @@
+ID   KLH17_HUMAN             Reviewed;         642 AA.
+AC   Q6TDP4; Q5SV94;
+DT   27-SEP-2004, integrated into UniProtKB/Swiss-Prot.
+DT   05-JUL-2004, sequence version 1.
+DT   16-MAY-2012, entry version 71.
+DE   RecName: Full=Kelch-like protein 17;
+DE   AltName: Full=Actinfilin;
+GN   Name=KLHL17;
+OS   Homo sapiens (Human).
+OC   Eukaryota; Metazoa; Chordata; Craniata; Vertebrata; Euteleostomi;
+OC   Mammalia; Eutheria; Euarchontoglires; Primates; Haplorrhini;
+OC   Catarrhini; Hominidae; Homo.
+OX   NCBI_TaxID=9606;
+RN   [1]
+RP   NUCLEOTIDE SEQUENCE [MRNA].
+RA   Huang C.Q., Wu S.L., Shan Y.X.;
+RL   Submitted (SEP-2003) to the EMBL/GenBank/DDBJ databases.
+RN   [2]
+RP   NUCLEOTIDE SEQUENCE [LARGE SCALE GENOMIC DNA].
+RX   PubMed=16710414; DOI=10.1038/nature04727;
+RA   Gregory S.G., Barlow K.F., McLay K.E., Kaul R., Swarbreck D.,
+RA   Dunham A., Scott C.E., Howe K.L., Woodfine K., Spencer C.C.A.,
+RA   Jones M.C., Gillson C., Searle S., Zhou Y., Kokocinski F.,
+RA   McDonald L., Evans R., Phillips K., Atkinson A., Cooper R., Jones C.,
+RA   Hall R.E., Andrews T.D., Lloyd C., Ainscough R., Almeida J.P.,
+RA   Ambrose K.D., Anderson F., Andrew R.W., Ashwell R.I.S., Aubin K.,
+RA   Babbage A.K., Bagguley C.L., Bailey J., Beasley H., Bethel G.,
+RA   Bird C.P., Bray-Allen S., Brown J.Y., Brown A.J., Buckley D.,
+RA   Burton J., Bye J., Carder C., Chapman J.C., Clark S.Y., Clarke G.,
+RA   Clee C., Cobley V., Collier R.E., Corby N., Coville G.J., Davies J.,
+RA   Deadman R., Dunn M., Earthrowl M., Ellington A.G., Errington H.,
+RA   Frankish A., Frankland J., French L., Garner P., Garnett J., Gay L.,
+RA   Ghori M.R.J., Gibson R., Gilby L.M., Gillett W., Glithero R.J.,
+RA   Grafham D.V., Griffiths C., Griffiths-Jones S., Grocock R.,
+RA   Hammond S., Harrison E.S.I., Hart E., Haugen E., Heath P.D.,
+RA   Holmes S., Holt K., Howden P.J., Hunt A.R., Hunt S.E., Hunter G.,
+RA   Isherwood J., James R., Johnson C., Johnson D., Joy A., Kay M.,
+RA   Kershaw J.K., Kibukawa M., Kimberley A.M., King A., Knights A.J.,
+RA   Lad H., Laird G., Lawlor S., Leongamornlert D.A., Lloyd D.M.,
+RA   Loveland J., Lovell J., Lush M.J., Lyne R., Martin S.,
+RA   Mashreghi-Mohammadi M., Matthews L., Matthews N.S.W., McLaren S.,
+RA   Milne S., Mistry S., Moore M.J.F., Nickerson T., O'Dell C.N.,
+RA   Oliver K., Palmeiri A., Palmer S.A., Parker A., Patel D., Pearce A.V.,
+RA   Peck A.I., Pelan S., Phelps K., Phillimore B.J., Plumb R., Rajan J.,
+RA   Raymond C., Rouse G., Saenphimmachak C., Sehra H.K., Sheridan E.,
+RA   Shownkeen R., Sims S., Skuce C.D., Smith M., Steward C.,
+RA   Subramanian S., Sycamore N., Tracey A., Tromans A., Van Helmond Z.,
+RA   Wall M., Wallis J.M., White S., Whitehead S.L., Wilkinson J.E.,
+RA   Willey D.L., Williams H., Wilming L., Wray P.W., Wu Z., Coulson A.,
+RA   Vaudin M., Sulston J.E., Durbin R.M., Hubbard T., Wooster R.,
+RA   Dunham I., Carter N.P., McVean G., Ross M.T., Harrow J., Olson M.V.,
+RA   Beck S., Rogers J., Bentley D.R.;
+RT   "The DNA sequence and biological annotation of human chromosome 1.";
+RL   Nature 441:315-321(2006).
+CC   -!- FUNCTION: Substrate-recognition component of some cullin-RING-
+CC       based BCR (BTB-CUL3-RBX1) E3 ubiquitin-protein ligase complex. The
+CC       BCR(KLHL17) mediates the ubiquitination and subsequenct
+CC       degradation of GLUR6. May play a role in the actin-based neuronal
+CC       function (By similarity).
+CC   -!- PATHWAY: Protein modification; protein ubiquitination.
+CC   -!- SUBUNIT: Interacts with F-actin; the interaction disruptes the F-
+CC       actin structures and leads to marked changes of neuronal
+CC       morphology. Component of a complex, composed of PDZK1, SYNGAP1,
+CC       KLHL17 and NMDA receptors. Interacts directly with PDZK1 (via PDZ1
+CC       domain); the interaction is important for integrity of actin
+CC       cytoskeleton structures in neurons. Interacts with DLG4 and
+CC       SYNGAP1. Interacts (via kelch repeats) with GRIK2 (via C-
+CC       terminus); the interaction targets GRIK2 for degradation via
+CC       ubiquitin-proteasome pathway. Interacts with GRIK1. Interacts with
+CC       (via BTB domain) CUL3; the inteaction regulates surface GRIK2
+CC       expression (By similarity).
+CC   -!- SUBCELLULAR LOCATION: Cell junction, synapse, postsynaptic cell
+CC       membrane, postsynaptic density (By similarity). Cell junction,
+CC       synapse (By similarity). Note=Postsynaptic density (By
+CC       similarity).
+CC   -!- SIMILARITY: Contains 1 BACK (BTB/Kelch associated) domain.
+CC   -!- SIMILARITY: Contains 1 BTB (POZ) domain.
+CC   -!- SIMILARITY: Contains 6 Kelch repeats.
+CC   -----------------------------------------------------------------------
+CC   Copyrighted by the UniProt Consortium, see http://www.uniprot.org/terms
+CC   Distributed under the Creative Commons Attribution-NoDerivs License
+CC   -----------------------------------------------------------------------
+DR   EMBL; AY423763; AAR03710.1; -; mRNA.
+DR   EMBL; AL645608; CAI15569.1; -; Genomic_DNA.
+DR   IPI; IPI00418437; -.
+DR   RefSeq; NP_938073.1; NM_198317.2.
+DR   UniGene; Hs.109212; -.
+DR   ProteinModelPortal; Q6TDP4; -.
+DR   SMR; Q6TDP4; 67-322, 341-624.
+DR   STRING; Q6TDP4; -.
+DR   PhosphoSite; Q6TDP4; -.
+DR   DMDM; 52783052; -.
+DR   PRIDE; Q6TDP4; -.
+DR   DNASU; 339451; -.
+DR   Ensembl; ENST00000338591; ENSP00000343930; ENSG00000187961.
+DR   GeneID; 339451; -.
+DR   KEGG; hsa:339451; -.
+DR   UCSC; uc001aca.2; human.
+DR   CTD; 339451; -.
+DR   GeneCards; GC01P000885; -.
+DR   HGNC; HGNC:24023; KLHL17.
+DR   HPA; HPA031251; -.
+DR   neXtProt; NX_Q6TDP4; -.
+DR   PharmGKB; PA134887396; -.
+DR   eggNOG; NOG236397; -.
+DR   GeneTree; ENSGT00640000091425; -.
+DR   HOGENOM; HOG000230814; -.
+DR   HOVERGEN; HBG014286; -.
+DR   InParanoid; Q6TDP4; -.
+DR   KO; K10454; -.
+DR   OMA; HVAAKEI; -.
+DR   OrthoDB; EOG473PQZ; -.
+DR   NextBio; 97399; -.
+DR   ArrayExpress; Q6TDP4; -.
+DR   Bgee; Q6TDP4; -.
+DR   CleanEx; HS_KLHL17; -.
+DR   Genevestigator; Q6TDP4; -.
+DR   GermOnline; ENSG00000187961; Homo sapiens.
+DR   GO; GO:0015629; C:actin cytoskeleton; ISS:UniProtKB.
+DR   GO; GO:0030054; C:cell junction; IEA:UniProtKB-KW.
+DR   GO; GO:0005886; C:plasma membrane; IEA:UniProtKB-KW.
+DR   GO; GO:0014069; C:postsynaptic density; IEA:UniProtKB-SubCell.
+DR   GO; GO:0045211; C:postsynaptic membrane; IEA:UniProtKB-KW.
+DR   GO; GO:0032947; F:protein complex scaffold; ISS:UniProtKB.
+DR   GO; GO:0030036; P:actin cytoskeleton organization; ISS:UniProtKB.
+DR   Gene3D; G3DSA:3.30.710.10; BTB/POZ_fold; 1.
+DR   Gene3D; G3DSA:2.130.10.80; Gal_Oxidase_b-propeller; 1.
+DR   InterPro; IPR011705; BACK.
+DR   InterPro; IPR000210; BTB/POZ-like.
+DR   InterPro; IPR011333; BTB/POZ_fold.
+DR   InterPro; IPR013069; BTB_POZ.
+DR   InterPro; IPR015916; Gal_Oxidase_b-propeller.
+DR   InterPro; IPR017096; Kelch-like_gigaxonin.
+DR   InterPro; IPR006652; Kelch_1.
+DR   Pfam; PF07707; BACK; 1.
+DR   Pfam; PF00651; BTB; 1.
+DR   Pfam; PF01344; Kelch_1; 5.
+DR   PIRSF; PIRSF037037; Kelch-like_protein_gigaxonin; 1.
+DR   SMART; SM00875; BACK; 1.
+DR   SMART; SM00225; BTB; 1.
+DR   SMART; SM00612; Kelch; 6.
+DR   SUPFAM; SSF54695; BTB/POZ_fold; 1.
+DR   PROSITE; PS50097; BTB; 1.
+PE   2: Evidence at transcript level;
+KW   Actin-binding; Cell junction; Cell membrane; Complete proteome;
+KW   Kelch repeat; Membrane; Postsynaptic cell membrane;
+KW   Reference proteome; Repeat; Synapse; Ubl conjugation pathway.
+FT   CHAIN         1    642       Kelch-like protein 17.
+FT                                /FTId=PRO_0000119119.
+FT   DOMAIN       92    159       BTB.
+FT   DOMAIN      194    296       BACK.
+FT   REPEAT      343    389       Kelch 1.
+FT   REPEAT      390    436       Kelch 2.
+FT   REPEAT      438    483       Kelch 3.
+FT   REPEAT      484    530       Kelch 4.
+FT   REPEAT      532    577       Kelch 5.
+FT   REPEAT      578    624       Kelch 6.
+FT   REGION      289    641       Interaction with F-actin (By similarity).
+FT   REGION      640    642       Interaction with PDZK1 (By similarity).
+FT   COMPBIAS     15     52       Pro-rich.
+SQ   SEQUENCE   642 AA;  69874 MW;  FE37BBCCD32131BF CRC64;
+     MQPRSERPAG RTQSPEHGSP GPGPEAPPPP PPQPPAPEAE RTRPRQARPA APMEGAVQLL
+     SREGHSVAHN SKRHYHDAFV AMSRMRQRGL LCDIVLHVAA KEIRAHKVVL ASCSPYFHAM
+     FTNEMSESRQ THVTLHDIDP QALDQLVQFA YTAEIVVGEG NVQTLLPAAS LLQLNGVRDA
+     CCKFLLSQLD PSNCLGIRGF ADAHSCSDLL KAAHRYVLQH FVDVAKTEEF MLLPLKQVLE
+     LVSSDSLNVP SEEEVYRAVL SWVKHDVDAR RQHVPRLMKC VRLPLLSRDF LLGHVDAESL
+     VRHHPDCKDL LIEALKFHLL PEQRGVLGTS RTRPRRCEGA GPVLFAVGGG SLFAIHGDCE
+     AYDTRTDRWH VVASMSTRRA RVGVAAVGNR LYAVGGYDGT SDLATVESYD PVTNTWQPEV
+     SMGTRRSCLG VAALHGLLYS AGGYDGASCL NSAERYDPLT GTWTSVAAMS TRRRYVRVAT
+     LDGNLYAVGG YDSSSHLATV EKYEPQVNVW SPVASMLSRR SSAGVAVLEG ALYVAGGNDG
+     TSCLNSVERY SPKAGAWESV APMNIRRSTH DLVAMDGWLY AVGGNDGSSS LNSIEKYNPR
+     TNKWVAASCM FTRRSSVGVA VLELLNFPPP SSPTLSVSST SL
+//

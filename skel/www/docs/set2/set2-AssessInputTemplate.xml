@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<queries
+	callback="http://gopher.bioinfo.cnio.es/XCESC-logic/evapobox.xql/SOMEUUID/MOREUUID/LASTUUID"
+	xmlns="http://www.cnio.es/scombio/xcesc/1.0"
+>
+	<query queryId="ANOTHERUUID">
+		<answer targetId="1">
+			<target id="B0GA25" namespace="UniProt" description="Putative uncharacterized protein">
+				<query queryId="1"><![CDATA[SGVKIKAGKRRGNVMDYVRILYTYIVEDFMYSGYLLLTLLLPCLIYQGLMEIKAK
+QNSRRVPAKYYFGVYVMLVYLWVVFKVTGIGLLADIVRLKDAISGGYNRNPLAGLGMGFV
+LNIIMFLPLGLLIPCIWKKCRSITNVTVTGFLLSLTIEISQIFNARATDIDDLLANTIGA
+CAGYLIWRGIYVLVCGKQKEKGDGHVENPIEADGRKWEPMI
+]]></query>
+				<baseline timeStamp="2011-09-12T19:12:59.453647576+01:00">
+				</baseline>
+			</target>
+			<!-- source attribute is used to tell something about the method class -->
+		</answer>
+		<answer targetId="2">
+			<target id="Q6TDP4" namespace="UniProt" description="Kelch-like protein 17">
+				<query queryId="2"><![CDATA[QSPEHGSPGPGPEAPPPPPPQPPAPEAERTRPRQARPAAPMEGAVQLL
+SREGHSVAHNSKRHYHDAFVAMSRMRQRGLLCDIVLHVAAKEIRAHKVVLASCSPYFHAM
+FTNEMSESRQTHVTLHDIDPQALDQLVQFAYTAEIVVGEGNVQTLLPAASLLQLNGVRDA
+CCKFLLSQLDPSNCLGIRGFADAHSCSDLLKAAHRYVLQHFVDVAKTEEFMLLPLKQVLE
+LVSSDSLNVPSEEEVYRAVLSWVKHDVDARRQHVPRLMKCVRLPLLSRDFLLGHVDAESL
+VRHHPDCKDLLIEALKFHLLPEQRGVLGTSRTRPRRCEGAGPVLFAVGGGSLFAIHGDCE
+AYDTRTDRWHVVASMSTRRARVGVAAVGNRLYAVGGYDGTSDLATVESYDPVTNTWQPEV
+SMGTRRSCLGVAALHGLLYSAGGYDGASCLNSAERYDPLTGTWTSVAAMSTRRRYVRVAT
+LDGNLYAVGGYDSSSHLATVEKYEPQVNVWSPVASMLSRRSSAGVAVLEGALYVAGGNDG
+TSCLNSVERYSPKAGAWESVAPMNIRRSTHDLVAMDGWLYAVGGNDGSSSLNSIEKYNPR
+TNKWVAASCMFTRRSSVGVAVLELLNFPPPSSPTLS]]></query>
+				<baseline timeStamp="2012-05-28T20:27:50.453647576+02:00">
+					<match source="GOA" timeStamp="2012-05-28T20:27:50.453647576+02:00">
+						<term namespace="GO" kind="C" id="GO:0005886">
+							<metric type="e-value">0.0</metric>
+						</term>
+						<term namespace="GO" kind="C" id="GO:0014069">
+							<metric type="e-value">0</metric>
+						</term>
+						<term namespace="GO" kind="F" id="GO:0032947">
+							<metric type="e-value">0</metric>
+						</term>
+						<term namespace="GO" kind="P" id="GO:0030036">
+							<metric type="e-value">0</metric>
+						</term>
+						<term namespace="GO" kind="C" id="GO:0030054">
+							<metric type="e-value">0</metric>
+						</term>
+						<term namespace="GO" kind="C" id="GO:0015629">
+							<metric type="e-value">0</metric>
+						</term>
+						<term namespace="GO" kind="C" id="GO:0045211">
+							<metric type="e-value">0</metric>
+						</term>
+
+						<term namespace="GO" kind="C" id="GO:0032389">
+							<metric type="e-value">0</metric>
+						</term>
+						<term namespace="GO" kind="C" id="GO:0043025">
+							<metric type="e-value">0</metric>
+						</term>
+						<term namespace="GO" kind="P" id="GO:0007420">
+							<metric type="e-value">0</metric>
+						</term>
+						<term namespace="GO" kind="F" id="GO:0031208">
+							<metric type="e-value">0</metric>
+						</term>
+						<term namespace="GO" kind="F" id="GO:0051015">
+							<metric type="e-value">0</metric>
+						</term>
+					</match>
+				</baseline>
+			</target>
+		</answer>
+		<answer targetId="3">
+			<target id="Q9FRT8" namespace="UniProt" description="Albumin-1">
+				<query queryId="3"><![CDATA[CNGACSPFEMPPCRSTDCRCIPIALFGGFCINPTGLSSVAKMIDEHPNLCQSDDECL
+KKGSGNFCARYPNHYMDYGWCFDSD]]></query>
+				<baseline timeStamp="2012-05-28T20:39:50.453647576+02:00">
+					<match source="GOA" timeStamp="2012-05-28T20:39:50.453647576+02:00">
+						<term namespace="GO" kind="P" id="GO:0009405">
+							<metric type="e-value">5.0e-63</metric>
+						</term>
+						<term namespace="GO" kind="F" id="GO:0045735">
+							<metric type="e-value">5.0e-63</metric>
+						</term>
+					</match>
+				</baseline>
+			</target>
+		</answer>
+	</query>
+</queries>

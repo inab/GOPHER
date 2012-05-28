@@ -1,0 +1,43 @@
+ID   B0GA25_9FIRM            Unreviewed;       239 AA.
+AC   B0GA25;
+DT   18-MAR-2008, integrated into UniProtKB/TrEMBL.
+DT   18-MAR-2008, sequence version 1.
+DT   14-DEC-2011, entry version 5.
+DE   SubName: Full=Putative uncharacterized protein;
+GN   ORFNames=DORFOR_03141;
+OS   Dorea formicigenerans ATCC 27755.
+OC   Bacteria; Firmicutes; Clostridia; Clostridiales; Lachnospiraceae;
+OC   Dorea.
+OX   NCBI_TaxID=411461;
+RN   [1]
+RP   NUCLEOTIDE SEQUENCE.
+RC   STRAIN=ATCC 27755;
+RA   Sudarsanam P., Ley R., Guruge J., Turnbaugh P.J., Mahowald M.,
+RA   Liep D., Gordon J.;
+RT   "Draft genome sequence of Dorea formicigenerans(ATCC 27755).";
+RL   Submitted (OCT-2007) to the EMBL/GenBank/DDBJ databases.
+RN   [2]
+RP   NUCLEOTIDE SEQUENCE.
+RC   STRAIN=ATCC 27755;
+RA   Fulton L., Clifton S., Fulton B., Xu J., Minx P., Pepin K.H.,
+RA   Johnson M., Thiruvilangam P., Bhonagiri V., Nash W.E., Wang C.,
+RA   Mardis E.R., Wilson R.K.;
+RL   Submitted (OCT-2007) to the EMBL/GenBank/DDBJ databases.
+CC   -!- CAUTION: The sequence shown here is derived from an
+CC       EMBL/GenBank/DDBJ whole genome shotgun (WGS) entry which is
+CC       preliminary data.
+CC   -----------------------------------------------------------------------
+CC   Copyrighted by the UniProt Consortium, see http://www.uniprot.org/terms
+CC   Distributed under the Creative Commons Attribution-NoDerivs License
+CC   -----------------------------------------------------------------------
+DR   EMBL; AAXA02000016; EDR45357.1; -; Genomic_DNA.
+DR   PATRIC; 26662850; VBIDorFor18168_2841.
+DR   InterPro; IPR006976; VanZ-like.
+DR   Pfam; PF04892; VanZ; 1.
+PE   4: Predicted;
+SQ   SEQUENCE   239 AA;  26902 MW;  88D65AD4E77DB34C CRC64;
+     MYSNISGVKI KAGKRRGNVM DYVRILYTYI VEDFMYSGYL LLTLLLPCLI YQGLMEIKAK
+     QNSRRVPAKY YFGVYVMLVY LWVVFKVTGI GLLADIVRLK DAISGGYNRN PLAGLGMGFV
+     LNIIMFLPLG LLIPCIWKKC RSITNVTVTG FLLSLTIEIS QIFNARATDI DDLLANTIGA
+     CAGYLIWRGI YVLVCGKQKE KGDGHVENPI EADGRKWEPM IYLALAFSGA FFLYNPYVQ
+//

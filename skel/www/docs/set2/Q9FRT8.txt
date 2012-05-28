@@ -1,0 +1,65 @@
+ID   ALB1_VIGRR              Reviewed;          89 AA.
+AC   Q9FRT8;
+DT   20-JUN-2001, integrated into UniProtKB/Swiss-Prot.
+DT   01-MAR-2001, sequence version 1.
+DT   31-MAY-2011, entry version 44.
+DE   RecName: Full=Albumin-1;
+DE            Short=A1;
+DE   Contains:
+DE     RecName: Full=Albumin-1 chain b;
+DE              Short=A1b;
+DE     AltName: Full=Leginsulin;
+DE   Contains:
+DE     RecName: Full=Albumin-1 chain a;
+DE              Short=A1a;
+DE   Flags: Precursor; Fragment;
+GN   Name=LEG;
+OS   Vigna radiata var. radiata (Mung bean) (Phaseolus aureus).
+OC   Eukaryota; Viridiplantae; Streptophyta; Embryophyta; Tracheophyta;
+OC   Spermatophyta; Magnoliophyta; eudicotyledons; core eudicotyledons;
+OC   rosids; fabids; Fabales; Fabaceae; Papilionoideae; Phaseoleae; Vigna.
+OX   NCBI_TaxID=3916;
+RN   [1]
+RP   NUCLEOTIDE SEQUENCE [GENOMIC DNA].
+RC   STRAIN=cv. Blackmappe; TISSUE=Leaf;
+RX   PubMed=12631285; DOI=10.1046/j.1432-1033.2003.03489.x;
+RA   Yamazaki T., Takaoka M., Katoh E., Hanada K., Sakita M., Sakata K.,
+RA   Nishiuchi Y., Hirano H.;
+RT   "A possible physiological function and the tertiary structure of a 4-
+RT   kDa peptide in legumes.";
+RL   Eur. J. Biochem. 270:1269-1276(2003).
+CC   -!- FUNCTION: A1b binds to basic 7S globulin (BG) and stimulates its
+CC       phosphorylation activity (By similarity).
+CC   -!- DOMAIN: The presence of a 'disulfide through disulfide knot'
+CC       structurally defines this protein as a knottin (By similarity).
+CC   -!- PTM: The C-terminal glycine may be removed from A1b.
+CC   -----------------------------------------------------------------------
+CC   Copyrighted by the UniProt Consortium, see http://www.uniprot.org/terms
+CC   Distributed under the Creative Commons Attribution-NoDerivs License
+CC   -----------------------------------------------------------------------
+DR   EMBL; AB052881; BAB19938.1; -; Genomic_DNA.
+DR   ProteinModelPortal; Q9FRT8; -.
+DR   SMR; Q9FRT8; 2-38.
+DR   GO; GO:0045735; F:nutrient reservoir activity; IEA:UniProtKB-KW.
+DR   GO; GO:0009405; P:pathogenesis; IEA:InterPro.
+DR   InterPro; IPR012512; Albumin_I.
+DR   Pfam; PF08027; Albumin_I; 1.
+PE   3: Inferred from homology;
+KW   Disulfide bond; Knottin; Seed storage protein; Signal;
+KW   Storage protein; Toxin.
+FT   SIGNAL       <1      1       Potential.
+FT   CHAIN         2     38       Albumin-1 chain b (By similarity).
+FT                                /FTId=PRO_0000032249.
+FT   PROPEP       39     46       Potential.
+FT                                /FTId=PRO_0000032250.
+FT   CHAIN        47    >89       Albumin-1 chain a (Potential).
+FT                                /FTId=PRO_0000032251.
+FT   DISULFID      4     21       By similarity.
+FT   DISULFID      8     23       By similarity.
+FT   DISULFID     16     33       By similarity.
+FT   NON_TER       1      1
+FT   NON_TER      89     89
+SQ   SEQUENCE   89 AA;  9711 MW;  4ADEB9797083135B CRC64;
+     AADCNGACSP FEMPPCRSTD CRCIPIALFG GFCINPTGLS SVAKMIDEHP NLCQSDDECL
+     KKGSGNFCAR YPNHYMDYGW CFDSDSEAL
+//
