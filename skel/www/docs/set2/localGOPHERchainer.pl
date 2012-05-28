@@ -1,6 +1,6 @@
 #!/usr/bin/perl -W
 
-# $Id: localGOPHERtester.pl 1970 2012-05-11 17:41:22Z jmfernandez $
+# $Id$
 # GOPHER tester service
 # This code takes as URL input the url of the service to test, and its role
 
