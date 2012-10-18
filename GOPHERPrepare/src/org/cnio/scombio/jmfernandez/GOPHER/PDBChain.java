@@ -19,6 +19,16 @@ public class PDBChain {
 		LOG.setUseParentHandlers(false);
 	};
 	
+	// The residues were read from the atom chains
+	protected final static int SEQ_RES_CHAIN=0;
+	// The residues were read from the PDB sequence field
+	protected final static int SEQ_SEQ_CHAIN=1;
+	// The sequence has (hopefully) its cloning artifacts masked
+	protected final static int SEQ_MASKED_CHAIN=2;
+	// The sequences has both its cloning artifacts and sequence
+	// fragments with no structural information, masked
+	protected final static int SEQ_MASKED_STRUCT_CHAIN=3;
+	
 	protected final static char CHAIN_SEP='_';
 	
 	protected final static int MINSEQLENGTH=30;
@@ -187,6 +197,7 @@ public class PDBChain {
 	protected HashSet<PDBCoord> artifactSet;
 	
 	protected boolean useMaskingHeuristics;
+	protected boolean missingUnpopulated;
 	
 	public PDBChain(final String pdbcode,final String chainName, final Map<String, Character> toOneAA, final Set<String> notAA, final boolean ignoreReason) {
 		this(pdbcode, chainName, toOneAA, notAA, ignoreReason, null);
@@ -207,14 +218,14 @@ public class PDBChain {
 		this.toOneAA = toOneAA;
 		this.notAA = notAA;
 		this.ignoreReason=ignoreReason;
-		chainseqs = new StringBuilder[] { null, null, null };
+		chainseqs = new StringBuilder[] { null, null, null, null };
 		chainAminos=new ArrayList<PDBAmino>();
 		initMissing(missingList);
 		artifactMapping=new ArrayList<Mapping>();
 		artifactHash=new HashMap<String,Mapping>();
 		artifactSet = new HashSet<PDBCoord>();
 		isTERChain=false;
-		isJammeds = new boolean[] { false, false, false };
+		isJammeds = new boolean[] { false, false, false, false };
 		description = null;
 		useMaskingHeuristics=false;
 	}
@@ -225,17 +236,22 @@ public class PDBChain {
 		missingRight = new TreeMap<PDBCoord,Integer>();
 		missingBeforeFirst = null;
 		missingBeforeFirstDistance = -1.0;
+		missingUnpopulated = true;
 	}
 	
 	private void populateMissing() {
 		// Reset
-		missingLeft.clear();
-		missingRight.clear();
-		
-		int segmentPos=0;
-		for(LabelledSegment<PDBAmino> missingSegment: missingList) {
-			LabelledSegment.TreeSegmentPopulation(missingSegment,segmentPos,missingLeft,missingRight);
-			segmentPos++;
+		if(missingUnpopulated) {
+			missingUnpopulated = false;
+			// this should be done if we reuse the objects
+			// missingLeft.clear();
+			// missingRight.clear();
+			
+			int segmentPos=0;
+			for(LabelledSegment<PDBAmino> missingSegment: missingList) {
+				LabelledSegment.TreeSegmentPopulation(missingSegment,segmentPos,missingLeft,missingRight);
+				segmentPos++;
+			}
 		}
 	}
 	
@@ -263,7 +279,7 @@ public class PDBChain {
 		if(isTERChain)
 			return false;
 		
-		int chainIdx=1;
+		int chainIdx=SEQ_SEQ_CHAIN;
 		
 		if(!isJammeds[chainIdx] && chainseqs[chainIdx] == null)
 			chainseqs[chainIdx] = new StringBuilder();
@@ -313,7 +329,7 @@ public class PDBChain {
 		if(isTERChain)
 			return false;
 		
-		int chainIdx=0;
+		int chainIdx=SEQ_RES_CHAIN;
 		
 		if(!isJammeds[chainIdx] && chainseqs[chainIdx] == null)
 			chainseqs[chainIdx] = new StringBuilder();
@@ -349,17 +365,25 @@ public class PDBChain {
 				//	# Y los nucleótidos en códigos de una letra
 				//	$localseq=undef;
 				//	last;
-				} else {
+				} else if(chainseqs[chainIdx].length()>0 || piece.length()>0) {
 					// print STDERR "WARNING: Jammed file: '$ires' in chain '$localchain' in $fullentry\n";
 					retval = false;
 					isJammeds[chainIdx] = true;
 					chainseqs[chainIdx] = null;
 					break;
+				//} else {
+				//	isJammeds[chainIdx] = chainseqs[chainIdx].length()>0;
+				//	chainseqs[chainIdx] = null;
+				//	break;
 				}
 			}
-			if(!isJammeds[chainIdx]) {
-				chainseqs[chainIdx].append(piece);
-				chainAminos.addAll(pieceList);
+			if(retval) {
+				if(piece.length()>0) {
+					chainseqs[chainIdx].append(piece);
+					chainAminos.addAll(pieceList);
+				} else {
+					retval = false;
+				}
 			}
 		}
 		
@@ -370,7 +394,7 @@ public class PDBChain {
 		if(isTERChain)
 			return false;
 		
-		int chainIdx=isSeq?1:0;
+		int chainIdx=isSeq?SEQ_SEQ_CHAIN:SEQ_RES_CHAIN;
 		
 		if(!isJammeds[chainIdx] && chainseqs[chainIdx] == null)
 			chainseqs[chainIdx] = new StringBuilder();
@@ -396,17 +420,15 @@ public class PDBChain {
 		if(isTERChain)
 			return false;
 		
-		if(!isJammeds[0] && chainseqs[0] == null)
-			chainseqs[0] = new StringBuilder();
+		if(!isJammeds[SEQ_RES_CHAIN] && chainseqs[SEQ_RES_CHAIN] == null)
+			chainseqs[SEQ_RES_CHAIN] = new StringBuilder();
 		
-		boolean retval = !isJammeds[0];
+		boolean retval = !isJammeds[SEQ_RES_CHAIN];
 		
 		if(retval) {
 			if(hasMissingResidues()) {
-				if(prev_coord==null) {
-					// Time to populate the other structures
-					populateMissing();
-				}
+				// Time to populate the other structures (only once!)
+				populateMissing();
 /*				Entry<PDBCoord,Integer> highMark=missingRight.lowerEntry(residue);
 				if(highMark!=null) {
 					// Need this one for checks
@@ -485,7 +507,7 @@ public class PDBChain {
 		if(isTERChain)
 			return false;
 		
-		int chainIdx=isSeq?1:0;
+		int chainIdx=isSeq?SEQ_SEQ_CHAIN:SEQ_RES_CHAIN;
 		
 		if(!isJammeds[chainIdx] && chainseqs[chainIdx] == null)
 			chainseqs[chainIdx] = new StringBuilder();
@@ -518,7 +540,7 @@ public class PDBChain {
 		if(isTERChain)
 			return false;
 		
-		int chainIdx=isSeq?1:0;
+		int chainIdx=isSeq?SEQ_SEQ_CHAIN:SEQ_RES_CHAIN;
 		
 		if(!isJammeds[chainIdx] && chainseqs[chainIdx] == null)
 			chainseqs[chainIdx] = new StringBuilder();
@@ -548,7 +570,7 @@ public class PDBChain {
 		if(isTERChain)
 			return false;
 		
-		int chainIdx=isSeq?1:0;
+		int chainIdx=isSeq?SEQ_SEQ_CHAIN:SEQ_RES_CHAIN;
 		
 		if(!isJammeds[chainIdx] && chainseqs[chainIdx] == null)
 			chainseqs[chainIdx] = new StringBuilder();
@@ -584,12 +606,12 @@ public class PDBChain {
 	}
 	
 	public String toString(boolean isSeq) {
-		int chainIdx=isSeq?1:0;
+		int chainIdx=isSeq?SEQ_SEQ_CHAIN:SEQ_RES_CHAIN;
 		return (chainseqs[chainIdx]!=null)?chainseqs[chainIdx].toString():null;
 	}
 	
 	public String toString() {
-		return chainseqs[2]!=null?chainseqs[2].toString():(chainseqs[0]!=null?chainseqs[0].toString():(chainseqs[1]!=null?chainseqs[1].toString():null));
+		return chainseqs[SEQ_MASKED_CHAIN]!=null?chainseqs[SEQ_MASKED_CHAIN].toString():(chainseqs[SEQ_RES_CHAIN]!=null?chainseqs[SEQ_RES_CHAIN].toString():(chainseqs[SEQ_SEQ_CHAIN]!=null?chainseqs[SEQ_SEQ_CHAIN].toString():null));
 	}
 	
 	public boolean storeMissingResidue(PDBRes residue) {
@@ -598,7 +620,7 @@ public class PDBChain {
 		String res = residue.res;
 		if(res.length()==3) {
 			if(!hasMissingResidues()) {
-				missingList.add(new LabelledSegment<PDBAmino>('m'));
+				missingList.add(new LabelledSegment<PDBAmino>(LabelledSegment.MISSING_SEGMENT_KIND));
 			}
 			
 			char aminochar=PDBAmino.UnknownAmino;
@@ -634,23 +656,38 @@ public class PDBChain {
 		return good;
 	}
 	
+	public boolean isEmpty() {
+		return (chainseqs[SEQ_RES_CHAIN]==null || chainseqs[SEQ_RES_CHAIN].length()==0) && (chainseqs[SEQ_SEQ_CHAIN]==null || chainseqs[SEQ_SEQ_CHAIN].length()==0);
+	}
+	
 	/**
 	 * Atom chain is terminated, so processing related to missing aminoacids and clone artifact masking can be done
 	 */
 	public boolean doTER() {
-		if(isTERChain)
+		if(isTERChain || isJammeds[SEQ_SEQ_CHAIN] || isEmpty())
 			return false;
+		
+		// Strange cases, where there is no SEQRES residue but there are ATOM ones!
+		if(chainseqs[SEQ_RES_CHAIN]!=null && chainseqs[SEQ_RES_CHAIN].length()>0 && (chainseqs[SEQ_SEQ_CHAIN]==null || chainseqs[SEQ_SEQ_CHAIN].length()==0))
+			chainseqs[SEQ_SEQ_CHAIN] = new StringBuilder(chainseqs[SEQ_RES_CHAIN]);
 		
 		boolean retval = false;
 		
-		// Masking is only needed when there is any known cloning artifact
-		if(artifactSet.size()>0 && chainAminos.size()>0) {
+		// Masking is only needed when there is any known cloning artifact or unknown aminos
+		if((hasMissingResidues() || artifactSet.size()>0) && chainAminos.size()>0) {
 			List<LabelledSegment<PDBAmino>> aminoSegments=null;
 			if(hasMissingResidues()) {
 				// First, segment detection in sequence
 				TreeMap<PDBCoord,Integer> atomLeftCoord = new TreeMap<PDBCoord,Integer>();
 				TreeMap<PDBCoord,Integer> atomRightCoord = new TreeMap<PDBCoord,Integer>();
-				List<LabelledSegment<PDBAmino>> newAminoSegments=LabelledSegment.SegmentsDetection(chainAminos,atomLeftCoord,atomRightCoord);
+				
+				List<LabelledSegment<PDBAmino>> newAminoSegments=null;
+				try {
+					newAminoSegments=LabelledSegment.SegmentsDetection(chainAminos,atomLeftCoord,atomRightCoord);
+				} catch(IndexOutOfBoundsException iooe) {
+					System.err.println("JOE "+getName()+" "+modelNo);
+					throw iooe;
+				}
 				aminoSegments=new ArrayList<LabelledSegment<PDBAmino>>(newAminoSegments);
 				
 				// 2A, missing segments positioning just before known sequence segments
@@ -949,53 +986,63 @@ public class PDBChain {
 				aminoSegments.add(new LabelledSegment<PDBAmino>(chainAminos));
 			}
 			
-			// Last, Building the sequence, just masked and unmasked
+			// Last, Building the sequence, just unmasked, masked and not structure masked
 			StringBuilder rebuiltSequence=new StringBuilder();
 			StringBuilder rebuiltPatchedSequence=new StringBuilder();
+			StringBuilder rebuiltPatchedStructSequence=new StringBuilder();
 			for(LabelledSegment<PDBAmino> anAminoSegment: aminoSegments) {
+				boolean isLostSegment = anAminoSegment.segmentKind == LabelledSegment.MISSING_SEGMENT_KIND;
 				for(PDBAmino anAmino: anAminoSegment.segment) {
 					rebuiltSequence.append(anAmino.amino);
-					rebuiltPatchedSequence.append(artifactSet.contains(anAmino)?PDBAmino.UnknownAmino:anAmino.amino);
+					char patchedAmino = artifactSet.contains(anAmino)?PDBAmino.UnknownAmino:anAmino.amino;
+					rebuiltPatchedSequence.append(patchedAmino);
+					rebuiltPatchedStructSequence.append(isLostSegment?PDBAmino.UnknownAmino:patchedAmino);
 				}
 			}
-			chainseqs[0]=rebuiltSequence;
+			chainseqs[SEQ_RES_CHAIN]=rebuiltSequence;
 			
 			// Can we use artifact-masked sequence or will we have to use heuristics?
-			CharSequence clippedSequence = ClipSequence(new StringBuilder(chainseqs[1]));
+			if(chainseqs[SEQ_SEQ_CHAIN]==null)
+				System.err.println(pdbcode+'_'+chainName+'('+modelNo+')');
+			CharSequence clippedSequence = ClipSequence(new StringBuilder(chainseqs[SEQ_SEQ_CHAIN]));
 			List<Integer> hiLo = new ArrayList<Integer>();
 			CharSequence clippedRebuiltSequence = ClipSequence(new StringBuilder(rebuiltSequence), hiLo);
 			CharSequence clippedRebuiltPatchedSequence = ClipSequence(new StringBuilder(rebuiltPatchedSequence));
+			CharSequence clippedRebuiltPatchedStructSequence = ClipSequence(new StringBuilder(rebuiltPatchedStructSequence));
 			
-			if(clippedSequence!=null && rebuiltSequence.toString().equals(chainseqs[1].toString())) {
+			if(clippedSequence!=null && rebuiltSequence.toString().equals(chainseqs[SEQ_SEQ_CHAIN].toString())) {
 				// It is redundant, but it servers as a marker
 				useMaskingHeuristics=false;
 				// Used sequence patched with SEQADV info
-				chainseqs[2]=rebuiltPatchedSequence;
+				chainseqs[SEQ_MASKED_CHAIN]=rebuiltPatchedSequence;
+				chainseqs[SEQ_MASKED_STRUCT_CHAIN]=rebuiltPatchedStructSequence;
 			} else if(clippedSequence!=null && clippedRebuiltSequence.toString().equals(clippedSequence.toString())) {
 				// It is redundant, but it servers as a marker
 				useMaskingHeuristics=false;
 				// Clipping on sequence patched with SEQADV info based on previous clipping info
-				chainseqs[2]=new StringBuilder(rebuiltPatchedSequence.substring(hiLo.get(0), hiLo.get(1)));
+				chainseqs[SEQ_MASKED_CHAIN]=new StringBuilder(rebuiltPatchedSequence.substring(hiLo.get(0), hiLo.get(1)));
+				chainseqs[SEQ_MASKED_STRUCT_CHAIN]=new StringBuilder(rebuiltPatchedStructSequence.substring(hiLo.get(0), hiLo.get(1)));
 			} else if(clippedSequence!=null && clippedRebuiltPatchedSequence.toString().equals(clippedSequence.toString())) {
-				// It is redundant, but it servers as a marker
+				// It is redundant, but it serves as a marker
 				useMaskingHeuristics=false;
-				chainseqs[2]=new StringBuilder(clippedRebuiltPatchedSequence);
+				chainseqs[SEQ_MASKED_CHAIN]=new StringBuilder(clippedRebuiltPatchedSequence);
+				chainseqs[SEQ_MASKED_STRUCT_CHAIN]=new StringBuilder(clippedRebuiltPatchedStructSequence);
 			} else {
 				if(clippedSequence!=null) {
 					LOG.finest("MISMATCHES "+getName());
 					LOG.finest("\tMissing List Size: "+missingList.size());
-					LOG.finest("\tS: "+chainseqs[1]);
+					LOG.finest("\tS: "+chainseqs[SEQ_SEQ_CHAIN]);
 					LOG.finest("\tA: "+rebuiltSequence);
 					LOG.finest("\tR: "+rebuiltPatchedSequence);
 					LOG.finest("\tC: "+clippedRebuiltPatchedSequence);
 				}
 				useMaskingHeuristics=true;
-				chainseqs[2]=chainseqs[1];
+				chainseqs[SEQ_MASKED_STRUCT_CHAIN]=chainseqs[SEQ_MASKED_CHAIN]=chainseqs[SEQ_SEQ_CHAIN];
 			}
 		} else {
 			// In this case is better reusing the same object, because it contains the information we trust
 			useMaskingHeuristics=true;
-			chainseqs[0]=chainseqs[2]=chainseqs[1];
+			chainseqs[SEQ_MASKED_STRUCT_CHAIN]=chainseqs[SEQ_RES_CHAIN]=chainseqs[SEQ_MASKED_CHAIN]=chainseqs[SEQ_SEQ_CHAIN];
 		}
 		
 		putTER();
@@ -1054,11 +1101,11 @@ public class PDBChain {
 	}
 	
 	public StringBuilder getMaskedAminos() {
-		return chainseqs[2];
+		return chainseqs[SEQ_MASKED_CHAIN];
 	}
 	
 	public StringBuilder getAminos(boolean isSeq) {
-		int chainIdx=isSeq?1:0;
+		int chainIdx=isSeq?SEQ_SEQ_CHAIN:SEQ_RES_CHAIN;
 		return getAminos(chainIdx);
 	}
 	
@@ -1089,5 +1136,56 @@ public class PDBChain {
 			retval = new PDBSeq(getName(),description,prunedSeq);
 		}
 		return retval;
+	}
+	
+	/**
+	 * This method returns the chain sequence with the cloning artifacts and
+	 * sequence sections with no structure removed.
+	 * The sequence length is at least MINSEQLENGTH. If artifacts mapping was not
+	 * possible, then heuristics are used over the aminoacid sequence.
+	 * @return The pruned aminoacid sequence, or null 
+	 */
+	public PDBSeq getMissingPrunedSequence() {
+		PDBSeq retval=null;
+		
+		StringBuilder tmpSeq=getAminos(SEQ_MASKED_STRUCT_CHAIN);
+		if(tmpSeq!=null)
+			tmpSeq=new StringBuilder(tmpSeq);
+		CharSequence missingPrunedSeq = ClipSequence(tmpSeq);
+		
+		// Do we need cloning artifacts heuristics?
+		if(useMaskingHeuristics && missingPrunedSeq!=null) {
+			missingPrunedSeq=ClipSequence(PruneSequence(missingPrunedSeq));
+		}
+		
+		if(missingPrunedSeq!=null) {
+			retval = new PDBSeq(getName(),description,missingPrunedSeq);
+		}
+		return retval;
+	}
+	
+	/**
+	 * This protected method is used to propagate the shared information
+	 * (SEQRES, SEQADV, DBREF...) from a PDBChain to this one. Mainly
+	 * used for chains from different PDB models.
+	 * @param chain
+	 */
+	protected void propagateFrom(PDBChain chain) {
+		if(chain!=null) {
+			// First, the description
+			if(chain.description!=null) {
+				this.description = chain.description;
+			}
+			// Then, the SEQRES sequence
+			if(chain.chainseqs[SEQ_SEQ_CHAIN]!=null) {
+				this.chainseqs[SEQ_SEQ_CHAIN] = new StringBuilder(chain.chainseqs[SEQ_SEQ_CHAIN]);
+				this.isJammeds[SEQ_SEQ_CHAIN] = chain.isJammeds[SEQ_SEQ_CHAIN];
+			}
+			
+			// And of course, the SEQADV info
+			this.artifactHash = new HashMap<String,Mapping>(chain.artifactHash);
+			this.artifactSet = new HashSet<PDBCoord>(chain.artifactSet);
+			this.artifactMapping = new ArrayList<Mapping>(chain.artifactMapping);
+		}
 	}
 }

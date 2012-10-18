@@ -16,6 +16,7 @@ class LabelledSegment<A extends PDBCoord> {
 	protected final static char INS_BACKWARD_MASK=INS_FORWARD_START | 0x20; // i.e. 64+32
 	
 	protected final static char DEFAULT_SEGMENT_KIND='a';
+	protected final static char MISSING_SEGMENT_KIND='m';
 	
 	protected static <A extends PDBCoord> void TreeSegmentPopulation(final LabelledSegment<A> currSegment,int segmentPos,final TreeMap<PDBCoord,Integer> atomLeftCoord,final TreeMap<PDBCoord,Integer> atomRightCoord) { 
 		// Although segments should be more or less consistent

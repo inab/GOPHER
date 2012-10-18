@@ -151,7 +151,7 @@ public class GOPHERPrepare {
 		
 		if(newFile.isDirectory()) {
 			PDBParser pdbParser = new PDBParser(cifdict,null);
-			pdbParser.parsePDBs(newFile, origHeaders,null,filtFile,analFile,false);
+			pdbParser.parsePDBs(newFile, origHeaders,null,filtFile,analFile,null,false);
 		} else {
 			List<String> newheaders=null;
 			BufferedReader NEW = new BufferedReader(new FileReader(newFile));

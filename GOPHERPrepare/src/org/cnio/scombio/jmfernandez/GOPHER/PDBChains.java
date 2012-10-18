@@ -52,6 +52,10 @@ public class PDBChains {
 		}
 	}
 	
+	public int getCurrentModel() {
+		return currModel;
+	}
+	
 	public void setCurrentModel(int modelNo) {
 		currModel = modelNo;
 		chains = getModel(modelNo);
@@ -113,16 +117,55 @@ public class PDBChains {
 	}
 	
 	public Mapping addMapping(String chainName, String db, String id, PDBCoord start, PDBCoord stop) {
-		PDBChain chain = getChain(chainName);
+		// It is shared knowledge among all the models of the same chain,
+		// so only the first model stores it
+		// (it is going to be used by the others later!)
+		PDBChain chain = getModelChain(1,chainName);
 		return chain.addMapping(db, id, start, stop);
 	}
 	
 	public void appendToArtifact(String chainName, String db, String id, String reason, PDBAmino residue) {
 		// System.err.println("FOUND ARTIFACT FOR CHAIN '"+chain+"'");
-		PDBChain chain = getChain(chainName);
+		
+		// It is shared knowledge among all the models of the same chain,
+		// so only the first model stores it
+		// (it is going to be used by the others later!)
+		PDBChain chain = getModelChain(1,chainName);
 		chain.appendToArtifact(db, id, reason, residue);
 	}
 	
+	/**
+	 * This method should be called when there is more than one model,
+	 * and we have finished with the SEQRES, SEQADV and DBREF information,
+	 * and we want to spread this information among the models
+	 */
+	public void propagateModels() {
+		// We are propagating only when there is more than one model
+		if(lchains.size()>1) {
+			Map<String,PDBChain> basechains=null;
+			for(Map<String,PDBChain> chains :lchains) {
+				if(basechains!=null) {
+					for(Map.Entry<String, PDBChain> entry:chains.entrySet()) {
+						PDBChain basechain = basechains.get(entry.getKey());
+						if(basechain!=null) {
+							PDBChain chain = entry.getValue();
+							
+							chain.propagateFrom(basechain);
+						}
+					}
+				} else {
+					basechains=chains;
+				}
+			}
+		}
+	}
+	
+	/**
+	 * Deprecated
+	 * @param chainName
+	 * @return
+	 */
+	@Deprecated
 	public boolean hasMissingResidues(String chainName) {
 		PDBChain chain = getChain(chainName);
 		return chain.hasMissingResidues();
@@ -140,7 +183,10 @@ public class PDBChains {
 	}
 	
 	public boolean appendToSeqChain(String chainName, String... residues) {
-		PDBChain chain = getChain(chainName);
+		// It is shared knowledge among all the models of the same chain,
+		// so only the first model stores it
+		// (it is going to be used by the others later!)
+		PDBChain chain = getModelChain(1,chainName);
 		return chain.appendToSeqChain(residues);
 	}
 	
@@ -152,6 +198,11 @@ public class PDBChains {
 	public boolean isOpenAtomChain(String chainName) {
 		PDBChain chain = getChain(chainName);
 		return chain.isOpen();
+	}
+	
+	public boolean isEmptyChain(String chainName) {
+		PDBChain chain = getChain(chainName);
+		return chain.isEmpty();
 	}
 	
 	public boolean padAtomBoth(String chainName) {
