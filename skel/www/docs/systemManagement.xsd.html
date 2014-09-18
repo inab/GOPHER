@@ -394,6 +394,277 @@ div#legend div.hint {
 </style>
       <script type="text/javascript">
 <!--
+          /* IDs of XML Instance Representation boxes */
+var xiBoxes = new Array('h-1109675339_xibox');
+/* IDs of diagram boxes */
+var diagramBoxes = new Array('h-1109675339_diagram');
+/* IDs of logical diagram boxes */
+var logicalDiagramBoxes = new Array('h-1109675339_logicalDiagram');
+/* IDs of Schema Component Representation boxes */
+var scBoxes = new Array('schema_scbox', 'h-1109675339_scbox');
+
+/**
+ * Can get the ID of the button controlling
+ * a collapseable box by concatenating
+ * this string onto the ID of the box itself.
+ */
+var B_SFIX = "_button";
+
+
+/**
+ * Returns an element in the current HTML document.
+ * 
+ * @param elementID Identifier of HTML element
+ * @return               HTML element object
+ */
+function getElementObject(elementID) {
+    var elemObj = null;
+    if (document.getElementById) {
+        elemObj = document.getElementById(elementID);
+    }
+    return elemObj;
+}             
+
+/**
+ * Closes a collapseable box.
+ * 
+ * @param boxObj       Collapseable box
+ * @param buttonObj Button controlling box
+ */
+function closeBox(boxObj, buttonObj) {
+  if (boxObj == null || buttonObj == null) {
+     // Box or button not found
+  } else {
+     // Change 'display' CSS property of box
+     boxObj.style.display="none";
+
+     // Change text of button 
+     if (boxObj.style.display=="none") {
+        buttonObj.value=" + ";
+     }
+  }
+}
+
+/**
+ * Opens a collapseable box.
+ * 
+ * @param boxObj       Collapseable box
+ * @param buttonObj Button controlling box
+ */
+function openBox(boxObj, buttonObj) {
+  if (boxObj == null || buttonObj == null) {
+     // Box or button not found
+  } else {
+     // Change 'display' CSS property of box
+     boxObj.style.display="block";
+
+     // Change text of button
+     if (boxObj.style.display=="block") {
+        buttonObj.value=" - ";
+     }
+  }
+}
+
+/**
+ * Sets the state of a collapseable box.
+ * 
+ * @param boxID Identifier of box
+ * @param open If true, box is "opened",
+ *             Otherwise, box is "closed".
+ */
+function setState(boxID, open) {
+  var boxObj = getElementObject(boxID);
+  var buttonObj = getElementObject(boxID+B_SFIX);
+  if (boxObj == null || buttonObj == null) {
+     // Box or button not found
+  } else if (open) {
+     openBox(boxObj, buttonObj);
+     // Make button visible
+     buttonObj.style.display="inline";
+  } else {
+     closeBox(boxObj, buttonObj);
+     // Make button visible
+     buttonObj.style.display="inline";
+  }
+}
+
+/**
+ * Switches the state of a collapseable box, e.g.
+ * if it's opened, it'll be closed, and vice versa.
+ * 
+ * @param boxID Identifier of box
+ */
+function switchState(boxID) {
+  var boxObj = getElementObject(boxID);
+  var buttonObj = getElementObject(boxID+B_SFIX);
+  if (boxObj == null || buttonObj == null) {
+     // Box or button not found
+  } else if (boxObj.style.display=="none") {
+     // Box is closed, so open it
+     openBox(boxObj, buttonObj);
+  } else if (boxObj.style.display=="block") {
+     // Box is opened, so close it
+     closeBox(boxObj, buttonObj);
+  }
+}
+
+/**
+ * Closes all boxes in a given list.
+ * 
+ * @param boxList Array of box IDs
+ */
+function collapseAll(boxList) {
+  var idx;
+  for (idx = 0; idx < boxList.length; idx++) {
+     var boxObj = getElementObject(boxList[idx]);
+     var buttonObj = getElementObject(boxList[idx]+B_SFIX);
+     closeBox(boxObj, buttonObj);
+  }
+}
+
+/**
+ * Open all boxes in a given list.
+ * 
+ * @param boxList Array of box IDs
+ */
+function expandAll(boxList) {
+  var idx;
+  for (idx = 0; idx < boxList.length; idx++) {
+     var boxObj = getElementObject(boxList[idx]);
+     var buttonObj = getElementObject(boxList[idx]+B_SFIX);
+     openBox(boxObj, buttonObj);
+  }
+}
+
+/**
+ * Makes all the control buttons of boxes appear.
+ * 
+ * @param boxList Array of box IDs
+ */
+function viewControlButtons(boxList) {
+    var idx;
+    for (idx = 0; idx < boxList.length; idx++) {
+        buttonObj = getElementObject(boxList[idx]+B_SFIX);
+        if (buttonObj != null) {
+            buttonObj.style.display = "inline";
+        }
+    }
+}
+
+/**
+ * Makes all the control buttons of boxes disappear.
+ * 
+ * @param boxList Array of box IDs
+ */
+function hideControlButtons(boxList) {
+    var idx;
+    for (idx = 0; idx < boxList.length; idx++) {
+        buttonObj = getElementObject(boxList[idx]+B_SFIX);
+        if (buttonObj != null) {
+            buttonObj.style.display = "none";
+        }
+    }
+}
+
+/**
+ * Sets the page for either printing mode
+ * or viewing mode. In printing mode, the page
+ * is made to be more readable when printing it out.
+ * In viewing mode, the page is more browsable.
+ *
+ * @param isPrinterVersion If true, display in
+ *                                 printing mode; otherwise, 
+ *                                 in viewing mode
+ */
+function displayMode(isPrinterVersion) {
+    var obj;
+    if (isPrinterVersion) {
+        // Hide global control buttons
+        obj = getElementObject("globalControls");
+        if (obj != null) {
+            obj.style.visibility = "hidden";
+        }
+        // Hide Legend
+        obj = getElementObject("legend");
+        if (obj != null) {
+            obj.style.display = "none";
+        }
+        obj = getElementObject("legendTOC");
+        if (obj != null) {
+            obj.style.display = "none";
+        }
+        // Hide Glossary
+        obj = getElementObject("glossary");
+        if (obj != null) {
+            obj.style.display = "none";
+        }
+        obj = getElementObject("glossaryTOC");
+        if (obj != null) {
+            obj.style.display = "none";
+        }
+
+        // Expand all diagrams
+        expandAll(diagramBoxes);
+        // Expand all logical diagrams
+        expandAll(logicalDiagramBoxes);        
+        // Expand all XML Instance Representation tables
+        expandAll(xiBoxes);
+        // Expand all Schema Component Representation tables
+        expandAll(scBoxes);
+
+        // Hide Control buttons
+        hideControlButtons(diagramBoxes);
+        hideControlButtons(logicalDiagramBoxes);
+        hideControlButtons(xiBoxes);
+        hideControlButtons(scBoxes);
+    } else {
+        // View global control buttons
+        obj = getElementObject("globalControls");
+        if (obj != null) {
+            obj.style.visibility = "visible";
+        }
+        // View Legend
+        obj = getElementObject("legend");
+        if (obj != null) {
+            obj.style.display = "block";
+        }
+        obj = getElementObject("legendTOC");
+        if (obj != null) {
+            obj.style.display = "block";
+        }
+        // View Glossary
+        obj = getElementObject("glossary");
+        if (obj != null) {
+            obj.style.display = "block";
+        }
+        obj = getElementObject("glossaryTOC");
+        if (obj != null) {
+            obj.style.display = "block";
+        }
+
+        // Expand all diagram boxes
+        expandAll(diagramBoxes);
+        // Collapse all logical diagram boxes.
+        collapseAll(logicalDiagramBoxes);
+        // Expand all XML Instance Representation tables
+        expandAll(xiBoxes);
+        // Collapse all Schema Component Representation tables
+        collapseAll(scBoxes);
+
+        // View Control buttons
+        viewControlButtons(diagramBoxes);
+        viewControlButtons(logicalDiagramBoxes);
+        viewControlButtons(xiBoxes);
+        viewControlButtons(scBoxes);
+    }
+}
+
+
+
+// -->
+</script>
+      <script type="text/javascript">
+<!--
           
          
 /**
@@ -456,16 +727,60 @@ function viewDocumentation(compDesc, compName, docTextArray) {
       <h1>
          <a name="top">Documentation for xcesc</a>
       </h1>
+      <div style="float: right;">
+         <div id="printerControls" style="display:none;">
+            <input type="checkbox" onclick="displayMode(this.checked)"/>Printer-friendly Version</div>
+         <script type="text/javascript">
+<!--
+          
+var pc = getElementObject("printerControls");
+if (pc != null) {
+   pc.style.display="block";
+}
+               
+// -->
+</script>
+         <div id="globalControls" style="display:none">
+            <strong>Logical Diagram:</strong>
+            <br/>
+            <span style="margin-left: 1em; white-space: nowrap">[ <a href="javascript:void(0)" onclick="expandAll(logicalDiagramBoxes)">Expand All</a> | <a href="javascript:void(0)" onclick="collapseAll(logicalDiagramBoxes)">Collapse All</a> ]</span>
+            <br/>
+            <br/>
+            <strong>XML Instance Representation:</strong>
+            <br/>
+            <span style="margin-left: 1em; white-space: nowrap">[ <a href="javascript:void(0)" onclick="expandAll(xiBoxes)">Expand All</a> | <a href="javascript:void(0)" onclick="collapseAll(xiBoxes)">Collapse All</a> ]</span>
+            <br/>
+            <br/>
+            <strong>Diagram:</strong>
+            <br/>
+            <span style="margin-left: 1em; white-space: nowrap">[ <a href="javascript:void(0)" onclick="expandAll(diagramBoxes)">Expand All</a> | <a href="javascript:void(0)" onclick="collapseAll(diagramBoxes)">Collapse All</a> ]</span>
+            <br/>
+            <br/>
+            <strong>Schema Component Representation:</strong>
+            <br/>
+            <span style="margin-left: 1em; white-space: nowrap">[ <a href="javascript:void(0)" onclick="expandAll(scBoxes)">Expand All</a> | <a href="javascript:void(0)" onclick="collapseAll(scBoxes)">Collapse All</a> ]</span>
+         </div>
+         <script type="text/javascript">
+<!--
+          
+var gc = getElementObject("globalControls");
+if (gc != null) {
+   gc.style.display="block";
+}
+               
+// -->
+</script>
+      </div>
       <h2>Table of Contents</h2>
       <ul>
          <li>
             <a href="#SchemaProperties">Schema Document Properties</a>
          </li>
          <li>
-                           Global Declarations
-                        <ul>
+            <a href="#SchemaDeclarations">Global Declarations</a>
+            <ul>
                <li>
-                  <a href="systemManagement.xsd.html_h-1109675339.html">Element: <strong>systemManagement</strong>
+                  <a href="#h-1109675339">Element: <strong>systemManagement</strong>
                   </a>
                </li>
             </ul>
@@ -557,6 +872,261 @@ function viewDocumentation(compDesc, compName, docTextArray) {
          <script type="text/javascript">
 <!--
           setState('schema_scbox', false);
+// -->
+</script>
+      </div>
+      <div style="text-align: right; clear: both;">
+         <a href="#top">top</a>
+      </div>
+      <hr/>
+      <h2>
+         <a name="SchemaDeclarations">Global Declarations</a>
+      </h2>
+      <h3>Element: <a name="h-1109675339" class="name">systemManagement</a>
+      </h3>
+      <table class="properties">
+         <tr>
+            <th>Name</th>
+            <td>systemManagement</td>
+         </tr>
+         <tr>
+            <th>Type</th>
+            <td>Locally-defined complex type</td>
+         </tr>
+         <tr>
+            <th>
+               <a title="Look up 'Nillable' in glossary"
+                  href="systemManagement.xsd.html#term_Nillable">Nillable</a>
+            </th>
+            <td>no</td>
+         </tr>
+         <tr>
+            <th>
+               <a title="Look up 'Abstract' in glossary"
+                  href="systemManagement.xsd.html#term_Abstract">Abstract</a>
+            </th>
+            <td>no</td>
+         </tr>
+         <tr>
+            <th>Documentation</th>
+            <td class="documentation">The root element for this piece of configuration</td>
+         </tr>
+      </table>
+      <div class="sample box">
+         <div>
+            <input type="button" id="h-1109675339_logicalDiagram_button" class="control"
+                   onclick="switchState('h-1109675339_logicalDiagram'); return false;"
+                   style="display: none"/> 
+            <span class="caption">Logical Diagram</span>
+         </div>
+         <div id="h-1109675339_logicalDiagram" class="contents">
+            <img usemap="#h-1354660659" src="schemaDiagrams/h-1354660659.png"/>
+            <!--
+            Map ref: file:/home/jmfernandez/projects/GOPHER/skel/www/docs//schemaDiagrams/h-1354660659.map--><map name="h-1354660659">
+</map>
+         </div>
+         <script type="text/javascript">
+<!--
+          setState('h-1109675339_logicalDiagram', false);
+// -->
+</script>
+      </div>
+      <div class="sample box">
+         <div>
+            <input type="button" id="h-1109675339_xibox_button" class="control"
+                   onclick="switchState('h-1109675339_xibox'); return false;"
+                   style="display: none"/> 
+            <span class="caption">XML Instance Representation</span>
+         </div>
+         <div id="h-1109675339_xibox" class="contents">
+            <div style="margin-left: 0em">&lt;<a href="#ns_mgmt" title="Find out namespace of 'mgmt' prefix">mgmt</a>:systemManagement<br/>
+               <span style="margin-left: 0.5em"> projectName="<span class="type">
+                     <a href="#ns_xs" title="Find out namespace of 'xs' prefix">xs</a>:string</span> 
+                  <span class="occurs">[1]</span> 
+                  <p class="documentation">'The project name for this XCESC instance'</p>"</span>
+               <br/>
+               <span style="margin-left: 0.5em"> collection="<span class="type">
+                     <a href="#ns_xs" title="Find out namespace of 'xs' prefix">xs</a>:string</span> 
+                  <span class="occurs">[1]</span> 
+                  <p class="documentation">'The collection where the management data (users, groups, registered servers) is going to be stored'</p>"</span>
+               <br/>
+               <span style="margin-left: 0.5em"> group="<span class="type">
+                     <a href="#ns_xs" title="Find out namespace of 'xs' prefix">xs</a>:string</span> 
+                  <span class="occurs">[1]</span> 
+                  <p class="documentation">'The eXist XCESC instance group'</p>"</span>
+               <br/>
+               <span style="margin-left: 0.5em"> managementDoc="<span class="type">
+                     <a href="#ns_xs" title="Find out namespace of 'xs' prefix">xs</a>:string</span> 
+                  <span class="occurs">[1]</span> 
+                  <p class="documentation">'The name of the document where management data (users, groups, registered servers) is being stored'</p>"</span>
+               <br/>
+               <span style="margin-left: 0.5em"> publicServerName="<span class="type">
+                     <a href="#ns_xs" title="Find out namespace of 'xs' prefix">xs</a>:string</span> 
+                  <span class="occurs">[1]</span> 
+                  <p class="documentation">'The public server name for this XCESC installation.'</p>"</span>
+               <br/>
+               <span style="margin-left: 0.5em"> publicServerPort="<span class="type">
+                     <a href="#ns_xs" title="Find out namespace of 'xs' prefix">xs</a>:anyURI</span> 
+                  <span class="occurs">[1]</span> 
+                  <p class="documentation">'The public server port for this XCESC installation.'</p>"</span>
+               <br/>
+               <span style="margin-left: 0.5em"> publicBasePath="<span class="type">
+                     <a href="#ns_xs" title="Find out namespace of 'xs' prefix">xs</a>:anyURI</span> 
+                  <span class="occurs">[1]</span> 
+                  <p class="documentation">'The public base query path for this XCESC installation.'</p>"</span>
+               <br/>
+               <span style="margin-left: 0.5em"> publicLogicRelURI="<span class="type">
+                     <a href="#ns_xs" title="Find out namespace of 'xs' prefix">xs</a>:string</span> 
+                  <span class="occurs">[1]</span> 
+                  <p class="documentation">'The name of the relative URI used for callable external logic in this XCESC installation.'</p>"</span>&gt; <br/>
+               <div style="margin-left: 1.5em">&lt;<a href="#ns_mgmt" title="Find out namespace of 'mgmt' prefix">mgmt</a>:admin<br/>
+                  <span style="margin-left: 0.5em"> user="<span class="type">
+                        <a href="#ns_xs" title="Find out namespace of 'xs' prefix">xs</a>:string</span> 
+                     <span class="occurs">[1]</span> 
+                     <p class="documentation">'The eXist XCESC instance superuser'</p>"</span>
+                  <br/>
+                  <span style="margin-left: 0.5em"> password="<span class="type">
+                        <a href="#ns_xs" title="Find out namespace of 'xs' prefix">xs</a>:string</span> 
+                     <span class="occurs">[1]</span> 
+                     <p class="documentation">'The eXist XCESC instance superpass'</p>"</span>
+                  <br/>
+                  <span style="margin-left: 0.5em"> mail="<span class="type">
+                        <a href="#ns_xs" title="Find out namespace of 'xs' prefix">xs</a>:string</span> 
+                     <span class="occurs">[1]</span> 
+                     <p class="documentation">'The manager e-mail'</p>"</span>/&gt;  <span class="occurs">[1]</span>
+               </div>
+               <div style="margin-left: 1.5em">&lt;<a href="#ns_mgmt" title="Find out namespace of 'mgmt' prefix">mgmt</a>:availableRoles&gt;  <span class="occurs">[1]</span>  
+                  <p class="documentation">'The list of database available roles'</p>
+                  <br/>
+                  <div style="margin-left: 1.5em">&lt;<a href="#ns_mgmt" title="Find out namespace of 'mgmt' prefix">mgmt</a>:role<br/>
+                     <span style="margin-left: 0.5em"> name="<span class="type">
+                           <a href="#ns_xs" title="Find out namespace of 'xs' prefix">xs</a>:string</span> 
+                        <span class="occurs">[1]</span> 
+                        <p class="documentation">'The role name'</p>"</span>
+                     <br/>
+                     <span style="margin-left: 0.5em"> isSuperUser="<span class="type">
+                           <a href="#ns_xs" title="Find out namespace of 'xs' prefix">xs</a>:boolean</span> 
+                        <span class="occurs">[0..1]</span> 
+                        <p class="documentation">'Is a superuser role?'</p>"</span>
+                     <br/>
+                     <span style="margin-left: 0.5em"> description="<span class="type">
+                           <a href="#ns_xs" title="Find out namespace of 'xs' prefix">xs</a>:string</span> 
+                        <span class="occurs">[1]</span> 
+                        <p class="documentation">'The description of the role'</p>"</span>/&gt;  <span class="occurs">[1..*]</span>
+                  </div>&lt;/<a href="#ns_mgmt" title="Find out namespace of 'mgmt' prefix">mgmt</a>:availableRoles&gt;</div>&lt;/<a href="#ns_mgmt" title="Find out namespace of 'mgmt' prefix">mgmt</a>:systemManagement&gt;</div>
+         </div>
+         <script type="text/javascript">
+<!--
+          setState('h-1109675339_xibox', true);
+// -->
+</script>
+      </div>
+      <div class="sample box">
+         <div>
+            <input type="button" id="h-1109675339_diagram_button" class="control"
+                   onclick="switchState('h-1109675339_diagram'); return false;"
+                   style="display: none"/> 
+            <span class="caption">Diagram</span>
+         </div>
+         <div id="h-1109675339_diagram" class="contents">
+            <img usemap="#h558738051" src="schemaDiagrams/h558738051.png"/>
+            <!--
+            Map ref: file:/home/jmfernandez/projects/GOPHER/skel/www/docs//schemaDiagrams/h558738051.map--><map name="h558738051">
+</map>
+         </div>
+         <script type="text/javascript">
+<!--
+          setState('h-1109675339_diagram', true);
+// -->
+</script>
+      </div>
+      <div class="schemaComponent box">
+         <div>
+            <input type="button" id="h-1109675339_scbox_button" class="control"
+                   onclick="switchState('h-1109675339_scbox'); return false;"
+                   style="display: none"/> 
+            <span class="caption">Schema Component Representation</span>
+         </div>
+         <div id="h-1109675339_scbox" class="contents">
+            <div style="margin-left: 0em">&lt;<span class="scTag">xs:element</span> 
+               <span class="scTag">name</span>="<span class="scContent">systemManagement</span>"&gt;<div style="margin-left: 1.5em">&lt;<span class="scTag">xs:complexType</span>&gt;<div style="margin-left: 1.5em">&lt;<span class="scTag">xs:sequence</span>&gt;<div style="margin-left: 1.5em">&lt;<span class="scTag">xs:element</span> 
+                        <span class="scTag">name</span>="<span class="scContent">admin</span>" <span class="scTag">minOccurs</span>="<span class="scContent">1</span>" <span class="scTag">maxOccurs</span>="<span class="scContent">1</span>"&gt;<div style="margin-left: 1.5em">&lt;<span class="scTag">xs:complexType</span>&gt;<div style="margin-left: 1.5em">&lt;<span class="scTag">xs:attribute</span> 
+                              <span class="scTag">name</span>="<span class="scContent">user</span>" <span class="scTag">type</span>="<span class="scContent">
+                                 <span class="type">
+                                    <a href="#ns_xs" title="Find out namespace of 'xs' prefix">xs</a>:string</span>
+                              </span>" <span class="scTag">use</span>="<span class="scContent">required</span>"/&gt;</div>
+                           <div style="margin-left: 1.5em">&lt;<span class="scTag">xs:attribute</span> 
+                              <span class="scTag">name</span>="<span class="scContent">password</span>" <span class="scTag">type</span>="<span class="scContent">
+                                 <span class="type">
+                                    <a href="#ns_xs" title="Find out namespace of 'xs' prefix">xs</a>:string</span>
+                              </span>" <span class="scTag">use</span>="<span class="scContent">required</span>"/&gt;</div>
+                           <div style="margin-left: 1.5em">&lt;<span class="scTag">xs:attribute</span> 
+                              <span class="scTag">name</span>="<span class="scContent">mail</span>" <span class="scTag">type</span>="<span class="scContent">
+                                 <span class="type">
+                                    <a href="#ns_xs" title="Find out namespace of 'xs' prefix">xs</a>:string</span>
+                              </span>" <span class="scTag">use</span>="<span class="scContent">required</span>"/&gt;</div>&lt;/<span class="scTag">xs:complexType</span>&gt;</div>&lt;/<span class="scTag">xs:element</span>&gt;</div>
+                     <div style="margin-left: 1.5em">&lt;<span class="scTag">xs:element</span> 
+                        <span class="scTag">name</span>="<span class="scContent">availableRoles</span>"&gt;<div style="margin-left: 1.5em">&lt;<span class="scTag">xs:complexType</span>&gt;<div style="margin-left: 1.5em">&lt;<span class="scTag">xs:sequence</span> 
+                              <span class="scTag">minOccurs</span>="<span class="scContent">1</span>" <span class="scTag">maxOccurs</span>="<span class="scContent">1</span>"&gt;<div style="margin-left: 1.5em">&lt;<span class="scTag">xs:element</span> 
+                                 <span class="scTag">name</span>="<span class="scContent">role</span>" <span class="scTag">minOccurs</span>="<span class="scContent">1</span>" <span class="scTag">maxOccurs</span>="<span class="scContent">unbounded</span>"&gt;<div style="margin-left: 1.5em">&lt;<span class="scTag">xs:complexType</span>&gt;<div style="margin-left: 1.5em">&lt;<span class="scTag">xs:attribute</span> 
+                                       <span class="scTag">name</span>="<span class="scContent">name</span>" <span class="scTag">type</span>="<span class="scContent">
+                                          <span class="type">
+                                             <a href="#ns_xs" title="Find out namespace of 'xs' prefix">xs</a>:string</span>
+                                       </span>" <span class="scTag">use</span>="<span class="scContent">required</span>"/&gt;</div>
+                                    <div style="margin-left: 1.5em">&lt;<span class="scTag">xs:attribute</span> 
+                                       <span class="scTag">name</span>="<span class="scContent">isSuperUser</span>" <span class="scTag">type</span>="<span class="scContent">
+                                          <span class="type">
+                                             <a href="#ns_xs" title="Find out namespace of 'xs' prefix">xs</a>:boolean</span>
+                                       </span>" <span class="scTag">use</span>="<span class="scContent">optional</span>" <span class="scTag">default</span>="<span class="scContent">false</span>"/&gt;</div>
+                                    <div style="margin-left: 1.5em">&lt;<span class="scTag">xs:attribute</span> 
+                                       <span class="scTag">name</span>="<span class="scContent">description</span>" <span class="scTag">type</span>="<span class="scContent">
+                                          <span class="type">
+                                             <a href="#ns_xs" title="Find out namespace of 'xs' prefix">xs</a>:string</span>
+                                       </span>" <span class="scTag">use</span>="<span class="scContent">required</span>"/&gt;</div>&lt;/<span class="scTag">xs:complexType</span>&gt;</div>&lt;/<span class="scTag">xs:element</span>&gt;</div>&lt;/<span class="scTag">xs:sequence</span>&gt;</div>&lt;/<span class="scTag">xs:complexType</span>&gt;</div>&lt;/<span class="scTag">xs:element</span>&gt;</div>&lt;/<span class="scTag">xs:sequence</span>&gt;</div>
+                  <div style="margin-left: 1.5em">&lt;<span class="scTag">xs:attribute</span> 
+                     <span class="scTag">name</span>="<span class="scContent">projectName</span>" <span class="scTag">type</span>="<span class="scContent">
+                        <span class="type">
+                           <a href="#ns_xs" title="Find out namespace of 'xs' prefix">xs</a>:string</span>
+                     </span>" <span class="scTag">use</span>="<span class="scContent">required</span>"/&gt;</div>
+                  <div style="margin-left: 1.5em">&lt;<span class="scTag">xs:attribute</span> 
+                     <span class="scTag">name</span>="<span class="scContent">collection</span>" <span class="scTag">type</span>="<span class="scContent">
+                        <span class="type">
+                           <a href="#ns_xs" title="Find out namespace of 'xs' prefix">xs</a>:string</span>
+                     </span>" <span class="scTag">use</span>="<span class="scContent">required</span>"/&gt;</div>
+                  <div style="margin-left: 1.5em">&lt;<span class="scTag">xs:attribute</span> 
+                     <span class="scTag">name</span>="<span class="scContent">group</span>" <span class="scTag">type</span>="<span class="scContent">
+                        <span class="type">
+                           <a href="#ns_xs" title="Find out namespace of 'xs' prefix">xs</a>:string</span>
+                     </span>" <span class="scTag">use</span>="<span class="scContent">required</span>"/&gt;</div>
+                  <div style="margin-left: 1.5em">&lt;<span class="scTag">xs:attribute</span> 
+                     <span class="scTag">name</span>="<span class="scContent">managementDoc</span>" <span class="scTag">type</span>="<span class="scContent">
+                        <span class="type">
+                           <a href="#ns_xs" title="Find out namespace of 'xs' prefix">xs</a>:string</span>
+                     </span>" <span class="scTag">use</span>="<span class="scContent">required</span>"/&gt;</div>
+                  <div style="margin-left: 1.5em">&lt;<span class="scTag">xs:attribute</span> 
+                     <span class="scTag">name</span>="<span class="scContent">publicServerName</span>" <span class="scTag">type</span>="<span class="scContent">
+                        <span class="type">
+                           <a href="#ns_xs" title="Find out namespace of 'xs' prefix">xs</a>:string</span>
+                     </span>" <span class="scTag">use</span>="<span class="scContent">required</span>"/&gt;</div>
+                  <div style="margin-left: 1.5em">&lt;<span class="scTag">xs:attribute</span> 
+                     <span class="scTag">name</span>="<span class="scContent">publicServerPort</span>" <span class="scTag">type</span>="<span class="scContent">
+                        <span class="type">
+                           <a href="#ns_xs" title="Find out namespace of 'xs' prefix">xs</a>:anyURI</span>
+                     </span>" <span class="scTag">use</span>="<span class="scContent">required</span>"/&gt;</div>
+                  <div style="margin-left: 1.5em">&lt;<span class="scTag">xs:attribute</span> 
+                     <span class="scTag">name</span>="<span class="scContent">publicBasePath</span>" <span class="scTag">type</span>="<span class="scContent">
+                        <span class="type">
+                           <a href="#ns_xs" title="Find out namespace of 'xs' prefix">xs</a>:anyURI</span>
+                     </span>" <span class="scTag">use</span>="<span class="scContent">required</span>"/&gt;</div>
+                  <div style="margin-left: 1.5em">&lt;<span class="scTag">xs:attribute</span> 
+                     <span class="scTag">name</span>="<span class="scContent">publicLogicRelURI</span>" <span class="scTag">type</span>="<span class="scContent">
+                        <span class="type">
+                           <a href="#ns_xs" title="Find out namespace of 'xs' prefix">xs</a>:string</span>
+                     </span>" <span class="scTag">use</span>="<span class="scContent">required</span>"/&gt;</div>&lt;/<span class="scTag">xs:complexType</span>&gt;</div>&lt;/<span class="scTag">xs:element</span>&gt;</div>
+         </div>
+         <script type="text/javascript">
+<!--
+          setState('h-1109675339_scbox', false);
 // -->
 </script>
       </div>
