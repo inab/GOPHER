@@ -7,8 +7,7 @@
 	xmlns:gui="http://www.cnio.es/scombio/xcesc/1.0/xquery/guiManagement"
 	xmlns:meta="http://www.cnio.es/scombio/xcesc/1.0/xquery/metaManagement"
 	xmlns:mailcore="http://www.cnio.es/scombio/xcesc/1.0/xquery/mailCore"
-	targetNamespace="http://www.cnio.es/scombio/xcesc/1.0"
-	elementFormDefault="qualified">
+	targetNamespace="http://www.cnio.es/scombio/xcesc/1.0" elementFormDefault="qualified">
 
 	<xsd:annotation>
 		<xsd:documentation><![CDATA[XCESC XML Schema, made by José María Fernández González (C) 2008-2011]]></xsd:documentation>
@@ -558,7 +557,7 @@ subtypes, categories or ontologies]]></xsd:documentation>
 		</xsd:annotation>
 		<xsd:complexType>
 			<xsd:sequence minOccurs="1" maxOccurs="1">
-				<xsd:element ref="xcesc:metric" minOccurs="1" maxOccurs="unbounded" />
+				<xsd:element ref="xcesc:metric" minOccurs="1" maxOccurs="unbounded"/>
 			</xsd:sequence>
 			<xsd:attributeGroup ref="xcesc:namespaceAttributesGroup"/>
 		</xsd:complexType>
@@ -571,7 +570,7 @@ As the scope can be sparse, more than one scope element can be specified]]></xsd
 		</xsd:annotation>
 		<xsd:complexType>
 			<xsd:sequence minOccurs="1" maxOccurs="1">
-				<xsd:element ref="xcesc:metric" minOccurs="0" maxOccurs="unbounded" />
+				<xsd:element ref="xcesc:metric" minOccurs="0" maxOccurs="unbounded"/>
 				<xsd:element ref="xcesc:term" minOccurs="0" maxOccurs="unbounded">
 					<xsd:annotation>
 						<xsd:documentation><![CDATA[This scope can have associated specific annotations]]></xsd:documentation>
@@ -604,7 +603,7 @@ It depends on the units system and it is always an inclusive limit.]]></xsd:docu
 	</xsd:element>
 	
 	<xsd:attributeGroup name="requiredTimeStampGroup">
-		<xsd:attribute  name="timeStamp" use='required' type="xsd:dateTime">
+		<xsd:attribute name="timeStamp" use="required" type="xsd:dateTime">
 			<xsd:annotation>
 				<xsd:documentation><![CDATA[The timestamp assigned to the element either in origin or destination]]></xsd:documentation>
 			</xsd:annotation>
@@ -612,7 +611,7 @@ It depends on the units system and it is always an inclusive limit.]]></xsd:docu
 	</xsd:attributeGroup>
 	
 	<xsd:attributeGroup name="optionalTimeStampGroup">
-		<xsd:attribute  name="timeStamp" use='optional' type="xsd:dateTime">
+		<xsd:attribute name="timeStamp" use="optional" type="xsd:dateTime">
 			<xsd:annotation>
 				<xsd:documentation><![CDATA[The timestamp assigned to the element either in origin or destination]]></xsd:documentation>
 			</xsd:annotation>
@@ -681,27 +680,27 @@ ab initio, then the origin of the match must be identified]]></xsd:documentation
 		<xsd:restriction base="xsd:string">
 			<xsd:enumeration value="right">
 				<xsd:annotation>
-					<xsd:documentation><![CDATA[Right place for the annotation, no more, no less]]></xsd:documentation>	
+					<xsd:documentation><![CDATA[Right place for the annotation, no more, no less]]></xsd:documentation>
 				</xsd:annotation>
 			</xsd:enumeration>
 			<xsd:enumeration value="partial">
 				<xsd:annotation>
-					<xsd:documentation><![CDATA[Predicted place partially overlaps a right one]]></xsd:documentation>	
+					<xsd:documentation><![CDATA[Predicted place partially overlaps a right one]]></xsd:documentation>
 				</xsd:annotation>
 			</xsd:enumeration>
 			<xsd:enumeration value="under">
 				<xsd:annotation>
-					<xsd:documentation><![CDATA[Predicted place is a subset of a right one]]></xsd:documentation>	
+					<xsd:documentation><![CDATA[Predicted place is a subset of a right one]]></xsd:documentation>
 				</xsd:annotation>
 			</xsd:enumeration>
 			<xsd:enumeration value="over">
 				<xsd:annotation>
-					<xsd:documentation><![CDATA[Predicted place is a superset of a right one]]></xsd:documentation>	
+					<xsd:documentation><![CDATA[Predicted place is a superset of a right one]]></xsd:documentation>
 				</xsd:annotation>
 			</xsd:enumeration>
 			<xsd:enumeration value="wrong">
 				<xsd:annotation>
-					<xsd:documentation><![CDATA[Predicted place is wrong or completely misplaced]]></xsd:documentation>	
+					<xsd:documentation><![CDATA[Predicted place is wrong or completely misplaced]]></xsd:documentation>
 				</xsd:annotation>
 			</xsd:enumeration>
 			<xsd:enumeration value="missing">
@@ -724,27 +723,27 @@ ab initio, then the origin of the match must be identified]]></xsd:documentation
 		<xsd:restriction base="xsd:string">
 			<xsd:enumeration value="right">
 				<xsd:annotation>
-					<xsd:documentation><![CDATA[Right annotation, no more, no less]]></xsd:documentation>	
+					<xsd:documentation><![CDATA[Right annotation, no more, no less]]></xsd:documentation>
 				</xsd:annotation>
 			</xsd:enumeration>
 			<xsd:enumeration value="under">
 				<xsd:annotation>
-					<xsd:documentation><![CDATA[Annotation is too general]]></xsd:documentation>	
+					<xsd:documentation><![CDATA[Annotation is too general]]></xsd:documentation>
 				</xsd:annotation>
 			</xsd:enumeration>
 			<xsd:enumeration value="over">
 				<xsd:annotation>
-					<xsd:documentation><![CDATA[Annotation is over specific]]></xsd:documentation>	
+					<xsd:documentation><![CDATA[Annotation is over specific]]></xsd:documentation>
 				</xsd:annotation>
 			</xsd:enumeration>
 			<xsd:enumeration value="wrong">
 				<xsd:annotation>
-					<xsd:documentation><![CDATA[Annotation is wrong]]></xsd:documentation>	
+					<xsd:documentation><![CDATA[Annotation is wrong]]></xsd:documentation>
 				</xsd:annotation>
 			</xsd:enumeration>
 			<xsd:enumeration value="missing">
 				<xsd:annotation>
-					<xsd:documentation><![CDATA[There was no prediction for this annotation, and there should be]]></xsd:documentation>	
+					<xsd:documentation><![CDATA[There was no prediction for this annotation, and there should be]]></xsd:documentation>
 				</xsd:annotation>
 			</xsd:enumeration>
 			<xsd:enumeration value="NA">
@@ -754,7 +753,7 @@ ab initio, then the origin of the match must be identified]]></xsd:documentation
 			</xsd:enumeration>
 		</xsd:restriction>
 	</xsd:simpleType>
-		
+	
 	<xsd:element name="jobEvaluation">
 		<xsd:annotation>
 			<xsd:documentation><![CDATA[The evaluation of each one of the jobs done by the partipant being assessed]]></xsd:documentation>
@@ -845,7 +844,7 @@ i.e. The value of the targetId attribute from the query element inside the arriv
 		<xsd:complexType>
 			<xsd:sequence>
 				<xsd:choice minOccurs="0">
-					<xsd:element ref="xcesc:target" minOccurs="1" maxOccurs="1" />
+					<xsd:element ref="xcesc:target" minOccurs="1" maxOccurs="1"/>
 					<xsd:element name="refContent" minOccurs="1" maxOccurs="1">
 						<xsd:annotation>
 							<xsd:documentation><![CDATA[This element is used to reference a common bundle of information]]></xsd:documentation>
@@ -858,14 +857,14 @@ i.e. The value of the targetId attribute from the query element inside the arriv
 							</xsd:attribute>
 						</xsd:complexType>
 						<xsd:keyref refer="xcesc:contentKey" name="contentKeyRef">
-							<xsd:selector xpath="." />
-							<xsd:field xpath="@ref" />
+							<xsd:selector xpath="."/>
+							<xsd:field xpath="@ref"/>
 						</xsd:keyref>
 					</xsd:element>
 				</xsd:choice>
 				<xsd:choice>
-					<xsd:element ref="xcesc:match" minOccurs="0" maxOccurs="unbounded" />
-					<xsd:element ref="xcesc:jobEvaluation" minOccurs="0" maxOccurs="unbounded" />
+					<xsd:element ref="xcesc:match" minOccurs="0" maxOccurs="unbounded"/>
+					<xsd:element ref="xcesc:jobEvaluation" minOccurs="0" maxOccurs="unbounded"/>
 				</xsd:choice>
 			</xsd:sequence>
 			<xsd:attribute name="targetId" use="required" type="xsd:string">
@@ -887,7 +886,7 @@ i.e. The value of the targetId attribute from the query element inside the arriv
 		</xsd:annotation>
 		<xsd:complexType>
 			<xsd:sequence>
-				<xsd:element ref="xcesc:common" minOccurs="0" maxOccurs="1" />
+				<xsd:element ref="xcesc:common" minOccurs="0" maxOccurs="1"/>
 				<xsd:element ref="xcesc:answer" minOccurs="1" maxOccurs="unbounded"/>
 			</xsd:sequence>
 		</xsd:complexType>
@@ -941,8 +940,8 @@ i.e. The value of the targetId attribute from the query element inside the arriv
 					</xsd:annotation>
 					<xsd:complexType>
 						<xsd:choice>
-							<xsd:element ref="xcesc:query" />
-							<xsd:element ref="xcesc:target" />
+							<xsd:element ref="xcesc:query"/>
+							<xsd:element ref="xcesc:target"/>
 						</xsd:choice>
 						<xsd:attribute name="id" type="xsd:string" use="required">
 							<xsd:annotation>
@@ -961,8 +960,8 @@ i.e. The value of the targetId attribute from the query element inside the arriv
 		</xsd:annotation>
 		<xsd:complexType>
 			<xsd:sequence>
-				<xsd:element ref="xcesc:common" minOccurs="0" maxOccurs="1" />
-				<xsd:element ref="xcesc:query" minOccurs="1" maxOccurs="unbounded" />
+				<xsd:element ref="xcesc:common" minOccurs="0" maxOccurs="1"/>
+				<xsd:element ref="xcesc:query" minOccurs="1" maxOccurs="unbounded"/>
 			</xsd:sequence>
 			<xsd:attributeGroup ref="xcesc:callbackAttributeGroup"/>
 		</xsd:complexType>
@@ -970,8 +969,8 @@ i.e. The value of the targetId attribute from the query element inside the arriv
 			<xsd:annotation>
 				<xsd:documentation><![CDATA[The shared content must use unique keys within the document]]></xsd:documentation>
 			</xsd:annotation>
-			<xsd:selector xpath="xcesc:content" />
-			<xsd:field xpath="@id" />
+			<xsd:selector xpath="xcesc:content"/>
+			<xsd:field xpath="@id"/>
 		</xsd:key>
 		
 	</xsd:element>
@@ -987,7 +986,7 @@ i.e. The value of the targetId attribute from the query element inside the arriv
 						<xsd:documentation><![CDATA[An accepted query]]></xsd:documentation>
 					</xsd:annotation>
 					<xsd:complexType>
-						<xsd:attributeGroup ref="xcesc:queryIdGroup"></xsd:attributeGroup>
+						<xsd:attributeGroup ref="xcesc:queryIdGroup"/>
 					</xsd:complexType>
 				</xsd:element>
 			</xsd:sequence>
@@ -1033,7 +1032,7 @@ i.e. The value of the targetId attribute from the query element inside the arriv
 								</xsd:complexType>
 							</xsd:element>
 						</xsd:choice>
-						<xsd:attribute name="label" use="optional" type="xsd:string" />
+						<xsd:attribute name="label" use="optional" type="xsd:string"/>
 					</xsd:complexType>
 				</xsd:element>
 				<xsd:element name="baseline" minOccurs="1" maxOccurs="unbounded">
@@ -1042,9 +1041,9 @@ i.e. The value of the targetId attribute from the query element inside the arriv
 					</xsd:annotation>
 					<xsd:complexType>
 						<xsd:sequence>
-							<xsd:element ref="xcesc:match" minOccurs="0" maxOccurs="unbounded" />
+							<xsd:element ref="xcesc:match" minOccurs="0" maxOccurs="unbounded"/>
 						</xsd:sequence>
-						<xsd:attributeGroup ref="xcesc:requiredTimeStampGroup" />
+						<xsd:attributeGroup ref="xcesc:requiredTimeStampGroup"/>
 					</xsd:complexType>
 				</xsd:element>
 				<!--							<xsd:element name="tag" minOccurs="0" maxOccurs="unbounded">
@@ -1085,7 +1084,7 @@ i.e. The value of the targetId attribute from the query element inside the arriv
 			<xsd:attributeGroup ref="xcesc:callbackAttributeGroup"/>
 		</xsd:complexType>
 	</xsd:element>
--->	
+-->
 	<xsd:element name="experiment">
 		<xsd:complexType>
 			<xsd:sequence minOccurs="1" maxOccurs="1">
@@ -1210,12 +1209,12 @@ i.e. The value of the targetId attribute from the query element inside the arriv
 			<xsd:field xpath="@id"/>
 		</xsd:key>
 		<xsd:keyref refer="xcesc:target_key" name="job_targetid_referes_target">
-			<xsd:selector xpath="xcesc:participant/xcesc:job"></xsd:selector>
-			<xsd:field xpath="@targetId"></xsd:field>
+			<xsd:selector xpath="xcesc:participant/xcesc:job"/>
+			<xsd:field xpath="@targetId"/>
 		</xsd:keyref>
 		<xsd:unique name="participant_server_unique">
-			<xsd:selector xpath="xcesc:participant/xcesc:server"></xsd:selector>
-			<xsd:field xpath="@id"></xsd:field>
+			<xsd:selector xpath="xcesc:participant/xcesc:server"/>
+			<xsd:field xpath="@id"/>
 		</xsd:unique>
 	</xsd:element>
 	
@@ -1229,15 +1228,15 @@ i.e. The value of the targetId attribute from the query element inside the arriv
 			<xsd:annotation>
 				<xsd:documentation><![CDATA[There cannot be two experiments with the same timestamp]]></xsd:documentation>
 			</xsd:annotation>
-			<xsd:selector xpath="xcesc:experiment"></xsd:selector>
-			<xsd:field xpath="@stamp"></xsd:field>
+			<xsd:selector xpath="xcesc:experiment"/>
+			<xsd:field xpath="@stamp"/>
 		</xsd:key>
 		<xsd:keyref refer="xcesc:experiments_stamp" name="experiments_baseStamp_stamp">
 			<xsd:annotation>
 				<xsd:documentation><![CDATA[baseStamp points to a previous experiment]]></xsd:documentation>
 			</xsd:annotation>
-			<xsd:selector xpath="xcesc:experiment"></xsd:selector>
-			<xsd:field xpath="@baseStamp"></xsd:field>
+			<xsd:selector xpath="xcesc:experiment"/>
+			<xsd:field xpath="@baseStamp"/>
 		</xsd:keyref>
 	</xsd:element>
 	
@@ -1376,12 +1375,12 @@ i.e. The value of the targetId attribute from the query element inside the arriv
 			<xsd:field xpath="@id"/>
 		</xsd:key>
 		<xsd:keyref refer="xcesc:assessment_target_key" name="job_targetid_referes_assessment_target">
-			<xsd:selector xpath="xcesc:participant/xcesc:job"></xsd:selector>
-			<xsd:field xpath="@targetId"></xsd:field>
+			<xsd:selector xpath="xcesc:participant/xcesc:job"/>
+			<xsd:field xpath="@targetId"/>
 		</xsd:keyref>
 		<xsd:unique name="assessor_server_unique">
-			<xsd:selector xpath="xcesc:assessor/xcesc:server"></xsd:selector>
-			<xsd:field xpath="@id"></xsd:field>
+			<xsd:selector xpath="xcesc:assessor/xcesc:server"/>
+			<xsd:field xpath="@id"/>
 		</xsd:unique>
 	</xsd:element>
 	
