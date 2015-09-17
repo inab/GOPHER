@@ -15,10 +15,10 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.cnio.scombio.jmfernandez.GOPHER.PDBSeq;
-import org.exist.dom.BinaryDocument;
-import org.exist.dom.DocumentImpl;
+import org.exist.dom.persistent.BinaryDocument;
+import org.exist.dom.persistent.DocumentImpl;
 import org.exist.dom.QName;
-import org.exist.memtree.MemTreeBuilder;
+import org.exist.dom.memtree.MemTreeBuilder;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.lock.Lock;
 import org.exist.xmldb.XmldbURI;
