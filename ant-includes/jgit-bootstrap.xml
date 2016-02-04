@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<project basedir="." default="download-jgit" name="jgit-bootstrap" xmlns:ivy="antlib:org.apache.ivy.ant">
+	<import file="${basedir}/ivy-bootstrap.xml"/>
+	<if>
+		<isset property="ant.file.included"/>
+		<then>
+			<dirname property="included.basedir" file="${ant.file.included}" />
+		</then>
+		<else>
+			<dirname property="included.basedir" file="${ant.file.imported}" />
+		</else>
+	</if>
+	
+	<property name="git.tasks.install.version" value="1.3.2"/>
+	<property name="jgit.install.version" value="4.2.0.201601211800-r"/>
+	<property name="jsch.install.version" value="0.1.53"/>
+	
+	<property name="jgit.jar.dir" value="${included.basedir}/ant-libs/jgit"/>
+	
+	<!-- xdb bootstrapping based on Ivy -->
+	<target name="download-jgit" depends="bootstrap-ivy" unless="skip.jgit.download">
+		<ivy:configure />
+		<ivy:resolve>
+			<ivy:dependency org="org.eclipse.jgit" 
+				name="org.eclipse.jgit.ant" 
+				rev="${jgit.install.version}" conf="*->*,!sources,!javadoc"/>
+			
+			<ivy:dependency org="org.eclipse.jgit" 
+				name="org.eclipse.jgit" 
+				rev="${jgit.install.version}" conf="*->*,!sources,!javadoc"/>
+			
+			<ivy:dependency org="com.jcraft" 
+				name="jsch" 
+				rev="${jsch.install.version}" conf="*->*,!sources,!javadoc"/>
+			
+			<ivy:dependency org="com.rimerosolutions.ant" 
+				name="ant-git-tasks"
+				rev="${git.tasks.install.version}" conf="*->*,!sources,!javadoc"/>
+		</ivy:resolve>
+		<ivy:retrieve type="jar,bundle" pattern="${jgit.jar.dir}/[artifact]-[revision].[ext]"/>
+	</target>
+	
+	<target name="bootstrap-jgit" depends="download-jgit" description="--> install git tasks">
+		<path id="jgit.lib.path">
+			<fileset dir="${jgit.jar.dir}" includes="*.jar"/>
+		</path>
+		<taskdef
+			resource="com/rimerosolutions/ant/git/jgit-ant-lib.xml"
+			uri="antlib:com.rimerosolutions.ant.git"
+			classpathref="jgit.lib.path"
+		/>
+	</target>
+</project>

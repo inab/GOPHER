@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<project basedir="." default="" name="common-build">
+	<taskdef resource="net/sf/antcontrib/antcontrib.properties" />
+	
+	<macrodef name="get-and-checksum">
+		<attribute name="url"/>
+		<attribute name="dest"/>
+		<sequential>
+			<local name="destdir"/>
+			<dirname property="destdir" file="@{dest}"/>
+			<basename property="destfile" file="@{dest}"/>
+			<get dest="${destdir}" usetimestamp="true" skipexisting="true">
+				<url url="@{url}"/>
+				<url url="@{url}.sha1"/>
+				<firstmatchmapper>
+					<globmapper from="@{url}.sha1" to="${destfile}.sha1"/>
+					<globmapper from="@{url}" to="${destfile}"/>
+				</firstmatchmapper>
+			</get>
+			<local name="checksum.matches"/>
+			<local name="checksum.matches.fail"/>
+			<checksum file="@{dest}" algorithm="sha" fileext=".sha1" verifyproperty="checksum.matches"/>
+			<condition property="checksum.matches.fail">
+				<equals arg1="${checksum.matches}" arg2="false"/>
+			</condition>
+			<fail if="checksum.matches.fail">Checksum error</fail>
+		</sequential>
+	</macrodef>
+</project>

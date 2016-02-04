@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<project basedir="." default="download-xdb" name="xdb-bootstrap" xmlns:ivy="antlib:org.apache.ivy.ant">
+	<import file="${basedir}/ivy-bootstrap.xml"/>
+	<if>
+		<isset property="ant.file.included"/>
+		<then>
+			<dirname property="included.basedir" file="${ant.file.included}" />
+		</then>
+		<else>
+			<dirname property="included.basedir" file="${ant.file.imported}" />
+		</else>
+	</if>
+	<property name="xdb.install.version" value="3.0.RC1"/>
+	<property name="xdb.jar.dir" value="${included.basedir}/ant-libs/xdb"/>
+	
+	<!-- xdb bootstrapping based on Ivy -->
+	<target name="download-xdb" depends="bootstrap-ivy" unless="skip.xdb.download">
+		<ivy:configure file="${basedir}/xdb-ivysettings.xml"/>
+		<ivy:resolve>
+			<ivy:dependency org="org.exist-db" name="exist-optional" rev="${xdb.install.version}" conf="*->*,!sources,!javadoc"/>
+		</ivy:resolve>
+		<ivy:retrieve pattern="${xdb.jar.dir}/[artifact]-[revision].[ext]"/>
+	</target>
+	
+	<target name="bootstrap-xdb" depends="download-xdb" description="--> install eXistDB tasks">
+		<path id="xdb.lib.path">
+			<fileset dir="${xdb.jar.dir}" includes="*.jar"/>
+		</path>
+		<taskdef
+			resource="org/exist/ant/antlib.xml"
+			uri="http://exist-db.org/ant"
+			classpathref="xdb.lib.path"
+		/>
+	</target>
+</project>

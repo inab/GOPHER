@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<project basedir="." default="download-ivy" name="Ivy-bootstrap">
+	<import file="${basedir}/common-build.xml"/>
+	<if>
+		<isset property="ant.file.included"/>
+		<then>
+			<dirname property="included.basedir" file="${ant.file.included}" />
+		</then>
+		<else>
+			<dirname property="included.basedir" file="${ant.file.imported}" />
+		</else>
+	</if>
+	<property name="ivy.install.version" value="2.4.0"/>
+	<property name="ivy.jar.dir" value="${included.basedir}/ant-libs"/>
+	<property name="ivy.jar.file" value="${ivy.jar.dir}/ivy.jar"/>
+	
+	<!-- Ivy bootstrapping based on http://ant.apache.org/ivy/history/latest-milestone/samples/build.xml -->
+	<target name="download-ivy" unless="skip.ivy.download">
+		<mkdir dir="${ivy.jar.dir}" />
+		
+		<!-- Downloading Ivy from its web site, and validate the checksum-->
+		<get-and-checksum url="https://repo1.maven.org/maven2/org/apache/ivy/ivy/${ivy.install.version}/ivy-${ivy.install.version}.jar" dest="${ivy.jar.file}"/>
+		<!--
+			<get src="https://repo1.maven.org/maven2/org/apache/ivy/ivy/${ivy.install.version}/ivy-${ivy.install.version}.jar" dest="${ivy.jar.file}" usetimestamp="true"/>
+		-->
+	</target>
+	
+	
+	<!-- ================================= 
+		target: bootstrap-ivy         
+		this target is not necessary if you put ivy.jar in your ant lib directory
+		if you already have ivy in your ant lib, you can simply remove this
+		target and the dependency the 'go' target has on it
+	     ================================= -->
+	<target name="bootstrap-ivy" depends="download-ivy" description="--> install Ivy tasks">
+		<!-- try to load ivy here from local ivy dir, in case the user has not already dropped
+		it into ant's lib dir (note that the latter copy will always take precedence).
+		We will not fail as long as local lib dir exists (it may be empty) and
+		ivy is in at least one of ant's lib dir or the local lib dir. -->
+		<path id="ivy.lib.path">
+			<fileset dir="${ivy.jar.dir}" includes="*.jar"/>
+		</path>
+		<taskdef
+			resource="org/apache/ivy/ant/antlib.xml"
+			uri="antlib:org.apache.ivy.ant"
+			classpathref="ivy.lib.path"
+		/>
+	</target>
+</project>
