@@ -4,111 +4,67 @@
 	<description>$Id$
 weeklyGOPHER-eXist-module glue classes by jmfernandez Ant script</description>
 
-	<dirname property="ant.file.dir" file="${ant.file}"/>
-	<dirname property="ant.file.dir.parent" file="${ant.file.dir}"/>
-
-	<property name="src" location="src" />
-	<property name="build" location="build" />
-	<property name="libs" location="libs" />
-	<property name="dist" location="dist" />
-
-	<property name="GOPHERPrepare.dir.rel" value="GOPHERPrepare" />
-	<property name="GOPHERPrepare.dir" location="${ant.file.dir.parent}/${GOPHERPrepare.dir.rel}" />
-	<property name="PDBSeq.jar.rel" value="dist/PDBSeq.jar" />
-	<property name="PDBSeq.jar" location="${GOPHERPrepare.dir}/${PDBSeq.jar.rel}" />
-
-	<available file="${PDBSeq.jar}" property="PDBSeq.archive.present"/>
-
-	<property name="eXist.dir.rel" value="eXist"/>
-	<property name="eXist.dir" location="${ant.file.dir.parent}/external/${eXist.dir.rel}"/>
+	<dirname property="weeklyGOPHER-eXist-module.dir" file="${ant.file.weeklyGOPHER-eXist-module}"/>
+	<dirname property="weeklyGOPHER-eXist-module.dir.parent" file="${weeklyGOPHER-eXist-module.dir}"/>
 	
-	<property name="eXist.jar.rel" value="exist.jar"/>
-	<property name="eXist.jar" location="${eXist.dir}/${eXist.jar.rel}"/>
+	<property name="weeklyGOPHER-eXist-module.main.jar" value="weeklyGOPHER-eXist-module" />
+	<include file="${weeklyGOPHER-eXist-module.dir.parent}/ant-includes/xdb-bootstrap.xml"/>
+	<include file="${weeklyGOPHER-eXist-module.dir.parent}/GOPHERPrepare/build.xml"/>
 	
-	<uptodate
-		property="eXist.archive.present"
-		targetfile="${eXist.jar}"
-	>
-		<srcfiles file="${eXist.dir}/build.xml"/>
-		<srcfiles file="${eXist.dir}/conf.xml.tmpl"/>
-		<srcfiles dir="${eXist.dir}/build/scripts" includes="**/*.x[ms]l"/>
-		<srcfiles dir="${eXist.dir}/src" includes="**/*.java"/>
-	</uptodate>
+	<!-- Target compiling version is determined by source one -->
+	<!-- See http://docs.oracle.com/javase/8/docs/technotes/tools/windows/javac.html -->
+	<property name="build.compiler.source" value="1.8"/>
 	
-	<path id="org.cnio.scombio.jmfernandez.weeklyGOPHER.javalibs">
-		<fileset dir="${eXist.dir}">
-			<include name="${eXist.jar.rel}"/>
-			<include name="lib/core/xmldb.jar"/>
-		</fileset>
-		<fileset dir="${GOPHERPrepare.dir}">
-			<include name="dist/GOPHERPrepare.jar"/>
-			<include name="${PDBSeq.jar.rel}"/>
-		</fileset>
-	</path>
-	
-	<target name="init">
+	<property name="weeklyGOPHER-eXist-module.src" location="${weeklyGOPHER-eXist-module.dir}/src" />
+	<property name="weeklyGOPHER-eXist-module.build" location="${weeklyGOPHER-eXist-module.dir}/build" />
+	<property name="weeklyGOPHER-eXist-module.libs" location="${weeklyGOPHER-eXist-module.dir}/libs" />
+	<property name="weeklyGOPHER-eXist-module.dist" location="${weeklyGOPHER-eXist-module.dir}/dist" />
+
+	<target name="init" depends="xdb-bootstrap.init,GOPHERPrepare.init">
 		<!-- Creating the timestamp -->
 		<tstamp/>
 	</target>
 
-	<target name="conditional.bootstrap.eXist" unless="eXist.archive.present">
-		<antcall target="bootstrap.eXist"/>
-	</target>
-	
-	<target name="conditional.bootstrap.PDBSeq" unless="PDBSeq.archive.present">
-		<antcall target="bootstrap.PDBSeq"/>
-	</target>
-	
-	<target name="bootstrap.eXist" depends="compile.eXist" description="It compiles eXist">
-	</target>
-
-	<target name="bootstrap.PDBSeq" depends="compile.PDBSeq" description="It compiles PDBSeq">
-	</target>
-
-	<target name="compile" depends="init,conditional.bootstrap.PDBSeq,conditional.bootstrap.eXist" description="compiles the source">
-		<mkdir dir="${build}"/>
-		<javac debug="on" includeantruntime="false" destdir="${build}" includes="**" srcdir="${src}" source="1.8" target="1.8">
-			<classpath refid="org.cnio.scombio.jmfernandez.weeklyGOPHER.javalibs" />
+	<target name="compile" depends="init,GOPHERPrepare.build" description="compiles the source">
+		<mkdir dir="${weeklyGOPHER-eXist-module.build}"/>
+		
+		<local name="compile.path.id.name"/>
+		<local name="gopherprepare.compile.path.id.name"/>
+		<property name="compile.path.id.name" value="eXist.classpath"/>
+		<property name="gopherprepare.compile.path.id.name" value="gopherprepare.classpath"/>
+		<eXist.dependencies.path eXist.path.id.name="${compile.path.id.name}"/>
+		<GOPHERPrepare.dependencies.path GOPHERPrepare.path.id.name="${gopherprepare.compile.path.id.name}"/>
+		
+		<javac
+			debug="on"
+			includeantruntime="false"
+			includes="**"
+			source="${build.compiler.source}"
+			srcdir="${weeklyGOPHER-eXist-module.src}"
+			destdir="${weeklyGOPHER-eXist-module.build}"
+		>
+			<classpath refid="${gopherprepare.compile.path.id.name}" />
+			<classpath refid="${compile.path.id.name}" />
 		</javac>
 	</target>
 	
 	<target name="build" depends="compile" description="generates the internal distribution">
-		<mkdir dir="${dist}"/>
+		<mkdir dir="${weeklyGOPHER-eXist-module.dist}"/>
 		<!--
-		<jar basedir="${build}" jarfile="${dist}/PDBSeq.jar">
+		<jar basedir="${weeklyGOPHER-eXist-module.build}" jarfile="${weeklyGOPHER-eXist-module.dist}/PDBSeq.jar">
 			<include name="**/PDBSeq.class"/>
 		</jar>
 		-->
-		<jar basedir="${build}" jarfile="${dist}/${ant.project.name}.jar">
+		<jar basedir="${weeklyGOPHER-eXist-module.build}" jarfile="${weeklyGOPHER-eXist-module.dist}/${weeklyGOPHER-eXist-module.main.jar}.jar">
 			<exclude name="**/PDBSeq.class"/>
 		</jar>
-		<copy file="${PDBSeq.jar}" todir="${dist}"/>
+		<copy file="${PDBSeq.jar}" todir="${weeklyGOPHER-eXist-module.dist}"/>
 	</target>
 	
-	<target name="clean" description="clean up ${ant.project.name}">
-		<delete dir="${build}"/>
-		<delete dir="${dist}"/>
+	<target name="clean" description="clean up ${weeklyGOPHER-eXist-module.main.jar}">
+		<delete dir="${weeklyGOPHER-eXist-module.build}"/>
+		<delete dir="${weeklyGOPHER-eXist-module.dist}"/>
 	</target>
 	
-	<target name="realclean" depends="clean.PDBSeq,clean.eXist,clean" description="clean up ${ant.project.name} and its dependencies">
-	</target>
-	
-	<target name="compile.eXist" depends="init" description="It compiles eXist libs needed">
-		<exec dir="${eXist.dir}" executable="./build.sh">
-		</exec>
-	</target>
-	
-	<target name="clean.eXist" depends="init" description="It cleans up eXist libs">
-		<ant inheritAll="false" inheritRefs="false" dir="${eXist.dir}" target="clean">
-			<property file="${ant.file.dir.parent}/shared-eXist.properties" />
-		</ant>
-	</target>
-	
-	<target name="compile.PDBSeq" depends="init" description="It compiles PDBSeq lib needed">
-		<ant inheritAll="false" inheritRefs="false" dir="${GOPHERPrepare.dir}"/>
-	</target>
-	
-	<target name="clean.PDBSeq" depends="init" description="It cleans up PDBSeq lib">
-		<ant inheritAll="false" inheritRefs="false" dir="${GOPHERPrepare.dir}" target="clean"/>
-	</target>
+	<target name="realclean" depends="GOPHERPrepare.clean,clean" description="clean up ${weeklyGOPHER-eXist-module.main.jar} and its dependencies" />
 </project>
