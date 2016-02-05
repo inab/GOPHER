@@ -1,26 +1,21 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<project basedir="." default="download-ivy" name="Ivy-bootstrap">
-	<import file="${basedir}/common-build.xml"/>
-	<if>
-		<isset property="ant.file.included"/>
-		<then>
-			<dirname property="included.basedir" file="${ant.file.included}" />
-		</then>
-		<else>
-			<dirname property="included.basedir" file="${ant.file.imported}" />
-		</else>
-	</if>
+<project basedir="." default="download-ivy" name="ivy-bootstrap">
+	<local name="included.basedir"/>
+	<dirname property="included.basedir" file="${ant.file.ivy-bootstrap}" />
+	<include file="${included.basedir}/common-build.xml"/>
+	
 	<property name="ivy.install.version" value="2.4.0"/>
-	<property name="ivy.jar.dir" value="${included.basedir}/ant-libs"/>
-	<property name="ivy.jar.file" value="${ivy.jar.dir}/ivy.jar"/>
+	<property name="ivy.jar.dir" location="${gopher.ant-libs.basedir}"/>
+	<property name="ivy.jar.file.rel" value="ivy-${ivy.install.version}.jar"/>
+	<property name="ivy.jar.file" location="${ivy.jar.dir}/${ivy.jar.file.rel}"/>
 	
 	<!-- Ivy bootstrapping based on http://ant.apache.org/ivy/history/latest-milestone/samples/build.xml -->
 	<target name="download-ivy" unless="skip.ivy.download">
 		<mkdir dir="${ivy.jar.dir}" />
 		
 		<!-- Downloading Ivy from its web site, and validate the checksum-->
-		<get-and-checksum url="https://repo1.maven.org/maven2/org/apache/ivy/ivy/${ivy.install.version}/ivy-${ivy.install.version}.jar" dest="${ivy.jar.file}"/>
+		<get-and-checksum url="https://repo1.maven.org/maven2/org/apache/ivy/ivy/${ivy.install.version}/${ivy.jar.file.rel}" dest="${ivy.jar.file}"/>
 		<!--
 			<get src="https://repo1.maven.org/maven2/org/apache/ivy/ivy/${ivy.install.version}/ivy-${ivy.install.version}.jar" dest="${ivy.jar.file}" usetimestamp="true"/>
 		-->

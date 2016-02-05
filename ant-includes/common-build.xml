@@ -3,11 +3,18 @@
 <project basedir="." default="" name="common-build">
 	<taskdef resource="net/sf/antcontrib/antcontrib.properties" />
 	
+	<dirname property="gopher.ant-includes.basedir" file="${ant.file.common-build}" />
+	
+	<!-- Common definitions for all the ant extensions / tasks -->
+	<dirname property="gopher.ant-includes.basedir.parent" file="${gopher.ant-includes.basedir}"/>
+	<property name="gopher.ant-libs.basedir" location="${gopher.ant-includes.basedir.parent}/ant-libs"/>
+	
 	<macrodef name="get-and-checksum">
 		<attribute name="url"/>
 		<attribute name="dest"/>
 		<sequential>
 			<local name="destdir"/>
+			<local name="destfile"/>
 			<dirname property="destdir" file="@{dest}"/>
 			<basename property="destfile" file="@{dest}"/>
 			<get dest="${destdir}" usetimestamp="true" skipexisting="true">
@@ -18,6 +25,7 @@
 					<globmapper from="@{url}" to="${destfile}"/>
 				</firstmatchmapper>
 			</get>
+			
 			<local name="checksum.matches"/>
 			<local name="checksum.matches.fail"/>
 			<checksum file="@{dest}" algorithm="sha" fileext=".sha1" verifyproperty="checksum.matches"/>
