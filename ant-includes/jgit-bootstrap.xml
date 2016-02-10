@@ -34,9 +34,12 @@
 				rev="${git.tasks.install.version}" conf="*->*,!sources,!javadoc"/>
 		</ivy:resolve>
 		<ivy:retrieve type="jar,bundle" pattern="${jgit.jar.dir}/[artifact]-[revision].[ext]"/>
+		
+		<!-- We do this task only once -->
+		<property name="skip.jgit.download" value="true"/>
 	</target>
 	
-	<target name="bootstrap-jgit" depends="download-jgit" description="--> install git tasks">
+	<target name="bootstrap-jgit" depends="download-jgit" description="--> install git tasks" unless="already.bootstrap-jgit">
 		<path id="jgit.lib.path">
 			<fileset dir="${jgit.jar.dir}" includes="*.jar"/>
 		</path>
@@ -45,5 +48,7 @@
 			uri="antlib:com.rimerosolutions.ant.git"
 			classpathref="jgit.lib.path"
 		/>
+		<!-- We do this only once -->
+		<property name="already.bootstrap-jgit" value="true"/>
 	</target>
 </project>

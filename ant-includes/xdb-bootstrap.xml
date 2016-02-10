@@ -25,9 +25,12 @@
 	<target name="download-xdb" depends="init" unless="skip.xdb.download">
 		<xdb-resolve />
 		<ivy:retrieve pattern="${xdb.jar.dir}/[artifact]-[revision].[ext]"/>
+		
+		<!-- We do this task only once -->
+		<property name="skip.xdb.download" value="true"/>
 	</target>
 	
-	<target name="bootstrap-xdb" depends="download-xdb" description="--> install eXistDB tasks">
+	<target name="bootstrap-xdb" depends="download-xdb" description="--> install eXistDB tasks" unless="already.bootstrap-xdb">
 		<path id="xdb.lib.path">
 			<fileset dir="${xdb.jar.dir}" includes="*.jar"/>
 		</path>
@@ -36,6 +39,8 @@
 			uri="http://exist-db.org/ant"
 			classpathref="xdb.lib.path"
 		/>
+		<!-- We do this only once -->
+		<property name="already.bootstrap-xdb" value="true"/>
 	</target>
 	
 	<!--

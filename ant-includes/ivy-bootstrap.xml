@@ -19,6 +19,9 @@
 		<!--
 			<get src="https://repo1.maven.org/maven2/org/apache/ivy/ivy/${ivy.install.version}/ivy-${ivy.install.version}.jar" dest="${ivy.jar.file}" usetimestamp="true"/>
 		-->
+		
+		<!-- We do this task only once -->
+		<property name="skip.ivy.download" value="true"/>
 	</target>
 	
 	
@@ -28,7 +31,7 @@
 		if you already have ivy in your ant lib, you can simply remove this
 		target and the dependency the 'go' target has on it
 	     ================================= -->
-	<target name="bootstrap-ivy" depends="download-ivy" description="--> install Ivy tasks">
+	<target name="bootstrap-ivy" depends="download-ivy" description="--> install Ivy tasks" unless="already.bootstrap-ivy">
 		<!-- try to load ivy here from local ivy dir, in case the user has not already dropped
 		it into ant's lib dir (note that the latter copy will always take precedence).
 		We will not fail as long as local lib dir exists (it may be empty) and
@@ -41,5 +44,7 @@
 			uri="antlib:org.apache.ivy.ant"
 			classpathref="ivy.lib.path"
 		/>
+		<!-- We do this only once -->
+		<property name="already.bootstrap-ivy" value="true"/>
 	</target>
 </project>
