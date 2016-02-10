@@ -1,15 +1,3 @@
-[submodule "AtomicWiki"]
-	path = AtomicWiki
-	url = https://github.com/wolfgangmm/AtomicWiki.git
-	branch = master
-[submodule "external/AtomicWiki"]
-	path = external/AtomicWiki
-	url = https://github.com/wolfgangmm/AtomicWiki.git
-	branch = master
-[submodule "external/eXist"]
-	path = external/eXist
-	url = https://github.com/eXist-db/exist.git
-	branch = develop
 [submodule "skel/www/forms/xsltforms"]
 	path = skel/www/forms/xsltforms
 	url = https://github.com/eXist-db/xsltforms-xar.git
