@@ -1,16 +1,17 @@
-<?xml version="1.0" encoding="ISO-8859-1"?>
+<?xml version="1.0" encoding="UTF-8"?>
 
-<project basedir="." default="list" name="GOPHER" xmlns:xdb="http://exist-db.org/ant">
+<project basedir="." default="list" name="GOPHER" xmlns:xdb="http://exist-db.org/ant" xmlns:git="antlib:com.rimerosolutions.ant.git">
 	<description>GOPHER system by jmfernandez Ant script $Id$</description>
 	
 	<!--
 		Configuration properties
 	-->
-	<dirname property="project.home" file="${ant.file}"/>
-	<property name="ant.file.properties" location="${project.home}/build.properties"/>
+	<dirname property="gopher.project.home" file="${ant.file}"/>
+	
+	<property name="ant.file.properties" location="${gopher.project.home}/build.properties"/>
 	<property file="${ant.file.properties}"/>
 	<property name="xcesc.config.col" value="XCESC-config"/>
-	<property name="skel.dir" location="${project.home}/skel" />
+	<property name="skel.dir" location="${gopher.project.home}/skel" />
 	<xmlproperty file="${skel.dir}/${xcesc.config.col}/systemManagement.xml"/>
 	<xmlproperty file="${skel.dir}/${xcesc.config.col}/metaManagement.xml"/>
 	<xmlproperty file="${skel.dir}/${xcesc.config.col}/jobManagement.xml"/>
@@ -25,14 +26,14 @@
 	<property name="xmldb.uri" value="xmldb:exist://${deploy.host}:${deploy.eXist.port}/xmlrpc"/>
 	<property name="publicBaseURI" value="http://${systemManagement(publicServerName)}:${systemManagement(publicServerPort)}${systemManagement(publicBasePath)}"/>
 	
-	<property name="external" location="external" />
-	<property name="src" location="src" />
-	<property name="build" location="build" />
-	<property name="libs" location="libs" />
-	<property name="downloads.dir" value="downloads" />
-	<property name="AtomicWiki.dir" location="${external}/AtomicWiki" />
-	<property name="eXist.conf.dir" location="eXist-conf" />
-	<property name="GOPHER.patches.dir" location="patches" />
+	<property name="external" location="${gopher.project.home}/external" />
+	<property name="src" location="${gopher.project.home}/src" />
+	<property name="build" location="${gopher.project.home}/build" />
+	<property name="libs" location="${gopher.project.home}/libs" />
+	<property name="downloads.dir" value="${gopher.project.home}/downloads" />
+	<property name="gopher.AtomicWiki.dir" location="${external}/AtomicWiki" />
+	<property name="eXist.conf.dir" location="${gopher.project.home}/eXist-conf" />
+	<property name="GOPHER.patches.dir" location="${gopher.project.home}/patches" />
 	<property name="GOPHER.template.startup" value="starteXist-GOPHER.sh"/>
 	<property name="GOPHER.startup" value="starteXist${deploy.eXist.basebranch}.sh"/>
 	
@@ -41,18 +42,17 @@
 	-->
 	<property name="GOPHER.AtomicWiki-site" location="${eXist.conf.dir}/AtomicWiki-site"/>
 	
-	<dirname property="project.home.parent" file="${project.home}"/>
+	<dirname property="gopher.project.home.parent" file="${gopher.project.home}"/>
 	
-	<property name="GOPHERPrepare.dir.rel" value="GOPHERPrepare" />
-	<property name="GOPHERPrepare.dir" location="${GOPHERPrepare.dir.rel}" />
-	<property name="GOPHERPrepare.dist.dir" location="${GOPHERPrepare.dir.rel}/dist" />
 	<property name="weeklyGOPHER-eXist-module.dir.rel" value="weeklyGOPHER-eXist-module" />
-	<property name="weeklyGOPHER-eXist-module.dir" location="${weeklyGOPHER-eXist-module.dir.rel}" />
-	<property name="weeklyGOPHER-eXist-module.dist.dir" location="${weeklyGOPHER-eXist-module.dir.rel}/dist" />
-	<property name="eXist.dir" location="${external}/eXist" />
-	<property name="eXist.ant.dir" location="${project.home}/antlibs" />
+	<property name="gopher.eXist.dir" location="${external}/eXist" />
+	<property name="eXist.ant.dir" location="${gopher.project.home}/antlibs" />
 	<property name="eXist.jar.rel" value="exist.jar"/>
 	<property name="eXist.jar" location="${eXist.ant.dir}/${eXist.jar.rel}"/>
+	
+	<include file="${gopher.project.home}/ant-includes/xdb-bootstrap.xml"/>
+	<include file="${gopher.project.home}/ant-includes/jgit-bootstrap.xml"/>
+	<include file="${gopher.project.home}/${weeklyGOPHER-eXist-module.dir.rel}/build.xml"/>
 	
 	<property name="atomic-xquery.jar" value="${libs}/atomic-xquery.jar"/>
 
@@ -76,28 +76,93 @@
 	<path id="AtomicWiki.classpath.tools">
 		<path refid="exist-ant.classpath.core"/>
 		
-		<fileset dir="${AtomicWiki.dir}/java/lib/tools">
+		<fileset dir="${gopher.AtomicWiki.dir}/java/lib/tools">
 			<include name="*.jar"/>
 			<exclude name="saxon*.jar"/>
 		</fileset>
 	</path>
 	<path id="AtomicWiki.classpath.core">
 		<path refid="AtomicWiki.classpath.tools"/>
-		<fileset dir="${AtomicWiki.dir}/java/lib/exist">
+		<fileset dir="${gopher.AtomicWiki.dir}/java/lib/exist">
 			<include name="*.jar"/>
 			<exclude name="exist.jar"/>
 			<exclude name="exist-optional.jar"/>
 		</fileset>
 		<!--
-		<fileset dir="${AtomicWiki.dir}/java/lib/endorsed">
+		<fileset dir="${gopher.AtomicWiki.dir}/java/lib/endorsed">
 			<include name="*.jar"/>
 		</fileset>
 		-->
-		<fileset dir="${AtomicWiki.dir}">
+		<fileset dir="${gopher.AtomicWiki.dir}">
 			<include name="atiki-modules.jar"/>
 		</fileset>
 	</path>
 
+	<!-- Macros -->
+	<macrodef name="get.git.checkout">
+		<attribute name="directory"/>
+		<attribute name="git.checkout.attribute"/>
+		<sequential>
+			<if>
+				<available file="@{directory}" type="dir"/>
+				<then>
+					<local name="tmp.git.checkout"/>
+					<exec executable="git" dir="@{directory}" outputproperty="tmp.git.checkout" failifexecutionfails="false">
+						<arg value="rev-parse"/>
+						<arg value="--verify"/>
+						<arg value="HEAD"/>
+					</exec>
+					<condition property="@{git.checkout.attribute}" value="${tmp.git.checkout}">
+						<and>
+							<isset property="tmp.git.checkout"/>
+							<length string="${tmp.git.checkout}" trim="yes" length="0" when="greater"/>
+						</and>
+					</condition>
+					<!--
+					<fail message="Unable to get commit hash for ${gopher.eXist.dir}. Is git installed?"  unless="eXist.git.checkout"/>
+					-->
+				</then>
+			</if>
+		</sequential>
+	</macrodef>
+	
+	<macrodef name="do.git.clone">
+		<attribute name="uri" />
+		<attribute name="directory" />
+		<attribute name="checkout" />
+		<attribute name="already.git.clone.property" />
+		<sequential>
+			<if>
+				<not>
+					<isset property="@{already.git.clone.property}" />
+				</not>
+				<then>
+					<local name="git.clone.head" />
+					<get.git.checkout directory="@{directory}" git.checkout.attribute="git.clone.head" />
+					<if>
+						<or>
+							<not>
+								<isset property="git.clone.head" />
+							</not>
+							<not>
+								<equals arg1="@{checkout}" arg2="${git.clone.head}" />
+							</not>
+						</or>
+						<then>
+							<delete dir="@{directory}" quiet="true"/>
+							<echo>Cloning @{uri} into @{directory} (checkout @{checkout})</echo>
+							<git:git directory="@{directory}" verbose="false">
+								<git:clone uri="@{uri}" clonesubmodules="true" nocheckout="true" />
+								<git:checkout branchname="@{checkout}" />
+							</git:git>
+						</then>
+					</if>
+					<property name="@{already.git.clone.property}" value="@{checkout}"/>
+				</then>
+			</if>
+		</sequential>
+	</macrodef>
+	
 	<!--
 		Targets
 	-->
@@ -107,113 +172,41 @@
 		<tstamp/>
 		<mkdir dir="${libs}"/>
 		<mkdir dir="${downloads.dir}"/>
-		<mkdir dir="${AtomicWiki.dir}/java/lib/endorsed"/>
 	</target>
 	
-	<target name="bootstrap.gopher.eXist.version">
-		<exec dir="${project.home}" executable="/bin/sh" outputproperty="gopher.eXist.version.weekly" failonerror="false">
-			<arg value="-c"/>
-			<arg value="svn propget svn:externals '${external}' | grep '^eXist' | grep -o -- '-r[0-9]*'"/>
-		</exec>
-		<exec dir="${project.home}" executable="/bin/sh" outputproperty="gopher.eXist.checkout.uri.weekly" failonerror="false">
-			<arg value="-c"/>
-			<arg value="svn propget svn:externals '${external}' | grep '^eXist' | grep -o -- 'http[^ ]*'"/>
-		</exec>
-		<exec dir="${project.home}" executable="/bin/sh" outputproperty="gopher.eXist.version.forms" failonerror="false">
-			<arg value="-c"/>
-			<arg value="svn propget svn:externals 'skel/www/${guiManagement(XForms-root)}' | grep -o -- '-r[0-9]*'"/>
-		</exec>
-		<exec dir="${project.home}" executable="/bin/sh" outputproperty="gopher.eXist.checkout.uri.forms" failonerror="false">
-			<arg value="-c"/>
-			<arg value="svn propget svn:externals 'skel/www/${guiManagement(XForms-root)}' | grep -o -- 'http[^ ]*'"/>
-		</exec>
-		
-		<condition property="gopher.eXist.version.uptodate">
-			<and>
-				<equals arg1="${gopher.eXist.version.weekly}" arg2="${gopher.eXist.version}"/>
-				<equals arg1="${gopher.eXist.checkout.uri.weekly}" arg2="${gopher.eXist.checkout.uri}"/>
-				<equals arg1="${gopher.eXist.version.forms}" arg2="${gopher.eXist.version}"/>
-				<equals arg1="${gopher.eXist.checkout.uri.forms}" arg2="${gopher.eXist.checkout.uri}/webapp/xforms/xsltforms"/>
-			</and>
-		</condition>
+	<!-- Generic external content git checkout task -->
+	<target name="bootstrap.gopher.something" depends="jgit-bootstrap.bootstrap-jgit">
+		<do.git.clone
+			uri="${gopher.something.git.uri}"
+			directory="${gopher.something.dir}"
+			checkout="${gopher.something.checkout}"
+			already.git.clone.property="${already.bootstrap.gopher.something}"
+		/>
 	</target>
 	
-	<target name="conditional.bootstrap.gopher.eXist.version" depends="bootstrap.gopher.eXist.version" unless="gopher.eXist.version.uptodate">
-		<!-- First one -->
-		<exec dir="${project.home}" executable="/bin/sh" outputproperty="gopher.eXist.updated.version" failonerror="false">
-			<arg value="-c"/>
-			<arg value="svn propget svn:externals '${external}' | sed '/^eXist.*$/d ; /^tools-ant.*$/d ; /^tools-endorsed.*$/d ; $a eXist	${gopher.eXist.version}	${gopher.eXist.checkout.uri}\ntools-ant	${gopher.eXist.version}	${gopher.eXist.checkout.uri}/tools/ant\ntools-endorsed	${gopher.eXist.version}	${gopher.eXist.checkout.uri}/lib/endorsed' | sed '/^$/d'"/>
-		</exec>
-		<exec dir="${project.home}" executable="svn" failonerror="true">
-			<arg value="propset"/>
-			<arg value="svn:externals"/>
-			<arg value="${gopher.eXist.updated.version}"/>
-			<arg value="${external}"/>
-		</exec>
-		<exec dir="${project.home}" executable="svn" failonerror="true">
-			<arg value="update"/>
-			<arg value="${external}"/>
-		</exec>
-		<!-- Second one -->
-		<exec dir="${project.home}" executable="/bin/sh" outputproperty="gopher.xsltforms.updated.version" failonerror="false">
-			<arg value="-c"/>
-			<arg value="svn propget svn:externals 'skel/www/${guiManagement(XForms-root)}' | sed '/^xsltforms.*$/d ; $a xsltforms	${gopher.eXist.version}	${gopher.eXist.checkout.uri}/webapp/xforms/xsltforms' | sed '/^$/d'"/>
-		</exec>
-		<exec dir="${project.home}" executable="svn" failonerror="true">
-			<arg value="propset"/>
-			<arg value="svn:externals"/>
-			<arg value="${gopher.xsltforms.updated.version}"/>
-			<arg value="skel/www/${guiManagement(XForms-root)}"/>
-		</exec>
-		<exec dir="${project.home}" executable="svn" failonerror="true">
-			<arg value="update"/>
-			<arg value="skel/www/${guiManagement(XForms-root)}"/>
-		</exec>
+	<target name="conditional.bootstrap.gopher.AtomicWiki" unless="already.bootstrap.gopher.AtomicWiki">
+		<antcall target="bootstrap.gopher.something">
+			<param name="gopher.something.git.uri" value="${gopher.AtomicWiki.git.uri}"/>
+			<param name="gopher.something.dir" value="${gopher.AtomicWiki.dir}" />
+			<param name="gopher.something.checkout" value="${gopher.AtomicWiki.checkout}" />
+			<param name="already.bootstrap.gopher.something" value="already.bootstrap.gopher.AtomicWiki" />
+		</antcall>
 	</target>
 	
-	<target name="bootstrap.eXist.exists" depends="init , conditional.bootstrap.gopher.eXist.version">
-		<uptodate
-			property="eXist.archive.present"
-			targetfile="${eXist.jar}"
-		>
-			<srcfiles file="${eXist.dir}/build.xml"/>
-			<srcfiles file="${eXist.dir}/conf.xml.tmpl"/>
-			<srcfiles dir="${eXist.dir}/build/scripts" includes="**/*.x[ms]l"/>
-			<srcfiles dir="${eXist.dir}/src" includes="**/*.java"/>
-		</uptodate>
+	<target name="conditional.bootstrap.gopher.eXist" unless="already.bootstrap.gopher.eXist">
+		<antcall target="bootstrap.gopher.something">
+			<param name="gopher.something.git.uri" value="${gopher.eXist.git.uri}"/>
+			<param name="gopher.something.dir" value="${gopher.eXist.dir}" />
+			<param name="gopher.something.checkout" value="${gopher.eXist.checkout}" />
+			<param name="already.bootstrap.gopher.something" value="already.bootstrap.gopher.eXist" />
+		</antcall>
 	</target>
 	
-	<target name="conditional.bootstrap.eXist" depends="bootstrap.eXist.exists" unless="eXist.archive.present">
-		<antcall target="bootstrap.eXist"/>
-		<mkdir dir="${eXist.ant.dir}"/>
-		<copy preservelastmodified="true" todir="${eXist.ant.dir}">
-			<fileset dir="${eXist.dir}">
-				<include name="lib/core/*.jar" />
-				<include name="${eXist.jar.rel}" />
-				<include name="exist-optional.jar" />
-			</fileset>
-		</copy>
-	</target>
-	
-	<target name="bootstrap.eXist" depends="conditional.bootstrap.gopher.eXist.version , compile.eXist" description="It compiles eXist">
+	<target name="bootstrap.eXist" depends="conditional.compile.eXist" description="It compiles eXist">
 	</target>
 	
 
-	<target name="init.eXist.extension" depends="conditional.bootstrap.eXist" unless="already.init.eXist.extension">
-		<!--
-			eXist Ant task
-		-->
-		<!-- Emit the property to the ant console -->
-		<!--
-		<property name="myclasspath" refid="AtomicWiki.classpath.core"/>
-		<echo message="Classpath = ${myclasspath}"/>
-		-->
-		
-		<typedef resource="org/exist/ant/antlib.xml" uri="http://exist-db.org/ant">
-			<classpath refid="exist-ant.classpath.core"/>
-		</typedef>
-		<available file="${eXist.jar}" property="already.init.eXist.extension"/>
-	</target>
+	<target name="init.eXist.extension" depends="xdb-bootstrap.bootstrap-xdb" />
 	
 	<target name="list" depends="init.eXist.extension" description="Listing">
 		<xdb:list uri="${xmldb.uri}/db" user="${deploy.eXist.admin.user}" password="${deploy.eXist.admin.pass}" failonerror="true" resources="true" outputproperty="resources"/>
@@ -227,7 +220,7 @@
 			targetfile="${eXist.conf.dir}/conf.xml"
 		>
 			<srcfiles file="${GOPHER.patches.dir}/conf-patcher.xsl"/>
-			<srcfiles file="${eXist.dir}/conf.xml.tmpl"/>
+			<srcfiles file="${gopher.eXist.dir}/conf.xml.tmpl"/>
 			<srcfiles file="${ant.file}"/>
 			<srcfiles file="${ant.file.properties}"/>
 		</uptodate>
@@ -253,7 +246,7 @@
 			targetfile="${eXist.conf.dir}/log4j.xml"
 		>
 			<srcfiles file="${GOPHER.patches.dir}/log4j-patcher.xsl"/>
-			<srcfiles file="${eXist.dir}/log4j.xml"/>
+			<srcfiles file="${gopher.eXist.dir}/log4j.xml"/>
 			<srcfiles file="${ant.file}"/>
 			<srcfiles file="${ant.file.properties}"/>
 		</uptodate>
@@ -280,7 +273,7 @@
 		<delete file="${eXist.conf.dir}/conf.xml.tmpl.rej" failonerror="false"/>
 		-->
 		<xslt
-			in="${eXist.dir}/conf.xml.tmpl"
+			in="${gopher.eXist.dir}/conf.xml.tmpl"
 			out="${eXist.conf.dir}/conf.xml.tmpl"
 			style="${GOPHER.patches.dir}/conf-patcher.xsl"
 			force="true"
@@ -290,7 +283,7 @@
 		<!--
 		<patch
 			patchfile="${GOPHER.patches.dir}/eXist-conf-xml.patch"
-			originalfile="${eXist.dir}/conf.xml.tmpl"
+			originalfile="${gopher.eXist.dir}/conf.xml.tmpl"
 			destfile="${eXist.conf.dir}/conf.xml.tmpl"
 		/>
 		<fail message="Error while patching...">
@@ -359,7 +352,7 @@
 		<delete file="${eXist.conf.dir}/log4j.xml.rej" failonerror="false"/>
 		<patch
 			patchfile="${GOPHER.patches.dir}/log4j-eXist-logdir.patch"
-			originalfile="${eXist.dir}/log4j.xml"
+			originalfile="${gopher.eXist.dir}/log4j.xml"
 			destfile="${eXist.conf.dir}/log4j.xml"
 		/>
 		<fail message="Error while patching...">
@@ -374,7 +367,7 @@
 		</fail>
 		-->
 		<xslt
-			in="${eXist.dir}/log4j.xml"
+			in="${gopher.eXist.dir}/log4j.xml"
 			out="${eXist.conf.dir}/log4j.xml"
 			style="${GOPHER.patches.dir}/log4j-patcher.xsl"
 			force="true"
@@ -494,7 +487,7 @@
 	<target name="build-atomic-xquery-jar" depends="init">
 		<!-- Prepare customized atom-services.xml -->
 		<xslt
-			in="${AtomicWiki.dir}/webapp/atom-services.xml"
+			in="${gopher.AtomicWiki.dir}/webapp/atom-services.xml"
 			out="${eXist.conf.dir}/atom-services.xml"
 			style="${GOPHER.patches.dir}/atom-services.xsl"
 			force="true"
@@ -508,7 +501,7 @@
 		<!-- Build patched atomic-xquery jar -->
 		<delete dir="${eXist.conf.dir}/xquery-AtomicWiki"/>
 		<copy todir="${eXist.conf.dir}/xquery-AtomicWiki">
-			<fileset dir="${AtomicWiki.dir}/xquery/src">
+			<fileset dir="${gopher.AtomicWiki.dir}/xquery/src">
 				<exclude name="**/.svn" />
 				<exclude name="**/.svn/**" />
 			</fileset>
@@ -520,11 +513,23 @@
 			destfile="${atomic-xquery.jar}"
 			basedir="${eXist.conf.dir}/xquery-AtomicWiki" />
 	</target>
-
+	
+	<!-- depends="init.eXist.extension , conditional.patches , clean.AtomicWiki , patch.AtomicWiki , build-atomic-xquery-jar , compile.AtomicWiki , update.AtomicWiki.default-site" -->
 	<target name="deploy.skel.meta"
-		depends="init.eXist.extension , conditional.patches , clean.AtomicWiki , patch.AtomicWiki , build-atomic-xquery-jar , compile.AtomicWiki , update.AtomicWiki.default-site"
+		depends="init.eXist.extension , clean.AtomicWiki , conditional.compile.AtomicWiki"
 		description="Remote eXist Meta-skeleton for GOPHER"
 	>
+		<!-- Let's check whether there is a previous deployment or not -->
+		<sshexec
+			host="${deploy.host}"
+			username="${deploy.ssh.user}"
+			keyfile="${deploy.ssh.keyfile}"
+			trust="yes"
+			passphrase="${deploy.ssh.passphrase}"
+			command="if [ ! -d '${deploy.eXist.dir}' ]"
+			outputproperty="already.deployed.eXist.version"
+		/>
+		
 		<!-- First, stop the patient (it may fail) -->
 		<xdb:shutdown
 			uri="${xmldb.uri}/db"
@@ -625,7 +630,7 @@
 			trust="yes"
 			passphrase="${deploy.ssh.passphrase}"
 		>
-			<fileset dir="${AtomicWiki.dir}">
+			<fileset dir="${gopher.AtomicWiki.dir}">
 				<include name="etc/**"/>
 				<exclude name="etc/jetty.xml"/>
 				<exclude name="etc/webdefault.xml"/>
@@ -642,10 +647,10 @@
 		>
 			<!-- The ones from Saxon -->
 			<!-- The ones needed by AtomicWiki -->
-			<fileset dir="${AtomicWiki.dir}">
+			<fileset dir="${gopher.AtomicWiki.dir}">
 				<include name="*.jar"/>
 			</fileset>
-			<fileset dir="${AtomicWiki.dir}/java/lib/tools">
+			<fileset dir="${gopher.AtomicWiki.dir}/java/lib/tools">
 				<include name="atiki-modules*.jar"/>
 				<include name="WikiModel*.jar"/>
 			</fileset>
@@ -965,7 +970,7 @@
 			trust="yes"
 			passphrase="${deploy.ssh.passphrase}"
 		>
-			<fileset dir="${weeklyGOPHER-eXist-module.dist.dir}">
+			<fileset dir="${weeklyGOPHER-eXist-module.dist}">
 				<include name="*.jar"/>
 			</fileset>
 		</scp>
@@ -975,32 +980,89 @@
 		<!-- At this point the database instance must be running! -->
 	</target>
 	
-	<target name="compile.GOPHERPrepare" depends="init" description="compiles GOPHERPrepare">
-		<ant inheritAll="false" inheritRefs="false" dir="${GOPHERPrepare.dir}" />
-	</target>
+	<target name="compile.weeklyGOPHER-eXist-module" depends="weeklyGOPHER-eXist-module.build" description="compiles weeklyGOPHER-eXist-module" />
 	
-	<target name="compile.weeklyGOPHER-eXist-module" depends="init" description="compiles weeklyGOPHER-eXist-module">
-		<ant inheritAll="false" inheritRefs="false" dir="${weeklyGOPHER-eXist-module.dir}" />
-	</target>
+	<property name="gopher.eXist.compiled.file" location="${gopher.eXist.dir}/.gopher.compiled" />
+	<available file="${gopher.eXist.compiled.file}" property="already.compile.eXist" />
 	
-	<target name="compile.eXist" depends="init" description="compiles eXist inside weeklyGOPHER-eXist-module">
-		<ant inheritAll="false" inheritRefs="false" dir="${eXist.dir}">
+	<target name="compile.eXist" depends="conditional.bootstrap.gopher.eXist" description="compiles eXist">
+		<exec dir="${gopher.eXist.dir}" executable="${gopher.eXist.dir}/build.sh">
+			<arg value="all"/>
+		</exec>
+		<touch file="${gopher.eXist.compiled.file}"/>
+		<property name="already.compile.eXist" value="true"/>
+		<!--
+		<ant inheritAll="false" inheritRefs="false" dir="${gopher.eXist.dir}">
 			<property file="${ant.file.dir.parent}/shared-eXist.properties" />
+		</ant>
+		-->
+	</target>
+	
+	<target name="conditional.compile.eXist" unless="already.compile.eXist">
+		<antcall target="compile.eXist" />
+	</target>
+	
+	<target name="clean.eXist" description="It cleans eXist">
+		<delete file="${gopher.eXist.compiled.file}" quiet="true" />
+		<exec dir="${gopher.eXist.dir}" executable="${gopher.eXist.dir}/build.sh">
+			<arg value="clean"/>
+		</exec>
+		<delete dir="${gopher.eXist.dir}/dist" quiet="true" />
+	</target>
+	
+	<property name="gopher.AtomicWiki.compiled.file" location="${gopher.AtomicWiki.dir}/.gopher.compiled" />
+	<available file="${gopher.AtomicWiki.compiled.file}" property="already.compile.AtomicWiki" />
+	
+	<target name="compile.AtomicWiki" depends="conditional.bootstrap.gopher.AtomicWiki" description="compiles AtomicWiki">
+		<ant inheritAll="false" inheritRefs="false" dir="${gopher.AtomicWiki.dir}">
+			<property name="wiki.base-uri" value="${publicBaseURI}"/>
+			<property name="data.dir" value="${GOPHER.AtomicWiki-site}"/>
+		</ant>
+		<touch file="${gopher.AtomicWiki.compiled.file}" />
+		<property name="already.compile.AtomicWiki" value="true"/>
+		<!--
+		<ant inheritAll="false" inheritRefs="false" dir="${gopher.eXist.dir}">
+			<property file="${ant.file.dir.parent}/shared-eXist.properties" />
+		</ant>
+		-->
+	</target>
+	
+	<target name="conditional.compile.AtomicWiki" unless="already.compile.AtomicWiki">
+		<antcall target="compile.AtomicWiki" />
+	</target>
+	
+	<target name="clean.AtomicWiki" description="cleans AtomicWiki">
+		<delete file="${gopher.eXist.compiled.file}" quiet="true" />
+		<ant inheritAll="false" inheritRefs="false" dir="${gopher.AtomicWiki.dir}" target="clean">
+			<property name="wiki.base-uri" value="${publicBaseURI}"/>
+			<property name="data.dir" value="${GOPHER.AtomicWiki-site}"/>
 		</ant>
 	</target>
 	
-	<target name="clean" depends="clean.weeklyGOPHER-eXist-module , clean.AtomicWiki" description="clean up ${ant.project.name}">
+	<target name="clean" depends="clean.weeklyGOPHER-eXist-module" description="clean up ${ant.project.name}">
 		<!-- Something, please! -->
 		<delete dir="${libs}"/>
 		<delete dir="${downloads.dir}"/>
 	</target>
 	
-	<target name="clean.weeklyGOPHER-eXist-module" description="clean up weeklyGOPHER-eXist-module">
-		<ant inheritAll="false" inheritRefs="false" dir="${weeklyGOPHER-eXist-module.dir}" target="clean" />
+	<target name="clean-all" depends="clean ,  clean.AtomicWiki , clean.eXist" description="cleans all the project, and its dependencies" />
+	
+	<target name="clean.weeklyGOPHER-eXist-module" depends="weeklyGOPHER-eXist-module.clean" description="clean up weeklyGOPHER-eXist-module" />
+	
+	<target name="dist.gopher" depends="conditional.compile.AtomicWiki , conditional.compile.eXist , compile.weeklyGOPHER-eXist-module" description="Prepares the GOPHER eXist bundle">
+		<copy preservelastmodified="true" todir="${gopher.eXist.dir}/autodeploy">
+			<fileset dir="${gopher.AtomicWiki.dir}/build">
+				<include name="*.xar" />
+			</fileset>
+			<!-- TODO: copy future .xar file of GOPHER -->
+		</copy>
+		<exec dir="${gopher.eXist.dir}" executable="${gopher.eXist.dir}/build.sh">
+			<arg value="dist-zip"/>
+		</exec>
 	</target>
 	
 	<target name="patch.AtomicWiki" description="AtomicWiki is updated and patched">
-		<exec dir="${AtomicWiki.dir}" executable="svn" failonerror="false">
+		<exec dir="${gopher.AtomicWiki.dir}" executable="svn" failonerror="false">
 			<arg value="revert"/>
 			<arg value="-R"/>
 			<arg value="."/>
@@ -1008,87 +1070,49 @@
 		
 		<patch
 			patchfile="${GOPHER.patches.dir}/AtomicWiki-patches/001_internal-saxon.patch"
-			dir="${AtomicWiki.dir}" strip="0"
+			dir="${gopher.AtomicWiki.dir}" strip="0"
 		/>
 		
 		<patch
 			patchfile="${GOPHER.patches.dir}/AtomicWiki-patches/002_eXist-1.5-changes.patch"
-			dir="${AtomicWiki.dir}" strip="0"
+			dir="${gopher.AtomicWiki.dir}" strip="0"
 		/>
 		
 		<patch
 			patchfile="${GOPHER.patches.dir}/AtomicWiki-patches/003_eXist-1.5-etc-changes.patch"
-			dir="${AtomicWiki.dir}" strip="0"
+			dir="${gopher.AtomicWiki.dir}" strip="0"
 		/>
 		
 		<patch
 			patchfile="${GOPHER.patches.dir}/AtomicWiki-patches/004_xquery-changes-1.5.patch"
-			dir="${AtomicWiki.dir}" strip="0"
+			dir="${gopher.AtomicWiki.dir}" strip="0"
 		/>
 		
 		<patch
 			patchfile="${GOPHER.patches.dir}/AtomicWiki-patches/005_fix-permissions.patch"
-			dir="${AtomicWiki.dir}" strip="0"
+			dir="${gopher.AtomicWiki.dir}" strip="0"
 		/>
 		
 		<patch
 			patchfile="${GOPHER.patches.dir}/AtomicWiki-patches/006_group-creation.patch"
-			dir="${AtomicWiki.dir}" strip="0"
+			dir="${gopher.AtomicWiki.dir}" strip="0"
 		/>
 		
 		<patch
 			patchfile="${GOPHER.patches.dir}/AtomicWiki-patches/007_build-sh.patch"
-			dir="${AtomicWiki.dir}" strip="0"
+			dir="${gopher.AtomicWiki.dir}" strip="0"
 		/>
 		
 	</target>
 	
-	<target name="compile.AtomicWiki" depends="conditional.bootstrap.eXist" description="compiles AtomicWiki">
-		<ant inheritAll="false" inheritRefs="false" dir="${AtomicWiki.dir}">
-			<property name="exist.dist" location="${eXist.dir}"/>
-			<property name="xmldb.uri" value="${xmldb.uri}"/>
-			<property name="admin.password" value="${deploy.eXist.admin.pass}"/>
-			<property name="wiki.admin.user" value="${deploy.eXist.wiki.admin.user}"/>
-			<property name="wiki.admin.password" value="${deploy.eXist.wiki.admin.pass}"/>
-			<property name="wiki.base-uri" value="${publicBaseURI}"/>
-			<property name="data.dir" value="${GOPHER.AtomicWiki-site}"/>
-			
-			<reference refid="AtomicWiki.classpath.core" torefid="classpath.core"/>
-			<reference refid="AtomicWiki.classpath.tools" torefid="classpath.tools"/>
-		</ant>
-	</target>
-	
-	<target name="clean.AtomicWiki" description="cleans AtomicWiki">
-		<ant inheritAll="false" inheritRefs="false" dir="${AtomicWiki.dir}" target="clean">
-			<property name="exist.dist" location="${eXist.dir}"/>
-			<property name="xmldb.uri" value="${xmldb.uri}"/>
-			<property name="admin.password" value="${deploy.eXist.admin.pass}"/>
-			<property name="wiki.admin.user" value="${deploy.eXist.wiki.admin.user}"/>
-			<property name="wiki.admin.password" value="${deploy.eXist.wiki.admin.pass}"/>
-			<property name="wiki.base-uri" value="${publicBaseURI}"/>
-			<property name="data.dir" value="${GOPHER.AtomicWiki-site}"/>
-			
-			<reference refid="AtomicWiki.classpath.core" torefid="classpath.core"/>
-			<reference refid="AtomicWiki.classpath.tools" torefid="classpath.tools"/>
-		</ant>
-	</target>
-	
 	<target name="do.AtomicWiki" description="does something with AtomicWiki">
-		<ant inheritAll="false" inheritRefs="false" dir="${AtomicWiki.dir}" target="${the.target}">
-			<property name="exist.dist" location="${eXist.dir}"/>
-			<property name="xmldb.uri" value="${xmldb.uri}"/>
-			<property name="admin.password" value="${deploy.eXist.admin.pass}"/>
-			<property name="wiki.admin.user" value="${deploy.eXist.wiki.admin.user}"/>
-			<property name="wiki.admin.password" value="${deploy.eXist.wiki.admin.pass}"/>
+		<ant inheritAll="false" inheritRefs="false" dir="${gopher.AtomicWiki.dir}" target="${the.target}">
 			<property name="wiki.base-uri" value="${publicBaseURI}"/>
 			<property name="data.dir" value="${GOPHER.patches.dir}/AtomicWiki-site"/>
-			
-			<reference refid="AtomicWiki.classpath.core" torefid="classpath.core"/>
-			<reference refid="AtomicWiki.classpath.tools" torefid="classpath.tools"/>
 		</ant>
 		<!--
-		<exec executable="ant" dir="${AtomicWiki.dir}" failonerror="true">
-			<arg value="-Dexist.dist=${eXist.dir}"/>
+		<exec executable="ant" dir="${gopher.AtomicWiki.dir}" failonerror="true">
+			<arg value="-Dexist.dist=${gopher.eXist.dir}"/>
 			<arg value="-Dxmldb.uri=${xmldb.uri}"/>
 			<arg value="-Dadmin.password=${deploy.eXist.admin.pass}"/>
 			<arg value="-Dwiki.admin.user=${deploy.eXist.wiki.admin.user}"/>
@@ -1107,7 +1131,7 @@
 		<!-- First we are going to copy the wiki data directory, so binary resources are taken into account -->
 		<delete dir="${GOPHER.AtomicWiki-site}" failonerror="false"/>
 		<copy todir="${GOPHER.AtomicWiki-site}">
-			<fileset dir="${AtomicWiki.dir}/site">
+			<fileset dir="${gopher.AtomicWiki.dir}/site">
 				<exclude name="**/.svn" />
 				<exclude name="**/.svn/**" />
 			</fileset>
@@ -1123,7 +1147,7 @@
 		
 		<!-- And translate, so wiki admin user is fixed -->
 		<xslt
-			basedir="${AtomicWiki.dir}/site"
+			basedir="${gopher.AtomicWiki.dir}/site"
 			destdir="${GOPHER.AtomicWiki-site}"
 			style="${GOPHER.patches.dir}/atomic-patcher.xsl"
 			force="true"
@@ -1148,21 +1172,21 @@
 	
 	<target
 		name="deploy.AtomicWiki"
-		depends="compile.AtomicWiki , init.eXist.extension"
+		depends="conditional.compile.AtomicWiki , init.eXist.extension"
 		description="deploys AtomicWiki files into the database"
 	>
 		
 		<!-- With this sentence we force configuration rewriting -->
 		
-		<touch millis="0" file="${AtomicWiki.dir}/etc/configuration.xml"/>
+		<touch millis="0" file="${gopher.AtomicWiki.dir}/etc/configuration.xml"/>
 		<!-- This cannot be done so, because subants inherit typedef declarations -->
-			<ant inheritAll="false" inheritRefs="false" dir="${AtomicWiki.dir}">
+			<ant inheritAll="false" inheritRefs="false" dir="${gopher.AtomicWiki.dir}">
 				<property name="already.init.eXist.extension" value="true"/>
 			
 				<property name="java.libs.exist" location="${eXist.ant.dir}"/>
 				<property name="java.libs.tools" location="${eXist.ant.dir}/lib/core"/>
 				<property name="java.libs.endorsed" value="${java.endorsed.dirs}"/>
-				<property name="exist.dist" location="${eXist.dir}"/>
+				<property name="exist.dist" location="${gopher.eXist.dir}"/>
 				<property name="xmldb.uri" value="${xmldb.uri}"/>
 				<property name="admin.password" value="${deploy.eXist.admin.pass}"/>
 				<property name="wiki.admin.user" value="${deploy.eXist.wiki.admin.user}"/>
@@ -1182,7 +1206,7 @@
 		
 		<!--
 		<java classname="org.apache.tools.ant.launch.Launcher" fork="true" failonerror="true"
-			dir="${AtomicWiki.dir}" timeout="4000000" taskname="startAnt"
+			dir="${gopher.AtomicWiki.dir}" timeout="4000000" taskname="startAnt"
 		>
 			<classpath>
 				<pathelement location="${ant.home}/lib/ant-launcher.jar"/>
@@ -1195,7 +1219,7 @@
 			<arg value="-Djava.libs.exist=${eXist.ant.dir}"/>
 			<arg value="-Djava.libs.tools=${eXist.ant.dir}/lib/core"/>
 			<arg value="-Djava.libs.endorsed=${java.endorsed.dirs}"/>
-			<arg value="-Dexist.dist=${eXist.dir}"/>
+			<arg value="-Dexist.dist=${gopher.eXist.dir}"/>
 			<arg value="-Dxmldb.uri=${xmldb.uri}"/>
 			<arg value="-Dadmin.password=${deploy.eXist.admin.pass}"/>
 			<arg value="-Dwiki.admin.user=${deploy.eXist.wiki.admin.user}"/>
@@ -1212,8 +1236,8 @@
 		-->
 		
 		<!--
-		<exec executable="ant" dir="${AtomicWiki.dir}" failonerror="true">
-			<arg value="-Dexist.dist=${eXist.dir}"/>
+		<exec executable="ant" dir="${gopher.AtomicWiki.dir}" failonerror="true">
+			<arg value="-Dexist.dist=${gopher.eXist.dir}"/>
 			<arg value="-Dxmldb.uri=${xmldb.uri}"/>
 			<arg value="-Dadmin.password=${deploy.eXist.admin.pass}"/>
 			<arg value="-Dwiki.admin.user=${deploy.eXist.wiki.admin.user}"/>
@@ -1265,7 +1289,7 @@
 		<!-- We need to patch all get-context-path occurrences! -->
 		<delete dir="${eXist.conf.dir}/webapp-AtomicWiki"/>
 		<copy todir="${eXist.conf.dir}/webapp-AtomicWiki">
-			<fileset dir="${AtomicWiki.dir}/webapp">
+			<fileset dir="${gopher.AtomicWiki.dir}/webapp">
 				<include name="**/*.xq*" />
 				
 				<exclude name="controller.xql" />
@@ -1282,8 +1306,7 @@
 			<fileset dir="${eXist.conf.dir}/webapp-AtomicWiki">
 				<include name="**"/>
 			</fileset>
-			<fileset dir="${AtomicWiki.dir}/webapp">
-				<include name="assets/**" />
+			<fileset dir="${gopher.AtomicWiki.dir}/webapp">				<include name="assets/**" />
 				<include name="images/**" />
 				<include name="scripts/**" />
 				<include name="styles/**" />
@@ -1322,7 +1345,7 @@
 		-->
 		
 		<xdb:store uri="${xmldb.uri}/db" user="${deploy.eXist.admin.user}" password="${deploy.eXist.admin.pass}" failonerror="true" createsubcollections="true">
-			<fileset dir="${AtomicWiki.dir}/webapp">
+			<fileset dir="${gopher.AtomicWiki.dir}/webapp">
 				<include name="*.xml" />
 				<exclude name="atom-services.xml" />
 			</fileset>
